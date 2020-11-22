@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Sapphire Assistant Framework</string>
+    <string name="title_activity_core_central_">Core_Central_Activity</string>
+    <!--
+    This string is used for square devices and overridden by hello_world in
+    values-round/strings.xml for round devices.
+    -->
+    <string name="hello_world">Hello Square World!</string>
+    <string name="title_vosk_stt_module">Vosk Speech To Text</string>
+    <string name="title_parsermodule">SAF Parser Module</string>
+    <string name="title_calendarskill">SAF Calendar Skill</string>
+</resources>

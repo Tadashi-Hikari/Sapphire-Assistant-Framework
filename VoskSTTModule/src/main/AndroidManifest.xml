@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:dist="http://schemas.android.com/apk/distribution"
+    package="com.example.vosksttmodule">
+
+    <dist:module
+        dist:instant="false"
+        dist:title="@string/title_vosk_stt_module">
+        <dist:delivery>
+            <dist:install-time />
+        </dist:delivery>
+        <dist:fusing dist:include="true" />
+    </dist:module>
+
+    <!-- I have the STT running in its own process, since it's so resource heavy -->
+    <application>
+        <meta-data
+            android:name="sapphire_assistant_framework_module"
+            android:value="true"/>
+        <meta-data
+            android:name="bound_service"
+            android:value="com.example.vosksttmodule.KaldiService"/>
+        <service
+            android:process="vosk.service"
+            android:name=".KaldiService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="sapphire_assistant_framework.BIND"/>
+            </intent-filter>
+        </service>
+    </application>
+</manifest>
