@@ -11,4 +11,22 @@
         </dist:delivery>
         <dist:fusing dist:include="true" />
     </dist:module>
+
+    <application>
+        <meta-data
+            android:name="sapphire_assistant_framework_module"
+            android:value="true">
+        </meta-data>
+        <meta-data
+            android:name="saf_parser"
+            android:value="com.example.parsermodule.UtteranceParsing"/>
+        <service
+            android:name=".UtteranceProcessing"
+            android:exported="true"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="android.intent.action.PARSE"/>
+            </intent-filter>
+        </service>
+    </application>
 </manifest>
