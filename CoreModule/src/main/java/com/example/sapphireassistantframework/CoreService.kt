@@ -14,11 +14,10 @@ import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import edu.stanford.nlp.classify.ColumnDataClassifier
+import com.example.sapphireassistantframework.depreciated.CoreDatabase
 import java.lang.Exception
 import java.util.*
 import org.json.JSONObject
-import java.io.*
 
 internal class CoreService : Service(){
     private var connections: LinkedList<Pair<String, Connection>> = LinkedList()
@@ -27,10 +26,42 @@ internal class CoreService : Service(){
     private val NAME = "Sapphire Assistant Framework"
     private val SERVICE_TEXT = "Sapphire Assistant Framework"
     private var sapphire_apps: LinkedList<Pair<String, String>> = LinkedList()
-    private lateinit var classifier: ColumnDataClassifier
+    private var pipeline: LinkedList<String> = LinkedList<String>()
 
     override fun onBind(intent: Intent?): IBinder? {
         TODO("Not yet implemented")
+    }
+
+    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+        if (intent.action == "sapphire_assistant_framework.BIND") {
+            createNotificationChannel()
+            with(NotificationManagerCompat.from(this)) {
+                // I defined notification id as 1, may need to change this later
+                notify(1337, builder.build())
+            }
+
+            //this isn't working unless its in the Daemon. Maybe its the context is service specific,
+            //rather than app specific
+            var db = CoreDatabase(this.applicationContext)
+            db.initDatabase()
+
+            scanApplicationManifests()
+            update_database(sapphire_apps)
+            //startup_services = load_startup_services()
+
+
+            // Start all of the other Mycroft/SAF services
+            // I want to see this starting the services from the database
+            // Namely, I expect to see the UDP_Server started
+            startBackgroundServices(sapphire_apps)
+            // This may be a much longer running service than I was expecting
+            Log.i("CoreService", "Everything should be starting up now")
+        } else {
+            sortPost(intent)
+            //intentHandler(intent)
+        }
+
+        return super.onStartCommand(intent, flags, startId)
     }
 
     fun scanApplicationManifests(){
@@ -71,38 +102,7 @@ internal class CoreService : Service(){
 
     override fun onCreate() {
         super.onCreate()
-        classifier = train()
-    }
-
-    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        if (intent.action == "sapphire_assistant_framework.BIND") {
-            createNotificationChannel()
-            with(NotificationManagerCompat.from(this)) {
-                // I defined notification id as 1, may need to change this later
-                notify(1337, builder.build())
-            }
-
-            //this isn't working unless its in the Daemon. Maybe its the context is service specific,
-            //rather than app specific
-            var db = CoreDatabase(this.applicationContext)
-            db.initDatabase()
-
-            scanApplicationManifests()
-            update_database(sapphire_apps)
-            //startup_services = load_startup_services()
-
-
-            // Start all of the other Mycroft/SAF services
-            // I want to see this starting the services from the database
-            // Namely, I expect to see the UDP_Server started
-            startBackgroundServices(sapphire_apps)
-            // This may be a much longer running service than I was expecting
-            Log.i("CoreService", "Everything should be starting up now")
-        } else {
-            intentHandler(intent)
-        }
-
-        return super.onStartCommand(intent, flags, startId)
+        //classifier = train()
     }
 
     // This is the notification for the foreground service. Maybe have it lead into other bound services
@@ -132,10 +132,7 @@ internal class CoreService : Service(){
         notificationManager.cancel(1337)
     }
 
-    //Called 'post_office' in Python version
-    // Strikes me as inefficent. Also, the path probably shouldn't be hardcoded
-    // I suppose this is the place to read the config file, or search for installed modules
-    // Maybe I should move this to its own file
+    // This is really the 'special feature' handler
     fun intentHandler(intent: Intent) {
         Log.i("CoreService", "IntentHandler received an intent")
         var options: LinkedList<String> = LinkedList<String>()
@@ -150,36 +147,6 @@ internal class CoreService : Service(){
                 if (extra.equals("HYPOTHESIS")){
                     if (value != null) updateUtterance(value)
                 }
-            }
-        }
-    }
-
-    // This is just updating the UI. I need to make this more dynamic I think
-    fun updateUtterance(utterance: String){
-        var coreCentralActivityIntent = Intent()
-        //coreCentralActivityIntent.setClassName(this, "${packageName}.CoreCentralActivity")
-        coreCentralActivityIntent.setAction("UPDATE")
-
-        var json = JSONObject(utterance)
-        var text: String = json.getString("text")
-        coreCentralActivityIntent.putExtra("HYPOTHESIS",text)
-        sendBroadcast(coreCentralActivityIntent)
-        Log.i("CoreService", "Text is ${text}")
-
-        if(text != "") {
-            // Something isn't right here, and I'm not quite sure what. Does it matter the testing class? Maybe not.
-            var temp = "none\t${text}"
-            var datum = classifier.makeDatumFromLine(temp)
-            var classified = classifier.classOf(datum)
-            Log.i("CoreService", classified)
-            var counter = classifier.scoresOf(datum)
-            var score = counter.getCount(classified)
-            Log.i("CoreService", "${counter.keySet()}")
-            Log.i("CoreService", "${counter.values()}")
-            if(classifier.scoresOf(datum).getCount(classified) > 1.0){
-                Log.i("CoreService","${classified}, ${score}")
-            }else{
-                Log.i("CoreService", "Does not match a class")
             }
         }
     }
@@ -291,55 +258,91 @@ internal class CoreService : Service(){
         }
     }
 
-    // Uses a tab-delimited text
-    fun train(): ColumnDataClassifier{
-        // I should probably make this a resource name
-        var propFile = convertStreamToFile("test",".prop")
-        var trainingFile = convertStreamToFile("training_data",".txt")
-        Log.i("CoreService", "The conversion is done")
-
-        //var classifier = ColumnDataClassifier(propFile.canonicalPath)
-        var props = createProperties()
-        var classifier = ColumnDataClassifier(props)
-        classifier.trainClassifier(trainingFile.canonicalPath)
-        Log.i("CoreService", "The training is done")
-
-        return classifier
+    fun updateListenerHooks(){
+        Log.i("CoreServicePostOffice","This is not yet implemented")
     }
 
-    fun createProperties(): Properties{
-        var props = Properties()
-        props.setProperty("goldAnswerColumn","0")
-        props.setProperty("useNB","true")
-        //props.setProperty("useClass","true")
-        props.setProperty("useClassFeatures","true")
-        //props.setProperty("1.splitWordsRegexp","false")
-        //props.setProperty("1.splitWordsTokenizerRegexp","false")
-        props.setProperty("1.splitWordsWithPTBTokenizer","true")
-        // This is the line that was missing
-        props.setProperty("1.useSplitWords","true")
+    // This determines where its from and what to do with it
+    fun sortPost(intent:Intent){
+        var sendingModule = intent.getStringExtra("FROM")
 
-        return props
-    }
+        // I needed a dynamic way to handle data, based on the apps data needs and purpose.
+        if(sendingModule == null) {
+            Log.e(
+                "CoreServicePostOffice",
+                "Some kind of generic data received from somewhere unknown. Ignoring"
+            )
+        }else if(sendingModule == "KaldiService"){
+            Log.i("CoreServicePostOffice","KaldiService received")
+            intentHandler(intent)
+            var outgoingIntent = Intent()
+            outgoingIntent.setAction("PARSE")
+            var className = Class.forName("com.example.parsermodule."+"UtteranceProcessing")
+            outgoingIntent.setClassName(this,"com.example.parsermodule.UtteranceProcessing")
+            outgoingIntent.putExtra("HYPOTHESIS",intent.getStringExtra("HYPOTHESIS"))
+            startService(outgoingIntent)
+            Log.i("CoreServicePostOffice",outgoingIntent.toString())
+        }else if(checkSpecialFeatureFor(sendingModule)){
+            doAsTheConfigSays()
+        }else{
+            var found = false
+            for(module in pipeline){
+                if(found){
+                    intent.setAction(module)
+                    intent.setClassName(module,module)
+                    if(module == "activity") startActivity(intent)
+                    else if(module == "service") startService(intent)
+                    else sendBroadcast(intent)
 
-    // I hate that Android won't let me bundle files as files
-    fun convertStreamToFile(prefix: String, suffix: String): File{
-        // This file needs to be tab separated columns
-        var asset = assets.open(prefix+suffix)
-        var fileReader = InputStreamReader(asset)
-
-        var tempFile = File.createTempFile(prefix, suffix)
-        var tempFileWriter = FileOutputStream(tempFile)
-        // This is ugly AF
-        var data = fileReader.read()
-        while (data != -1) {
-            tempFileWriter.write(data)
-            data = fileReader.read()
+                    // I need TO module, not the sending module. This increments it by one
+                }else if(sendingModule == module){
+                    found = true
+                }
+            }
         }
-        // Do a little clean up
-        asset.close()
-        tempFileWriter.close()
+    }
 
-        return tempFile
+    fun checkSpecialFeatureFor(sendingModule:String): Boolean{
+        var configs = emptyArray<Objects>()
+
+        for(module in configs){
+            if(module as String == sendingModule){
+                return true
+            }
+        }
+        return false
+    }
+
+    // I may need some default options here, such as bind, sendToModule, schedule
+    fun doAsTheConfigSays(){
+        Log.i("CoreServicePostOffice","I need some logic here")
+    }
+
+    fun updateBackgroundMonitorUI(){
+        var coreCentralActivityIntent = Intent()
+        var stringBundle = emptyArray<String>()
+        var monitorText = ""
+
+        for(string in stringBundle){
+            //Enter everything on its own line
+            monitorText = "${string}\n"
+        }
+
+        coreCentralActivityIntent.setAction("UPDATE")
+        coreCentralActivityIntent.putExtra("MONITOR_TEXT",monitorText)
+        sendBroadcast(coreCentralActivityIntent)
+    }
+
+    // This is just updating the UI. I need to make this more dynamic I think
+    fun updateUtterance(utterance: String){
+        var coreCentralActivityIntent = Intent()
+        //coreCentralActivityIntent.setClassName(this, "${packageName}.CoreCentralActivity")
+        coreCentralActivityIntent.setAction("UPDATE")
+
+        var json = JSONObject(utterance)
+        var text: String = json.getString("text")
+        coreCentralActivityIntent.putExtra("HYPOTHESIS",text)
+        sendBroadcast(coreCentralActivityIntent)
+        Log.i("CoreService", "Text is ${text}")
     }
 }
