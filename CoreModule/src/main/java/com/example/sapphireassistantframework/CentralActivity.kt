@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Bundle
@@ -15,6 +16,8 @@ import android.util.Log
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.*
 
 private val UPDATE_UI = 1
@@ -87,9 +90,19 @@ class CoreCentralActivity: Activity(){
         }
     }
 
+    // This will likely need to be more dynamic. This is just checking for permissions
+    fun checkForPermissions(){
+        when{
+            ContextCompat.checkSelfPermission(this,"android.permission.RECORD_AUDIO") == PackageManager.PERMISSION_DENIED -> {
+                requestPermissions(arrayOf("android.permission.RECORD_AUDIO"),PackageManager.PERMISSION_GRANTED)
+            }
+        }
+    }
+
     fun startCoreService(){
         var intent: Intent = Intent().setClassName(this,"com.example.sapphireassistantframework.CoreService")
         intent.setAction("sapphire_assistant_framework.BIND")
+        checkForPermissions()
         startService(intent)
         intent.setAction("VISIBLE")
         startService(intent)
@@ -119,6 +132,20 @@ class CoreCentralActivity: Activity(){
                 startActivityForResult(intent, UNIQUE_REQUEST_CODE)
                 preferences.edit().putBoolean("FIRST_RUN", false)
             }
+        }
+    }
+
+    // Gracefully handle denied permissions
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if((grantResults.isNotEmpty())){
+            Log.v("CoreCentralActivity","Permission granted")
+        }else{
+            Log.e("CoreCentralActivity","Permission must be granted for use")
         }
     }
 

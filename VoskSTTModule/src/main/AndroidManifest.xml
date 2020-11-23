@@ -20,6 +20,9 @@
         <meta-data
             android:name="bound_service"
             android:value="com.example.vosksttmodule.KaldiService"/>
+        <meta-data
+            android:name="saf_stt"
+            android:value="com.example.vosksttmodule.KaldiService"/>
         <service
             android:process="vosk.service"
             android:name=".KaldiService"

@@ -1,4 +1,4 @@
-package com.example.sapphireassistantframework
+package com.example.sapphireassistantframework.depreciated
 
 import android.content.ContentValues
 import android.content.Context

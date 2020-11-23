@@ -18,6 +18,7 @@ import com.example.sapphireassistantframework.depreciated.CoreDatabase
 import java.lang.Exception
 import java.util.*
 import org.json.JSONObject
+import java.io.File
 
 internal class CoreService : Service(){
     private var connections: LinkedList<Pair<String, Connection>> = LinkedList()
@@ -25,7 +26,7 @@ internal class CoreService : Service(){
     private val CHANNEL_ID = "SAF"
     private val NAME = "Sapphire Assistant Framework"
     private val SERVICE_TEXT = "Sapphire Assistant Framework"
-    private var sapphire_apps: LinkedList<Pair<String, String>> = LinkedList()
+    private lateinit var sapphire_apps: LinkedList<Pair<String, String>>
     private var pipeline: LinkedList<String> = LinkedList<String>()
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -34,36 +35,44 @@ internal class CoreService : Service(){
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         if (intent.action == "sapphire_assistant_framework.BIND") {
-            createNotificationChannel()
-            with(NotificationManagerCompat.from(this)) {
-                // I defined notification id as 1, may need to change this later
-                notify(1337, builder.build())
-            }
-
-            //this isn't working unless its in the Daemon. Maybe its the context is service specific,
-            //rather than app specific
-            var db = CoreDatabase(this.applicationContext)
-            db.initDatabase()
-
-            scanApplicationManifests()
-            update_database(sapphire_apps)
-            //startup_services = load_startup_services()
-
-
-            // Start all of the other Mycroft/SAF services
-            // I want to see this starting the services from the database
-            // Namely, I expect to see the UDP_Server started
+            buildForegroundNotification()
+            //This should be an onFirstRun
+            sapphire_apps = scanApplicationManifests()
             startBackgroundServices(sapphire_apps)
-            // This may be a much longer running service than I was expecting
             Log.i("CoreService", "Everything should be starting up now")
         } else {
             sortPost(intent)
-            //intentHandler(intent)
         }
 
         return super.onStartCommand(intent, flags, startId)
     }
 
+    fun buildForegroundNotification(){
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            val importance = NotificationManager.IMPORTANCE_HIGH
+            val channel = NotificationChannel(CHANNEL_ID, NAME, importance).apply {
+                description = SERVICE_TEXT
+            }
+
+            notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
+
+        // This is the notification for the foreground service. Maybe have it lead into other bound services
+        var builder = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setSmallIcon(R.drawable.assistant)
+            .setContentTitle("Sapphire Assistant Framework")
+            .setContentText("SAF is running")
+            .setOngoing(true)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+
+        with(NotificationManagerCompat.from(this)) {
+            // I defined notification id as 1, may need to change this later
+            notify(1337, builder.build())
+        }
+    }
+
+    /**
     fun scanApplicationManifests(){
         var package_manager: PackageManager = packageManager
         var installed_packages = package_manager.getInstalledPackages(0)
@@ -93,37 +102,59 @@ internal class CoreService : Service(){
 
         Log.i("CoreService","Returning found SAF modules")
     }
+    **/
 
-    fun update_database(sapphire_apps: List<Pair<String,String>>): List<Pair<String,String>>{
-        Log.i("CoreService; update_database()","Not yet implemented. Dummy code")
+    // This is a placeholder. It's going to get broken up into just a scan app
+    fun scanApplicationManifests(): LinkedList<Pair<String,String>>{
+        var installedApplications = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
+        var startupApplications: LinkedList<Pair<String,String>> = LinkedList<Pair<String,String>>()
 
-        return sapphire_apps
+        for(applicationInfo in installedApplications){
+            var metadata = applicationInfo.metaData
+            try{
+                if(metadata.containsKey("sapphire_assistant_framework_module")){
+                    var packageName = applicationInfo.packageName
+                    Log.i("CoreService","Found SAF module: ${packageName}")
+                    // This can be changed to a dict key search w/ filenames as entry
+                    // Right now, i just need to launch the STT. This is a proof of concept
+                    if(metadata.containsKey("saf_stt")){
+                        startupApplications.add(Pair(packageName,metadata.get("saf_stt") as String))
+                    }
+                }
+            }catch(exception: Exception){
+                continue
+            }
+        }
+
+        return startupApplications
+    }
+
+    /**
+    fun saveApplicationData(){
+        var metadata = applicationInfo.metaData
+        var packageName = applicationInfo.packageName
+        Log.i("CoreService","Found SAF module: ${packageName}")
+        // This can be changed to a dict key search w/ filenames as entry
+        if(metadata.containsKey("saf_stt")){
+            var file = File(this.filesDir, "STTS")
+            file.appendText("${packageName},${metadata.getString("saf_stt") as String}")
+        }else if(metadata.containsKey("saf_skill")){
+            var file = File(this.filesDir, "SKILLS")
+            file.appendText("${packageName},${metadata.getString("saf_skill") as String}")
+        }else if(metadata.containsKey("saf_parser")){
+            var file = File(this.filesDir, "PARSERS")
+            file.appendText("${packageName},${metadata.getString("saf_parser") as String}")
+        }
+    }
+    **/
+
+    fun loadApplicationData(){
+
     }
 
     override fun onCreate() {
         super.onCreate()
         //classifier = train()
-    }
-
-    // This is the notification for the foreground service. Maybe have it lead into other bound services
-    var builder = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.drawable.assistant)
-            .setContentTitle("Sapphire Assistant Framework")
-            .setContentText("SAF is running")
-            .setOngoing(true)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-
-    // I think I need to change up some of this
-    fun createNotificationChannel(){
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
-            val importance = NotificationManager.IMPORTANCE_HIGH
-            val channel = NotificationChannel(CHANNEL_ID, NAME, importance).apply {
-                description = SERVICE_TEXT
-            }
-
-            notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
-        }
     }
 
     override fun onDestroy() {
@@ -145,7 +176,7 @@ internal class CoreService : Service(){
                 // Load task from some database
                 // Execute task (intent?)
                 if (extra.equals("HYPOTHESIS")){
-                    if (value != null) updateUtterance(value)
+                    if (value != null && value != "") updateUtterance(value)
                 }
             }
         }
@@ -153,29 +184,6 @@ internal class CoreService : Service(){
 
     // Can I collapse all of this database stuff into CoreDatabase, rather than here?
     fun startBackgroundServices(sapphire_apps: List<Pair<String,String>>){
-        Log.i("CoreService", "Starting startupServices()")
-        var dbHelper = CoreDatabase(this.applicationContext)
-        var db = dbHelper.readableDatabase
-
-        // get all of the services from the table
-        val cursor = db.query(
-                dbHelper.TABLE_STARTUP,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null
-        )
-        //
-        Log.i("CoreDaemon", "Number of records: ${cursor.count}")
-
-        var daemon = cursor.getColumnIndex(dbHelper.COLUMN_STARTUP_DAEMON)
-        // may need to change this to COLUMN_CLASS_NAME
-        var pkg = cursor.getColumnIndex(dbHelper.COLUMN_PACKAGE_NAME)
-        var classname = cursor.getColumnIndex(dbHelper.COLUMN_MODULE_NAME)
-
-
         for(info_pair: Pair<String,String> in sapphire_apps){
             // Do I need to return a pair? Seems annoying.
             Log.i("CoreService","launching ${info_pair.first}, ${info_pair.second}")
@@ -184,29 +192,6 @@ internal class CoreService : Service(){
     }
 
     fun stopBackgroundServices(sapphire_apps: List<Pair<String,String>>, connections: LinkedList<Pair<String,CoreService.Connection>>){
-        Log.i("CoreService", "Starting startupServices()")
-        var dbHelper = CoreDatabase(this.applicationContext)
-        var db = dbHelper.readableDatabase
-
-        // get all of the services from the table
-        val cursor = db.query(
-                dbHelper.TABLE_STARTUP,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null
-        )
-        //
-        Log.i("CoreDaemon", "Number of records: ${cursor.count}")
-
-        var daemon = cursor.getColumnIndex(dbHelper.COLUMN_STARTUP_DAEMON)
-        // may need to change this to COLUMN_CLASS_NAME
-        var pkg = cursor.getColumnIndex(dbHelper.COLUMN_PACKAGE_NAME)
-        var classname = cursor.getColumnIndex(dbHelper.COLUMN_MODULE_NAME)
-
-
         for(connection in connections){
             var service = connection.second
             unbindService(service)
@@ -219,15 +204,7 @@ internal class CoreService : Service(){
         }
     }
 
-    // start these services as threads? Can I start them in their own process?
-    // I am just going to broadcast that Mycroft has started. It can ping core for bindings if need be
     fun startBoundService(pkg: String, classname: String): Connection{
-        var connection =  bindToService(pkg, classname)
-
-        return connection
-    }
-
-    fun bindToService(pkg: String, classname: String): Connection{
         Log.i("CoreService", "binding ${pkg}, ${classname}")
         // This needs to be changed to not pseudocode
         var connection = Connection()
@@ -246,6 +223,7 @@ internal class CoreService : Service(){
 
         return connection
     }
+
 
     // The bound connection. The core attaches to each service as a client, tying them to cores lifecycle
     inner class Connection(): ServiceConnection {

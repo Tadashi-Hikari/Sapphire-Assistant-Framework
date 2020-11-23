@@ -15,7 +15,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.SapphireAssistantFramework">
-        <activity android:name=".CorrectionScreen"></activity>
         <activity
             android:name=".CoreCentralActivity"
             android:exported="true"
@@ -32,5 +31,4 @@
             android:enabled="true"
             android:exported="true" />
     </application>
-
 </manifest>
