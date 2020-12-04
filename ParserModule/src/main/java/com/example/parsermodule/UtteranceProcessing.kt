@@ -5,6 +5,9 @@ import android.content.Intent
 import android.os.IBinder
 import android.util.Log
 import edu.stanford.nlp.classify.ColumnDataClassifier
+import edu.stanford.nlp.ie.crf.CRFClassifier
+import edu.stanford.nlp.ling.CoreLabel
+import edu.stanford.nlp.process.PTBTokenizer
 import java.io.*
 import java.lang.Exception
 import java.util.*
@@ -19,7 +22,7 @@ class UtteranceProcessing: Service(){
     override fun onCreate() {
         super.onCreate()
         Log.i("UtteranceProcessing","Service created")
-        train()
+        trainIntentClassifier()
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
@@ -56,7 +59,7 @@ class UtteranceProcessing: Service(){
     }
 
     // Uses a tab-delimited text
-    fun train(){
+    fun trainIntentClassifier(){
         try{
             loadClassifier()
         }catch(exception: Exception){

@@ -9,4 +9,5 @@
     <string name="title_vosk_stt_module">Vosk Speech To Text</string>
     <string name="title_parsermodule">SAF Parser Module</string>
     <string name="title_calendarskill">SAF Calendar Skill</string>
+    <string name="title_runnermodule">Runner Module</string>
 </resources>

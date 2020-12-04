@@ -7,20 +7,17 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
-import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import com.example.sapphireassistantframework.depreciated.CoreDatabase
 import java.lang.Exception
 import java.util.*
 import org.json.JSONObject
-import java.io.File
 
-internal class CoreService : Service(){
+internal class BuiCoreService : Service(){
     private var connections: LinkedList<Pair<String, Connection>> = LinkedList()
     private lateinit var notificationManager: NotificationManager
     private val CHANNEL_ID = "SAF"
@@ -72,38 +69,6 @@ internal class CoreService : Service(){
         }
     }
 
-    /**
-    fun scanApplicationManifests(){
-        var package_manager: PackageManager = packageManager
-        var installed_packages = package_manager.getInstalledPackages(0)
-
-        for(package_info: PackageInfo in installed_packages){
-            var application_info = package_manager.getApplicationInfo(package_info.packageName,PackageManager.GET_META_DATA)
-            var bundle = application_info.metaData
-            try {
-                if (bundle.containsKey("sapphire_assistant_framework_module")) {
-                    Log.i("CoreService", "Found a SAF module")
-                    Log.i("CoreService", application_info.packageName)
-                    var package_name = application_info.packageName
-                    if (bundle.containsKey("bound_service")) {
-                        Log.i("CoreService", bundle.getString("bound_service", "Error"))
-                        var classname = bundle.getString("bound_service")
-                        // Checking for null explicitly lets me avoid those pesky Kotlin issues
-                        if(package_name != null && classname != null){
-                            var app_data = Pair(package_name,classname)
-                            sapphire_apps.add(app_data)
-                        }
-                    }
-                }
-            }catch(e: Exception){
-                continue
-            }
-        }
-
-        Log.i("CoreService","Returning found SAF modules")
-    }
-    **/
-
     // This is a placeholder. It's going to get broken up into just a scan app
     fun scanApplicationManifests(): LinkedList<Pair<String,String>>{
         var installedApplications = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
@@ -127,34 +92,6 @@ internal class CoreService : Service(){
         }
 
         return startupApplications
-    }
-
-    /**
-    fun saveApplicationData(){
-        var metadata = applicationInfo.metaData
-        var packageName = applicationInfo.packageName
-        Log.i("CoreService","Found SAF module: ${packageName}")
-        // This can be changed to a dict key search w/ filenames as entry
-        if(metadata.containsKey("saf_stt")){
-            var file = File(this.filesDir, "STTS")
-            file.appendText("${packageName},${metadata.getString("saf_stt") as String}")
-        }else if(metadata.containsKey("saf_skill")){
-            var file = File(this.filesDir, "SKILLS")
-            file.appendText("${packageName},${metadata.getString("saf_skill") as String}")
-        }else if(metadata.containsKey("saf_parser")){
-            var file = File(this.filesDir, "PARSERS")
-            file.appendText("${packageName},${metadata.getString("saf_parser") as String}")
-        }
-    }
-    **/
-
-    fun loadApplicationData(){
-
-    }
-
-    override fun onCreate() {
-        super.onCreate()
-        //classifier = train()
     }
 
     override fun onDestroy() {
@@ -255,10 +192,14 @@ internal class CoreService : Service(){
             intentHandler(intent)
             var outgoingIntent = Intent()
             outgoingIntent.setAction("PARSE")
-            var className = Class.forName("com.example.parsermodule."+"UtteranceProcessing")
+            //var className = Class.forName("com.example.parsermodule."+"UtteranceProcessing")
             outgoingIntent.setClassName(this,"com.example.parsermodule.UtteranceProcessing")
             outgoingIntent.putExtra("HYPOTHESIS",intent.getStringExtra("HYPOTHESIS"))
-            startService(outgoingIntent)
+            var entityIntent = Intent().setAction("ENTITY")
+            entityIntent.putExtra("HYPOTHESIS",intent.getStringExtra("HYPOTHESIS"))
+            entityIntent.setClassName(this,"com.example.parsermodule.EntityProcessing")
+            startService(entityIntent)
+            //startService(outgoingIntent)
             Log.i("CoreServicePostOffice",outgoingIntent.toString())
         }else if(checkSpecialFeatureFor(sendingModule)){
             doAsTheConfigSays()
@@ -313,14 +254,16 @@ internal class CoreService : Service(){
 
     // This is just updating the UI. I need to make this more dynamic I think
     fun updateUtterance(utterance: String){
-        var coreCentralActivityIntent = Intent()
-        //coreCentralActivityIntent.setClassName(this, "${packageName}.CoreCentralActivity")
-        coreCentralActivityIntent.setAction("UPDATE")
+        if (utterance != null && utterance != "") {
+            var coreCentralActivityIntent = Intent()
+            //coreCentralActivityIntent.setClassName(this, "${packageName}.CoreCentralActivity")
+            coreCentralActivityIntent.setAction("UPDATE")
 
-        var json = JSONObject(utterance)
-        var text: String = json.getString("text")
-        coreCentralActivityIntent.putExtra("HYPOTHESIS",text)
-        sendBroadcast(coreCentralActivityIntent)
-        Log.i("CoreService", "Text is ${text}")
+            var json = JSONObject(utterance)
+            var text: String = json.getString("text")
+            coreCentralActivityIntent.putExtra("HYPOTHESIS", text)
+            sendBroadcast(coreCentralActivityIntent)
+            Log.i("CoreService", "Text is ${text}")
+        }
     }
 }

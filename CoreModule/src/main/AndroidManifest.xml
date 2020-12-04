@@ -29,6 +29,10 @@
         <service
             android:name=".CoreService"
             android:enabled="true"
-            android:exported="true" />
+            android:exported="true"/>
+        <service
+            android:name=".CoreInstallService"
+            android:enabled="true"
+            android:exported="true"/>
     </application>
 </manifest>

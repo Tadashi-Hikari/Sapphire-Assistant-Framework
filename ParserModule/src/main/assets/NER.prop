@@ -1,0 +1,5 @@
+# This is for known words. Maybe work in one for UNK tokens later?
+useClassFeature=true
+useWord=true
+usePrev=true
+useNext=true

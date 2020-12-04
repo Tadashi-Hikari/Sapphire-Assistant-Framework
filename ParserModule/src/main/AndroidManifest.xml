@@ -14,12 +14,13 @@
 
     <application>
         <meta-data
-            android:name="sapphire_assistant_framework_module"
-            android:value="true">
-        </meta-data>
-        <meta-data
-            android:name="saf_parser"
-            android:value="com.example.parsermodule.UtteranceParsing"/>
+            android:name="sapphire_assistant_module"
+            android:value="com.example.parsermodule.InstallService"/>
+        <service
+            android:name=".InstallService"
+            android:enabled="true"
+            android:exported="true">
+        </service>
         <service
             android:name=".UtteranceProcessing"
             android:exported="true"
@@ -27,6 +28,10 @@
             <intent-filter>
                 <action android:name="android.intent.action.PARSE"/>
             </intent-filter>
+        </service>
+        <service android:name=".EntityProcessing"
+            android:exported="true"
+            android:enabled="true">
         </service>
     </application>
 </manifest>

@@ -1,0 +1,15 @@
+[Pipeline]
+STT=VoskModule
+Parser=ParserModule
+Formatter=FormatterModule
+Runner=RunnerModule
+
+[FROM]
+KaldiService=UtteranceProcessing
+UtteranceProcessing=Runner
+
+[UDPClient]
+port=9999
+
+[Background]
+
