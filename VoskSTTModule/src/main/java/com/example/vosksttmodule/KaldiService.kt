@@ -42,6 +42,8 @@ class KaldiService: RecognitionListener,Service(){
         coreServiceIntent.setClassName("com.example.sapphireassistantframework",
                 "com.example.sapphireassistantframework.CoreService")
         coreServiceIntent.putExtra("HYPOTHESIS",utterance)
+        coreServiceIntent.putExtra("FROM","KaldiService")
+        Log.i("KaldiService","Utterance hypothesis dispatched")
         startService(coreServiceIntent)
     }
 

@@ -11,6 +11,10 @@ android {
         targetCompatibility 1.8
     }
 
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
     defaultConfig {
         applicationId "com.example.parsermodule"
         minSdkVersion 25
@@ -37,4 +41,6 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
     androidTestImplementation 'androidx.annotation:annotation:1.1.0'
+    implementation files('libs/stanford-corenlp-4.1.0.jar')
+    implementation files('libs/stanford-ner-4.2.0.jar')
 }

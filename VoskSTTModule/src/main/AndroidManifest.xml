@@ -3,33 +3,37 @@
     xmlns:dist="http://schemas.android.com/apk/distribution"
     package="com.example.vosksttmodule">
 
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
     <dist:module
         dist:instant="false"
         dist:title="@string/title_vosk_stt_module">
         <dist:delivery>
             <dist:install-time />
         </dist:delivery>
+
         <dist:fusing dist:include="true" />
     </dist:module>
 
-    <!-- I have the STT running in its own process, since it's so resource heavy -->
     <application>
         <meta-data
             android:name="sapphire_assistant_framework_module"
-            android:value="true"/>
+            android:value="true" />
         <meta-data
             android:name="bound_service"
-            android:value="com.example.vosksttmodule.KaldiService"/>
+            android:value="com.example.vosksttmodule.KaldiService" />
         <meta-data
             android:name="saf_stt"
-            android:value="com.example.vosksttmodule.KaldiService"/>
+            android:value="com.example.vosksttmodule.KaldiService" />
+
         <service
-            android:process="vosk.service"
             android:name=".KaldiService"
-            android:exported="true">
+            android:exported="true"
+            android:process="vosk.service">
             <intent-filter>
-                <action android:name="sapphire_assistant_framework.BIND"/>
+                <action android:name="sapphire_assistant_framework.BIND" />
             </intent-filter>
         </service>
     </application>
+
 </manifest>
