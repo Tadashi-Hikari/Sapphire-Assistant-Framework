@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.IBinder
 import android.os.Parcel
 import android.os.Parcelable
+import android.util.Log
 import edu.stanford.nlp.ie.crf.CRFClassifier
 import edu.stanford.nlp.ling.CoreLabel
 import java.io.File
@@ -15,8 +16,9 @@ import java.io.ObjectOutputStream
 import java.util.*
 
 class ParserTrainService: Service() {
-
-    private var files = mutableListOf<Uri>()
+    private lateinit var classifier: CRFClassifier<CoreLabel>
+    private var entityFiles = mutableListOf<Uri>()
+    private var intentFiles = mutableListOf<Uri>()
 
     // I expect Intents and Entities for skills. The rest doesn't apply to this parser
     override fun onBind(intent: Intent?): IBinder? {
@@ -26,17 +28,24 @@ class ParserTrainService: Service() {
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         if((intent.getStringExtra("VERSION") == "0.0.1") and
             (intent.action == "assistant.framework.module.INSTALL")){
-
-            var intentFiles = intent.getParcelableExtra<Parcelable>("INTENTS")
-            var entityFiles = intent.getParcelableExtra<Parcelable>("ENTITIES")
-        }else if(intent.action == Intent.ACTION_SEND){
-            intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
+        }else if(intent.action == "assistant.framework.parser.TRAIN"){
+            getFiles(intent)
         }
 
         return super.onStartCommand(intent, flags, startId)
     }
 
-    private lateinit var classifier: CRFClassifier<CoreLabel>
+    // I need to change this
+    fun getFiles(intent: Intent){
+        var uriArrayList = intent.getParcelableArrayListExtra<Uri>("FILES")!!
+        for(uri in uriArrayList.iterator()){
+            var suffix = uri.lastPathSegment!!
+            if(suffix.contains("intent")){
+                Log.i("ParserTrainService","intent file")
+            }else if(suffix.contains("entity"))
+                Log.i("ParserTrainService","intent file")
+        }
+    }
 
     fun trainNERClassifier(file: File){
         classifier.train()
