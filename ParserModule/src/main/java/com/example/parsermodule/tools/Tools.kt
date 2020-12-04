@@ -2,7 +2,7 @@ package com.example.parsermodule.tools
 
 import java.io.File
 
-class NERTagger {
+class Tools {
     fun loadSentencesAndTags(){
         //request skills w/ data for training
         //Catch and aggrigate those files
