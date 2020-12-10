@@ -34,9 +34,11 @@ class Pipeline: Service(){
         var document = pipeline.processToCoreDocument(text)
     }
 
-    fun returnResults(coreLabel: CoreLabel){
+
+    /**
+    fun returnResults(coreLabels: CoreLabel){
         var resultIntent = Intent()
-        resultIntent.putExtra("SKILL", coreLabel.get(CoreAnnotations.AnswerAnnotation::class.java))
+        resultIntent.putExtra("SKILL", coreLabels.get(CoreAnnotations.AnswerAnnotation::class.java))
         for(token in coreLabels){
             var entity = token.get((CoreAnnotations.AnswerAnnotation::class.java))
             if(entity != 'O'){
@@ -46,4 +48,5 @@ class Pipeline: Service(){
         }
         startService(resultIntent)
     }
+    **/
 }

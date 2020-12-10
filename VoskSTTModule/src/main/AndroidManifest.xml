@@ -12,27 +12,14 @@
             <dist:install-time />
         </dist:delivery>
 
-        <dist:fusing dist:include="true" />
+        <dist:fusing dist:include="true"/>
     </dist:module>
 
     <application>
-        <meta-data
-            android:name="sapphire_assistant_framework_module"
-            android:value="true" />
-        <meta-data
-            android:name="bound_service"
-            android:value="com.example.vosksttmodule.KaldiService" />
-        <meta-data
-            android:name="saf_stt"
-            android:value="com.example.vosksttmodule.KaldiService" />
-
         <service
             android:name=".KaldiService"
             android:exported="true"
             android:process="vosk.service">
-            <intent-filter>
-                <action android:name="sapphire_assistant_framework.BIND" />
-            </intent-filter>
         </service>
     </application>
 

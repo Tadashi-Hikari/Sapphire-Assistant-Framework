@@ -48,7 +48,6 @@ class CoreCentralActivity: Activity(){
         val filter = IntentFilter("UPDATE")
         registerReceiver(br, filter)
 
-
         checkIfFirstRun()
 
         // Maybe I should just move this whole logic block
@@ -68,9 +67,6 @@ class CoreCentralActivity: Activity(){
 
     override fun onStart() {
         super.onStart()
-        var intent: Intent = Intent().setClassName(this,"com.example.sapphireassistantframework.CoreService")
-        intent.setAction("VISIBLE")
-        startService(intent)
     }
 
     override fun onPause() {

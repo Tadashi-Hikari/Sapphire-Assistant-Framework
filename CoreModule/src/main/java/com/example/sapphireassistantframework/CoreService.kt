@@ -17,7 +17,7 @@ import java.lang.Exception
 import java.util.*
 import org.json.JSONObject
 
-internal class BuiCoreService : Service(){
+class CoreService : Service(){
     private var connections: LinkedList<Pair<String, Connection>> = LinkedList()
     private lateinit var notificationManager: NotificationManager
     private val CHANNEL_ID = "SAF"
@@ -30,13 +30,22 @@ internal class BuiCoreService : Service(){
         TODO("Not yet implemented")
     }
 
+    override fun onCreate() {
+        super.onCreate()
+
+        /** I want all of these things to run when the service is created, not every time it
+         * it receives a message. Though, perhaps It should run when the foreground service
+         * is launched.
+         */
+        buildForegroundNotification()
+        scanInstalledApps()
+        mockStartBackgroundServices()
+        Log.i("CoreService", "Everything should be starting up now")
+    }
+
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         if (intent.action == "sapphire_assistant_framework.BIND") {
-            buildForegroundNotification()
             //This should be an onFirstRun
-            sapphire_apps = scanApplicationManifests()
-            startBackgroundServices(sapphire_apps)
-            Log.i("CoreService", "Everything should be starting up now")
         } else {
             sortPost(intent)
         }
@@ -69,29 +78,48 @@ internal class BuiCoreService : Service(){
         }
     }
 
-    // This is a placeholder. It's going to get broken up into just a scan app
-    fun scanApplicationManifests(): LinkedList<Pair<String,String>>{
+    // This is intended to replace scanApplicationManifest
+    fun scanInstalledApps(){
+        var intent = Intent().setAction("assistant.framework.module.INSTALL")
+        intent.addCategory("assistant.framework.module.CATEGORY_DEFAULT")
         var installedApplications = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
-        var startupApplications: LinkedList<Pair<String,String>> = LinkedList<Pair<String,String>>()
 
-        for(applicationInfo in installedApplications){
-            var metadata = applicationInfo.metaData
+        for(installedApplication in installedApplications) {
             try{
-                if(metadata.containsKey("sapphire_assistant_framework_module")){
-                    var packageName = applicationInfo.packageName
-                    Log.i("CoreService","Found SAF module: ${packageName}")
-                    // This can be changed to a dict key search w/ filenames as entry
-                    // Right now, i just need to launch the STT. This is a proof of concept
-                    if(metadata.containsKey("saf_stt")){
-                        startupApplications.add(Pair(packageName,metadata.get("saf_stt") as String))
+                var metadataBundle = installedApplication.metaData
+                if(installedApplication.packageName == "com.example.sapphireassistantframework"){
+                    for(key in metadataBundle.keySet()){
+                        Log.i("CoreService","Package name: ${installedApplication.packageName}")
+                        Log.i("CoreService","Install Service: ${metadataBundle.getString(key)}")
+                        // just a placeholder method for now
+                        isItRegistered(installedApplication.packageName)
+                        var installIntent = Intent().setClassName(installedApplication.packageName,metadataBundle.getString(key)!!)
+                        installIntent.action = "assistant.framework.module.INSTALL"
+                        startService(installIntent)
                     }
                 }
             }catch(exception: Exception){
                 continue
             }
         }
+    }
 
-        return startupApplications
+    // This isn't really used yet, but it's just meant for internal tracking of apps & updates
+    fun isItRegistered(packageName: String): Boolean {
+        var installedData = this.getSharedPreferences(
+            "com.example.sapphireassistantframework.CORE_PREFERENCES",
+            Context.MODE_PRIVATE
+        )
+        if(installedData.contains(packageName)){
+            Log.i("CoreService","${packageName} is already registered")
+            return true
+        }else{
+            var editor = installedData.edit()
+            editor.putString(packageName,"registered")
+            editor.apply()
+            Log.i("CoreService","${packageName} was not registered. It is now")
+            return false
+        }
     }
 
     override fun onDestroy() {
@@ -119,16 +147,33 @@ internal class BuiCoreService : Service(){
         }
     }
 
-    // Can I collapse all of this database stuff into CoreDatabase, rather than here?
-    fun startBackgroundServices(sapphire_apps: List<Pair<String,String>>){
-        for(info_pair: Pair<String,String> in sapphire_apps){
-            // Do I need to return a pair? Seems annoying.
-            Log.i("CoreService","launching ${info_pair.first}, ${info_pair.second}")
-            connections.plus(Pair(info_pair.second,startBoundService(info_pair.first,info_pair.second)))
+    // I want to change this to the flat file database
+    fun mockStartBackgroundServices(){
+        var speechToText = Pair(
+            "com.example.sapphireassistantframework",
+            "com.example.vosksttmodule.KaldiService")
+        var startupApps = listOf(speechToText)
+
+        /** Convoluted, but meant to give a human readable name to running processes.
+         * I started VoskSTT as a bound service, so that it will not die as long as a service
+         * (CoreService) is bound to it. This gives SAF the control over background processes to
+         * help control battery life. Since CoreService is a foreground service it also prevents
+         * me from spamming the user with notifications, or having the system kill the background
+         * service
+         */
+        for(classNamePair: Pair<String,String> in startupApps){
+            connections.plus(
+                Pair(
+                    classNamePair.first,
+                    startBoundService(
+                        classNamePair.first,
+                        classNamePair.second)
+                )
+            )
         }
     }
 
-    fun stopBackgroundServices(sapphire_apps: List<Pair<String,String>>, connections: LinkedList<Pair<String,CoreService.Connection>>){
+    fun stopBackgroundServices(sapphire_apps: List<Pair<String,String>>, connections: LinkedList<Pair<String,Connection>>){
         for(connection in connections){
             var service = connection.second
             unbindService(service)
