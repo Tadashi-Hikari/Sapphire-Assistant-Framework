@@ -14,7 +14,13 @@
 
     <application>
         <meta-data
-            android:name="saf_skill"
-            android:value="true"/>
+            android:name="com.example.calendarskill.SAPPHIRE_ASSISTANT_MODULE"
+            android:value="com.example.calendarskill.SkillInstallService">
+        </meta-data>
+        <service
+            android:name=".SkillInstallService"
+            android:exported="true"
+            android:enabled="true">
+        </service>
     </application>
 </manifest>

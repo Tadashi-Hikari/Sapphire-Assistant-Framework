@@ -4,15 +4,12 @@ import android.app.Service
 import android.content.Intent
 import android.net.Uri
 import android.os.IBinder
-import android.os.Parcel
-import android.os.Parcelable
 import android.util.Log
 import edu.stanford.nlp.ie.crf.CRFClassifier
 import edu.stanford.nlp.ling.CoreLabel
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStreamReader
-import java.io.ObjectOutputStream
 import java.util.*
 
 class ParserTrainService: Service() {
@@ -39,10 +36,10 @@ class ParserTrainService: Service() {
     fun getFiles(intent: Intent){
         var uriArrayList = intent.getParcelableArrayListExtra<Uri>("FILES")!!
         for(uri in uriArrayList.iterator()){
-            var suffix = uri.lastPathSegment!!
-            if(suffix.contains("intent")){
+            var segments = uri.pathSegments!!
+            if(segments.contains("intent")){
                 Log.i("ParserTrainService","intent file")
-            }else if(suffix.contains("entity"))
+            }else if(segments.contains("entity"))
                 Log.i("ParserTrainService","intent file")
         }
     }

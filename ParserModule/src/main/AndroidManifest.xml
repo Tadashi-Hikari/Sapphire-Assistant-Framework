@@ -13,9 +13,6 @@
     </dist:module>
 
     <application>
-        <meta-data
-            android:name="sapphire_assistant_module"
-            android:value="com.example.parsermodule.InstallService"/>
         <service
             android:name=".InstallService"
             android:enabled="true"
