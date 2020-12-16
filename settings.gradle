@@ -1,3 +1,5 @@
+include ':ComponentFramework'
+include ':GenericTemplateModule'
 include ':RunnerModule'
 include ':CalendarSkill'
 include ':ParserModule'

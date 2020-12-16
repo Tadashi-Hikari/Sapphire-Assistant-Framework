@@ -13,9 +13,7 @@ import java.io.InputStreamReader
 abstract class InstallHelper: Service(){
     val ACTION_TRAIN_PARSER = "assistant.framework.parser.TRAIN"
 
-    val PARSER_MODULE_PACKAGE = "com.example.sapphireassistantframework"
-    val PARSER_MODULE_INSTALL_CLASS = "com.example.parsermodule.ParserTrainService"
-    val PARSER_VERSION = "0.0.1"
+    val ACTION_INSTALL_MODULE = "assistant.framework.module.INSTALL"
 
     // This seems ugly as shit
     fun attachTrainingFiles(files: Array<String>):Intent{

@@ -16,6 +16,7 @@ class SkillInstallService: InstallHelper(){
     }
 
     fun registerSkill(){
+        /**
         var trainParser = Intent()
         trainParser.setAction(ACTION_TRAIN_PARSER)
         trainParser.setClassName(PARSER_MODULE_PACKAGE,PARSER_MODULE_INSTALL_CLASS)
@@ -28,5 +29,6 @@ class SkillInstallService: InstallHelper(){
          */
 
         startService(trainParser)
+        **/
     }
 }

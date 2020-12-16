@@ -1,18 +1,17 @@
 package com.example.vosksttmodule
 
-import android.app.Service
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
 import android.util.Log
-import androidx.lifecycle.LifecycleObserver
+import com.example.componentframework.SAFService
 import org.kaldi.*
 import java.io.File
 import java.io.InputStream
 import java.lang.Exception
 
 // This is an extension of service, but it could use a MycroftSkill interface which my help developers
-class KaldiService: RecognitionListener,Service(){
+class KaldiService: RecognitionListener, SAFService(){
 
     //model should be available internally
     //private val model = ???
@@ -41,8 +40,8 @@ class KaldiService: RecognitionListener,Service(){
         var coreServiceIntent: Intent = Intent()
         coreServiceIntent.setClassName("com.example.sapphireassistantframework",
                 "com.example.sapphireassistantframework.CoreService")
-        coreServiceIntent.putExtra("HYPOTHESIS",utterance)
-        coreServiceIntent.putExtra("FROM","KaldiService")
+        coreServiceIntent.putExtra(STDIO,utterance)
+        coreServiceIntent.putExtra(FROM,"KaldiService")
         Log.i("KaldiService","Utterance hypothesis dispatched")
         startService(coreServiceIntent)
     }

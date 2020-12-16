@@ -116,6 +116,10 @@ class CoreCentralActivity: Activity(){
         text_box.setText(utterance)
     }
 
+
+    /** This is to run a prompt that lets the user know how to use the app. I'll have tutorial stuff
+     * here
+     */
     fun checkIfFirstRun(){
         var UNIQUE_REQUEST_CODE = 1
         val preferences = getPreferences(Context.MODE_PRIVATE)
