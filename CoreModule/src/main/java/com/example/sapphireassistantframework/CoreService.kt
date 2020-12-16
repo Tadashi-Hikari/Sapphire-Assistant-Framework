@@ -13,11 +13,12 @@ import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import com.example.componentframework.SAFService
 import java.lang.Exception
 import java.util.*
 import org.json.JSONObject
 
-class CoreService : Service(){
+class CoreService: SAFService(){
     private var connections: LinkedList<Pair<String, Connection>> = LinkedList()
     private lateinit var notificationManager: NotificationManager
     private val CHANNEL_ID = "SAF"
@@ -47,7 +48,26 @@ class CoreService : Service(){
         if (intent.action == "sapphire_assistant_framework.BIND") {
             //This should be an onFirstRun
         } else {
-            sortPost(intent)
+            //sortPost(intent)
+            var sendingModule = intent.getStringExtra(FROM)
+            // I needed a dynamic way to handle data, based on the apps data needs and purpose.
+            if(sendingModule == null) {
+                Log.e(
+                    "CoreServicePostOffice",
+                    "Some kind of generic data received from somewhere unknown. Ignoring"
+                )
+            }else if(sendingModule == "KaldiService") {
+                Log.i("CoreService", "KaldiService received")
+                var newIntent = Intent()
+                newIntent.setClassName(
+                    "com.example.sapphireassistantframework",
+                    "com.example.sapphireassistantframework.PostOffice"
+                )
+                // Core is just redirecting. Should I include it?
+                newIntent.putExtra(FROM,"com.example.vosksttmodule.kaldiservice")
+                newIntent.putExtra(STDIO,intent.getStringExtra(STDIO))
+                startService(newIntent)
+            }
         }
 
         return super.onStartCommand(intent, flags, startId)
@@ -218,54 +238,6 @@ class CoreService : Service(){
         }
     }
 
-    fun updateListenerHooks(){
-        Log.i("CoreServicePostOffice","This is not yet implemented")
-    }
-
-    // This determines where its from and what to do with it
-    fun sortPost(intent:Intent){
-        var sendingModule = intent.getStringExtra("FROM")
-
-        // I needed a dynamic way to handle data, based on the apps data needs and purpose.
-        if(sendingModule == null) {
-            Log.e(
-                "CoreServicePostOffice",
-                "Some kind of generic data received from somewhere unknown. Ignoring"
-            )
-        }else if(sendingModule == "KaldiService"){
-            Log.i("CoreServicePostOffice","KaldiService received")
-            intentHandler(intent)
-            var outgoingIntent = Intent()
-            outgoingIntent.setAction("PARSE")
-            //var className = Class.forName("com.example.parsermodule."+"UtteranceProcessing")
-            outgoingIntent.setClassName(this,"com.example.parsermodule.UtteranceProcessing")
-            outgoingIntent.putExtra("HYPOTHESIS",intent.getStringExtra("HYPOTHESIS"))
-            var entityIntent = Intent().setAction("ENTITY")
-            entityIntent.putExtra("HYPOTHESIS",intent.getStringExtra("HYPOTHESIS"))
-            entityIntent.setClassName(this,"com.example.parsermodule.EntityProcessing")
-            startService(entityIntent)
-            //startService(outgoingIntent)
-            Log.i("CoreServicePostOffice",outgoingIntent.toString())
-        }else if(checkSpecialFeatureFor(sendingModule)){
-            doAsTheConfigSays()
-        }else{
-            var found = false
-            for(module in pipeline){
-                if(found){
-                    intent.setAction(module)
-                    intent.setClassName(module,module)
-                    if(module == "activity") startActivity(intent)
-                    else if(module == "service") startService(intent)
-                    else sendBroadcast(intent)
-
-                    // I need TO module, not the sending module. This increments it by one
-                }else if(sendingModule == module){
-                    found = true
-                }
-            }
-        }
-    }
-
     fun checkSpecialFeatureFor(sendingModule:String): Boolean{
         var configs = emptyArray<Objects>()
 
@@ -275,11 +247,6 @@ class CoreService : Service(){
             }
         }
         return false
-    }
-
-    // I may need some default options here, such as bind, sendToModule, schedule
-    fun doAsTheConfigSays(){
-        Log.i("CoreServicePostOffice","I need some logic here")
     }
 
     fun updateBackgroundMonitorUI(){

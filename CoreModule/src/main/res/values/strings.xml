@@ -10,4 +10,5 @@
     <string name="title_parsermodule">SAF Parser Module</string>
     <string name="title_calendarskill">SAF Calendar Skill</string>
     <string name="title_runnermodule">Runner Module</string>
+    <string name="title_generictemplatemodule">Generic Template Module</string>
 </resources>

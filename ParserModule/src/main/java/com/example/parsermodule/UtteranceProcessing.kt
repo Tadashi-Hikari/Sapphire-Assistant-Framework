@@ -1,18 +1,15 @@
 package com.example.parsermodule
 
-import android.app.Service
 import android.content.Intent
 import android.os.IBinder
 import android.util.Log
+import com.example.componentframework.SAFService
 import edu.stanford.nlp.classify.ColumnDataClassifier
-import edu.stanford.nlp.ie.crf.CRFClassifier
-import edu.stanford.nlp.ling.CoreLabel
-import edu.stanford.nlp.process.PTBTokenizer
 import java.io.*
 import java.lang.Exception
 import java.util.*
 
-class UtteranceProcessing: Service(){
+class UtteranceProcessing: SAFService(){
     private lateinit var classifier: ColumnDataClassifier
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -27,19 +24,19 @@ class UtteranceProcessing: Service(){
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         Log.i("UtteranceProcessing","intent received")
-        if(intent.action == "PARSE"){
-            Log.i("UtteranceProcessing","PARSE action received")
-            if(intent.hasExtra("HYPOTHESIS")) {
-                var utterance = intent.getStringExtra("HYPOTHESIS")
-                if(utterance != null){
-                    process(utterance)
-                }
+        //if(intent.action == "PARSE"){
+        //    Log.i("UtteranceProcessing","PARSE action received")
+        if(intent.hasExtra(STDIO)) {
+            var utterance = intent.getStringExtra(STDIO)
+            if(utterance != null){
+                process(utterance)
             }
         }
 
         return super.onStartCommand(intent, flags, startId)
     }
 
+    // This is where I direct it along the pipeline, or directly back to core.
     fun process(text: String){
         if(text != "") {
             var temp = "none\t${text}"
@@ -55,6 +52,8 @@ class UtteranceProcessing: Service(){
             }else{
                 Log.i("CoreService", "Does not match a class")
             }
+        }else{
+            Log.i("UtteranceProcessing","There was no text here...")
         }
     }
 

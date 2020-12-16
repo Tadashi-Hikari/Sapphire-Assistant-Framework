@@ -43,4 +43,5 @@ dependencies {
     androidTestImplementation 'androidx.annotation:annotation:1.1.0'
     implementation files('libs/stanford-corenlp-4.1.0.jar')
     implementation files('libs/stanford-ner-4.2.0.jar')
+    implementation project(":ComponentFramework")
 }

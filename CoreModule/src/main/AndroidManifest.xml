@@ -34,5 +34,9 @@
             android:name=".CoreInstallService"
             android:enabled="true"
             android:exported="true"/>
+        <service
+            android:name=".PostOffice"
+            android:enabled="true"
+            android:exported="true"/>
     </application>
 </manifest>

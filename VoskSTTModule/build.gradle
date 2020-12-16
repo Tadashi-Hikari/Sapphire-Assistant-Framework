@@ -52,4 +52,5 @@ dependencies {
     implementation fileTree(dir: 'aars', include: ['*'])
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     compileOnly 'com.google.android.wearable:wearable:2.8.1'
+    implementation project(":ComponentFramework")
 }
