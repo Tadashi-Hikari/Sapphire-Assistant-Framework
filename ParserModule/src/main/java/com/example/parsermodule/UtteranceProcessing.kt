@@ -5,6 +5,7 @@ import android.os.IBinder
 import android.util.Log
 import com.example.componentframework.SAFService
 import edu.stanford.nlp.classify.ColumnDataClassifier
+import org.json.JSONObject
 import java.io.*
 import java.lang.Exception
 import java.util.*
@@ -23,7 +24,7 @@ class UtteranceProcessing: SAFService(){
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        Log.i("UtteranceProcessing","intent received")
+        Log.i("UtteranceProcessing","Data processing intent received")
         //if(intent.action == "PARSE"){
         //    Log.i("UtteranceProcessing","PARSE action received")
         if(intent.hasExtra(STDIO)) {
@@ -31,6 +32,8 @@ class UtteranceProcessing: SAFService(){
             if(utterance != null){
                 process(utterance)
             }
+        }else{
+            Log.i("UtteranceProcessing","There was no STDIO data. Terminating")
         }
 
         return super.onStartCommand(intent, flags, startId)
@@ -45,12 +48,12 @@ class UtteranceProcessing: SAFService(){
             Log.i("CoreService", classified)
             var counter = classifier.scoresOf(datum)
             var score = counter.getCount(classified)
-            Log.i("CoreService", "${counter.keySet()}")
-            Log.i("CoreService", "${counter.values()}")
-            if(classifier.scoresOf(datum).getCount(classified) > 1.0){
-                Log.i("CoreService","${classified}, ${score}")
+            Log.i("UtteranceProcessing", "${counter.keySet()}")
+            Log.i("UtteranceProcessing", "${counter.values()}")
+            if(score > .04){
+                Log.i("UtteranceProcessing","${classified}, ${score}")
             }else{
-                Log.i("CoreService", "Does not match a class")
+                Log.i("UtteranceProcessing", "Does not match a class")
             }
         }else{
             Log.i("UtteranceProcessing","There was no text here...")
