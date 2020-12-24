@@ -5,6 +5,7 @@ import android.os.Binder
 import android.os.IBinder
 import android.util.Log
 import com.example.componentframework.SAFService
+import org.json.JSONObject
 import org.kaldi.*
 import java.io.File
 import java.io.InputStream
@@ -35,15 +36,20 @@ class KaldiService: RecognitionListener, SAFService(){
 
     // Maybe this should be a broadcast
     fun sendUtterance(utterance: String){
-        // This needs to not be hardcoded... How can a skill know? I need to pass it the core details
-        // I think I either need to set meta-data or resources
-        var coreServiceIntent: Intent = Intent()
-        coreServiceIntent.setClassName("com.example.sapphireassistantframework",
-                "com.example.sapphireassistantframework.CoreService")
-        coreServiceIntent.putExtra(STDIO,utterance)
-        coreServiceIntent.putExtra(FROM,"KaldiService")
-        Log.i("KaldiService","Utterance hypothesis dispatched")
-        startService(coreServiceIntent)
+        var json = JSONObject(utterance)
+        if(json.getString("text") != "") {
+            // This needs to not be hardcoded... How can a skill know? I need to pass it the core details
+            // I think I either need to set meta-data or resources
+            var coreServiceIntent: Intent = Intent()
+            coreServiceIntent.setClassName(
+                "com.example.sapphireassistantframework",
+                "com.example.sapphireassistantframework.CoreService"
+            )
+            coreServiceIntent.putExtra(STDIO, utterance)
+            coreServiceIntent.putExtra(FROM, "com.example.vosksttmodule.KaldiService")
+            Log.i("KaldiService", "Utterance hypothesis dispatched")
+            startService(coreServiceIntent)
+        }
     }
 
     fun setup(){

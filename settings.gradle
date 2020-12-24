@@ -1,3 +1,5 @@
+include ':FilterModule'
+include ':MultiprocessModule'
 include ':ComponentFramework'
 include ':GenericTemplateModule'
 include ':RunnerModule'

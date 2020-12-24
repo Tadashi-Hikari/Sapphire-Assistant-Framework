@@ -11,4 +11,6 @@
     <string name="title_calendarskill">SAF Calendar Skill</string>
     <string name="title_runnermodule">Runner Module</string>
     <string name="title_generictemplatemodule">Generic Template Module</string>
+    <string name="title_multiprocessmodule">Multiprocess Module</string>
+    <string name="title_filtermodule">Filter Module</string>
 </resources>

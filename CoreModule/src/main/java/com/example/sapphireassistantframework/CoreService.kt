@@ -64,7 +64,19 @@ class CoreService: SAFService(){
                     "com.example.sapphireassistantframework.PostOffice"
                 )
                 // Core is just redirecting. Should I include it?
-                newIntent.putExtra(FROM,"com.example.vosksttmodule.kaldiservice")
+                newIntent.putExtra(FROM,"com.example.vosksttmodule.KaldiService")
+                newIntent.putExtra(STDIO,intent.getStringExtra(STDIO))
+                startService(newIntent)
+            }else{
+                Log.i("CoreService","CoreService just received a command from ${intent.getStringExtra(FROM)}," +
+                        " containing data: ${intent.getStringExtra(STDIO)}")
+                var newIntent = Intent()
+                newIntent.setClassName(
+                    "com.example.sapphireassistantframework",
+                    "com.example.sapphireassistantframework.PostOffice"
+                )
+                // Core is just redirecting. Should I include it?
+                newIntent.putExtra(FROM,intent.getStringExtra(FROM))
                 newIntent.putExtra(STDIO,intent.getStringExtra(STDIO))
                 startService(newIntent)
             }
