@@ -16,6 +16,7 @@ class Calendar: Service(){
     var description = ""
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+        Log.i("Caledar","Calendar intent received")
         getManditoryVariables(intent)
         checkForOptional(intent)
 
