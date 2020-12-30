@@ -22,5 +22,9 @@
             android:exported="true"
             android:enabled="true">
         </service>
+        <service android:name=".Calendar"
+            android:exported="true"
+            android:enabled="true">
+        </service>
     </application>
 </manifest>

@@ -45,31 +45,24 @@ class CoreService: SAFService(){
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        if (intent.action == "sapphire_assistant_framework.BIND") {
-            //This should be an onFirstRun
-        } else {
-            //sortPost(intent)
-            var sendingModule = intent.getStringExtra(FROM)
-            // I needed a dynamic way to handle data, based on the apps data needs and purpose.
-            if(sendingModule == null) {
-                Log.e(
+        try {
+            if (intent.action == "sapphire_assistant_framework.BIND") {
+                //This should be an onFirstRun
+            } else {
+                Log.i(
                     "CoreService",
-                    "Some kind of generic data received from somewhere unknown. Ignoring"
+                    "CoreService just received a command from ${intent.getStringExtra(FROM)}," +
+                            " containing data: ${intent.getStringExtra(STDIO)}"
                 )
-            }else{
-                Log.i("CoreService","CoreService just received a command from ${intent.getStringExtra(FROM)}," +
-                        " containing data: ${intent.getStringExtra(STDIO)}")
-                var newIntent = Intent()
                 // This needs to be replaced with some kind of wildcard
-                newIntent.setClassName(
+                intent.setClassName(
                     "com.example.sapphireassistantframework",
                     "com.example.sapphireassistantframework.PostOffice"
                 )
-                // Core is just redirecting. Should I include it?
-                newIntent.putExtra(FROM,intent.getStringExtra(FROM))
-                newIntent.putExtra(STDIO,intent.getStringExtra(STDIO))
-                startService(newIntent)
+                startService(intent)
             }
+        }catch(exception: Exception){
+            Log.e("CoreService","Some intent error")
         }
 
         return super.onStartCommand(intent, flags, startId)

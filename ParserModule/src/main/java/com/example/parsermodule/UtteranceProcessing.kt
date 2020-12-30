@@ -52,8 +52,18 @@ class UtteranceProcessing: SAFService(){
             Log.i("UtteranceProcessing", "${counter.values()}")
             if(score > .04){
                 Log.i("UtteranceProcessing","${classified}, ${score}")
+                var intent = Intent()
+                intent.setClassName(this,"com.example.sapphireassistantframework.CoreService")
+                intent.putExtra(TO,classified)
+                intent.putExtra(STDIO,text)
+                startService(intent)
             }else{
                 Log.i("UtteranceProcessing", "Does not match a class")
+                var intent = Intent()
+                intent.setClassName(this,"com.example.sapphireassistantframework.CoreService")
+                intent.putExtra(TO,"calendar")
+                intent.putExtra(STDIO,text)
+                startService(intent)
             }
         }else{
             Log.i("UtteranceProcessing","There was no text here...")

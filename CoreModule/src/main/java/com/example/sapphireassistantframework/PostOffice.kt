@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.IBinder
 import android.util.Log
 import com.example.componentframework.SAFService
+import java.lang.Exception
 
 class PostOffice: SAFService(){
     var DEFAULT = ""
@@ -13,8 +14,11 @@ class PostOffice: SAFService(){
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        Log.i("PostOffice","Intent received from ${intent.getStringExtra(FROM)!!}")
-        loadMailRoute(intent)
+        try {
+            loadMailRoute(intent)
+        }catch(exception: Exception){
+            Log.e("PostOffice","Some intent error")
+        }
 
         return super.onStartCommand(intent, flags, startId)
     }
@@ -35,6 +39,7 @@ class PostOffice: SAFService(){
         // maybe change PIPELINE to PIPELINE_REQUEST
         if(intent.hasExtra(TO)){
             pipelineRequest = intent.getStringExtra(TO)!!
+            Log.i("PostOffice","pipelineRequest: ${pipelineRequest}")
         }else if(intent.hasExtra(FROM)) {
             pipelineRequest = intent.getStringExtra(FROM)!!
             Log.i("PostOffice","pipelineRequest: ${pipelineRequest}")
@@ -47,6 +52,7 @@ class PostOffice: SAFService(){
         var pipeline = parsePipeline(pipelineData)
         // It's going to be the first in the pipeline, right?
         outgoingIntent.setClassName(this,pipeline.first())
+        outgoingIntent.putExtra(STDIO,intent.getStringExtra(STDIO))
         outgoingIntent.putExtra(PIPELINE,pipelineData)
 
         startService(outgoingIntent)
@@ -58,7 +64,7 @@ class PostOffice: SAFService(){
         pipelines.put("com.example.vosksttmodule.KaldiService",
             "com.example.parsermodule.UtteranceProcessing")
         //calendar, in this example, is STDIN, not FROM
-        pipelines.put("calendar","com.example.calendarskill.calendar")
+        pipelines.put("calendar","com.example.calendarskill.Calendar")
 
         return pipelines
     }
