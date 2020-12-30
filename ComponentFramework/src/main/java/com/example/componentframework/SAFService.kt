@@ -8,7 +8,7 @@ import android.util.Log
 import java.util.regex.Pattern
 import kotlin.math.PI
 
-abstract class SAFService: SAFComponent, Service(){
+abstract class SAFService: Service(){
     val STDIO = "ASISTANT_FRAMEWORK_STDIO"
     // This *could* call chatbot....
     val STDERR = "ASSISTANT_FRAMEWORK_STDERR"
@@ -26,51 +26,13 @@ abstract class SAFService: SAFComponent, Service(){
 
 
     // This is for having a SAF compontent pass along the pipeline w/o a callback to core
-    fun parsePipeline(intent: Intent): List<String>{
+    fun parsePipeline(string: String): List<String>{
         var pipeline = emptyList<String>()
-        try{
-            if(intent.hasExtra(PIPELINE)){
-                pipeline = intent.getStringExtra(PIPELINE)!!.split(",")
-                return pipeline
-            }
-        }catch (exception: Exception){
-            Log.e("SAFService","There is no pipeline to parse!")
-        }
-        return emptyList()
-    }
-
-    fun getNextComponent(intent: Intent): String{
-        var pipeline = parsePipeline(intent)
-
-        // Return the next (or only) component in the pipeline. else, send it back to the core
-        if (pipeline != emptyList<String>()) {
-            if (intent.component != null) {
-                Log.i("SAFService","Getting next component for ${intent.getStringExtra(FROM)}")
-                var index = pipeline.indexOf(intent.getStringExtra(FROM))
-                if(pipeline.size >= index){
-                    Log.e("SAFService","There are no more components in the pipeline! Sent from ${intent.getStringExtra(FROM)!!}")
-                    return intent.getStringExtra(FROM)!!
-                }
-            }else{
-                return pipeline.first()
-            }
-        }
-        // This could error out to a question. or it could add an action?
-        return "com.example.sapphireassistantframework.CoreService"
+        pipeline = string.split(",")
+        return pipeline
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        initialIntent = intent
-        // is this redundant? I'm assuming this makes a copy, rather than a reference
-        SAFIntent = Intent(intent)
-
-        try {
-            if(initialIntent.component != null){
-                var nextComponent = parsePipeline(initialIntent.component!!.className)
-            }
-        }catch (exception: Exception){
-            Log.e("SAFService","There was an issue preparing SAFIntent")
-        }
         return super.onStartCommand(intent, flags, startId)
     }
 }

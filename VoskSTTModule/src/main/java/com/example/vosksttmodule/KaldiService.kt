@@ -46,7 +46,7 @@ class KaldiService: RecognitionListener, SAFService(){
                 "com.example.sapphireassistantframework.CoreService"
             )
             coreServiceIntent.putExtra(STDIO, utterance)
-            coreServiceIntent.putExtra(FROM, "com.example.vosksttmodule.KaldiService")
+            coreServiceIntent.putExtra(FROM,"com.example.vosksttmodule.KaldiService")
             Log.i("KaldiService", "Utterance hypothesis dispatched")
             startService(coreServiceIntent)
         }

@@ -53,24 +53,14 @@ class CoreService: SAFService(){
             // I needed a dynamic way to handle data, based on the apps data needs and purpose.
             if(sendingModule == null) {
                 Log.e(
-                    "CoreServicePostOffice",
+                    "CoreService",
                     "Some kind of generic data received from somewhere unknown. Ignoring"
                 )
-            }else if(sendingModule == "KaldiService") {
-                Log.i("CoreService", "KaldiService received")
-                var newIntent = Intent()
-                newIntent.setClassName(
-                    "com.example.sapphireassistantframework",
-                    "com.example.sapphireassistantframework.PostOffice"
-                )
-                // Core is just redirecting. Should I include it?
-                newIntent.putExtra(FROM,"com.example.vosksttmodule.KaldiService")
-                newIntent.putExtra(STDIO,intent.getStringExtra(STDIO))
-                startService(newIntent)
             }else{
                 Log.i("CoreService","CoreService just received a command from ${intent.getStringExtra(FROM)}," +
                         " containing data: ${intent.getStringExtra(STDIO)}")
                 var newIntent = Intent()
+                // This needs to be replaced with some kind of wildcard
                 newIntent.setClassName(
                     "com.example.sapphireassistantframework",
                     "com.example.sapphireassistantframework.PostOffice"
@@ -160,25 +150,6 @@ class CoreService: SAFService(){
         notificationManager.cancel(1337)
     }
 
-    // This is really the 'special feature' handler
-    fun intentHandler(intent: Intent) {
-        Log.i("CoreService", "IntentHandler received an intent")
-        var options: LinkedList<String> = LinkedList<String>()
-        options.add("HYPOTHESIS")
-        for (extra: String in options.iterator()) {
-            Log.i("CoreService", "Testing for extra ${extra}")
-            if (intent.hasExtra(extra) == true) {
-                var value = intent.getStringExtra(extra)
-                Log.i("CoreService", "${value}")
-                // Load task from some database
-                // Execute task (intent?)
-                if (extra.equals("HYPOTHESIS")){
-                    if (value != null && value != "") updateUtterance(value)
-                }
-            }
-        }
-    }
-
     // I want to change this to the flat file database
     fun mockStartBackgroundServices(){
         var speechToText = Pair(
@@ -247,47 +218,6 @@ class CoreService: SAFService(){
 
         override fun onServiceDisconnected(name: ComponentName?) {
             Log.i("CoreService", "Service disconnected")
-        }
-    }
-
-    fun checkSpecialFeatureFor(sendingModule:String): Boolean{
-        var configs = emptyArray<Objects>()
-
-        for(module in configs){
-            if(module as String == sendingModule){
-                return true
-            }
-        }
-        return false
-    }
-
-    fun updateBackgroundMonitorUI(){
-        var coreCentralActivityIntent = Intent()
-        var stringBundle = emptyArray<String>()
-        var monitorText = ""
-
-        for(string in stringBundle){
-            //Enter everything on its own line
-            monitorText = "${string}\n"
-        }
-
-        coreCentralActivityIntent.setAction("UPDATE")
-        coreCentralActivityIntent.putExtra("MONITOR_TEXT",monitorText)
-        sendBroadcast(coreCentralActivityIntent)
-    }
-
-    // This is just updating the UI. I need to make this more dynamic I think
-    fun updateUtterance(utterance: String){
-        if (utterance != null && utterance != "") {
-            var coreCentralActivityIntent = Intent()
-            //coreCentralActivityIntent.setClassName(this, "${packageName}.CoreCentralActivity")
-            coreCentralActivityIntent.setAction("UPDATE")
-
-            var json = JSONObject(utterance)
-            var text: String = json.getString("text")
-            coreCentralActivityIntent.putExtra("HYPOTHESIS", text)
-            sendBroadcast(coreCentralActivityIntent)
-            Log.i("CoreService", "Text is ${text}")
         }
     }
 }
