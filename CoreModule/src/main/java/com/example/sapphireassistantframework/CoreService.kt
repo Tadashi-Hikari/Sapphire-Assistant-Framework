@@ -1,5 +1,10 @@
 package com.example.sapphireassistantframework
 
+/**
+ * This module is the foreground service that is run by the assistant framework. It dos the primary
+ * sorting for modules, and then passes off the remaining tasks to a secondary service for sorting
+ */
+
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
@@ -23,6 +28,7 @@ class CoreService: SAFService(){
     private lateinit var notificationManager: NotificationManager
     private val CHANNEL_ID = "SAF"
     private val NAME = "Sapphire Assistant Framework"
+    private val INSTALL = "assistant.framework.module.INSTALL"
     private val SERVICE_TEXT = "Sapphire Assistant Framework"
     private lateinit var sapphire_apps: LinkedList<Pair<String, String>>
     private var pipeline: LinkedList<String> = LinkedList<String>()
@@ -45,9 +51,24 @@ class CoreService: SAFService(){
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+        // Should this sorting be done in PostOffice?
         try {
             if (intent.action == "sapphire_assistant_framework.BIND") {
-                //This should be an onFirstRun
+                /**
+                 * This handles finding pipelines for installation, which can be configured, but may be
+                 * different from the standard pipeline
+                 **/
+            // both the action and category should be values, not variables. This is too static
+            }else if(intent.action == INSTALL){
+                Log.i("CoreService","Install action found")
+                // This doesn't have to be processor.DATA exclusive
+                if(intent.hasCategory("assistant.framework.processor.DATA")){
+                    Log.i("CoreService","Contains processor data")
+                    var processorIntent = Intent(intent)
+                    // This should load from something configurable, and a pipeline
+                    processorIntent.setClassName(this,"package com.example.parsermodule.ParserTrainService")
+                    startService(processorIntent)
+                }
             } else {
                 Log.i(
                     "CoreService",
@@ -104,6 +125,7 @@ class CoreService: SAFService(){
                 var metadataBundle = installedApplication.metaData
                 if(installedApplication.packageName == "com.example.sapphireassistantframework"){
                     for(key in metadataBundle.keySet()){
+                        // This is useful for replacing all "this" in other modules.
                         Log.i("CoreService","Package name: ${installedApplication.packageName}")
                         Log.i("CoreService","Install Service: ${metadataBundle.getString(key)}")
                         // just a placeholder method for now

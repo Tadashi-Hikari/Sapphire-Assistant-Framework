@@ -13,4 +13,6 @@
     <string name="title_generictemplatemodule">Generic Template Module</string>
     <string name="title_multiprocessmodule">Multiprocess Module</string>
     <string name="title_filtermodule">Filter Module</string>
+    <string name="title_spontaneousdatatracker">Spontaneous Data Tracker</string>
+    <string name="title_termuxsocketmodule">Termux Socket Module</string>
 </resources>

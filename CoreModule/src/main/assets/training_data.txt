@@ -1,7 +1,0 @@
-alarm	what alarms do i have set
-alarm	wake me up at ten
-alarm	set an alarm for two
-calendar	monday at five i have to go to work
-calendar	from one to three i have to sleep
-calendar	dont let me forget tuesday i have class
-calendar	remind me wednesday i have a meeting

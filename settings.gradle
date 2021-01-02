@@ -1,10 +1,12 @@
+include ':TermuxSocketModule'
+include ':SpontaneousDataTracker'
 include ':FilterModule'
 include ':MultiprocessModule'
 include ':ComponentFramework'
 include ':GenericTemplateModule'
 include ':RunnerModule'
 include ':CalendarSkill'
-include ':ParserModule'
+include ':ProcessorModule'
 include ':VoskSTTModule'
 include ':CoreModule'
 rootProject.name = "Sapphire Assistant Framework"

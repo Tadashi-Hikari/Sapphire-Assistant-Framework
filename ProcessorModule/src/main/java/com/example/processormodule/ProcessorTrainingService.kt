@@ -1,0 +1,111 @@
+package com.example.processormodule
+
+/**
+ * This module handles the training of information from other installed modules
+ */
+
+import android.content.Intent
+import android.os.IBinder
+import android.util.Log
+import com.example.componentframework.SAFService
+import edu.stanford.nlp.classify.ColumnDataClassifier
+import java.io.File
+import java.util.*
+
+class ProcessorTrainingService: SAFService(){
+
+    override fun onBind(intent: Intent?): IBinder? {
+        TODO("Not yet implemented")
+    }
+
+    // Does this need to check the intent somehow?
+    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+        var processorFiles = getProcessorFiles(intent)
+        var intentFiles = mutableListOf<File>()
+
+        // Get the files that our processor will use
+        for(name in processorFiles.keys){
+            if(name.endsWith(".intent")){
+                intentFiles.add(processorFiles.get(name)!!)
+            }else{
+                // I don't like this way of handling it... Maybe fix it later? More generic?
+                Log.v("Temporary","This processor doesnt use this type of file ")
+            }
+        }
+
+        var trainingFile = combineFiles(intentFiles)
+        trainIntentClassifier(trainingFile)
+
+        return super.onStartCommand(intent, flags, startId)
+    }
+
+    // Can I adapt this to work w/ non-text files? Or should I use the socket for that
+    fun getProcessorFiles(intent: Intent): Map<String,File>{
+        var files = mutableMapOf<String,File>()
+
+        try{
+            var fileNames = intent.getStringArrayExtra("assistant.framework.processor.DATA_FILENAMES")!!
+            for(fileName in fileNames){
+                var lines = intent.getStringArrayExtra(fileName)!!
+                // This seems poorly constructed
+                files.put(fileName,convertStringsToFile(fileName, lines.toList()))
+            }
+        }catch(exception: Exception){
+            Log.e("Temporary","Some kind of error")
+        }
+
+        return files
+    }
+
+    fun combineFiles(files: List<File>): File{
+        var combinedFile = File.createTempFile("trainingFile",".tmp")
+
+        for(file in files){
+            for(line in file.readLines()){
+                // I need to be careful. I could be adding unneeded white space
+                combinedFile.writeText("${line}/n")
+            }
+        }
+
+        return combinedFile
+    }
+
+    fun convertStringsToFile(fileName: String, lines: List<String>): File{
+        var tempFile = File.createTempFile(fileName,".tmp")
+        for(line in lines){
+            tempFile.writeText("${line}\n")
+        }
+
+        return tempFile
+    }
+
+    // This is where saveClassifier is called
+    fun trainIntentClassifier(trainingFile: File){
+        var properties = createProperties()
+        var classifier = ColumnDataClassifier(properties)
+
+        classifier.trainClassifier(trainingFile.canonicalPath)
+        Log.i("Parser","Intent classifier training done")
+        saveClassifier(classifier)
+    }
+
+    fun createProperties(): Properties{
+        var properties = Properties()
+        properties.setProperty("goldAnswerColumn","0")
+        properties.setProperty("useNB","true")
+        //props.setProperty("useClass","true")
+        properties.setProperty("useClassFeatures","true")
+        //props.setProperty("1.splitWordsRegexp","false")
+        //props.setProperty("1.splitWordsTokenizerRegexp","false")
+        properties.setProperty("1.splitWordsWithPTBTokenizer","true")
+        // This is the line that was missing
+        properties.setProperty("1.useSplitWords","true")
+
+        return properties
+    }
+
+    fun saveClassifier(classifier: ColumnDataClassifier){
+        val fileName = File(this.filesDir,"Intent.classifer")
+        classifier.serializeClassifier(fileName.canonicalPath)
+    }
+}

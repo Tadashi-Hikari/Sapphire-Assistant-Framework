@@ -4,7 +4,7 @@ plugins {
 }
 android {
     compileSdkVersion 30
-    buildToolsVersion "30.0.2"
+    buildToolsVersion "30.0.3"
 
     compileOptions {
         sourceCompatibility 1.8
@@ -12,8 +12,8 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.example.multiprocessmodule"
-        minSdkVersion 25
+        applicationId "com.example.spontaneousdatatracker"
+        minSdkVersion 16
         targetSdkVersion 30
         versionCode 1
         versionName "1.0"
@@ -37,5 +37,4 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
     androidTestImplementation 'androidx.annotation:annotation:1.1.0'
-    implementation project(":ComponentFramework")
 }

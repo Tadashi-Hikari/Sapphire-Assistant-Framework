@@ -1,4 +1,4 @@
-package com.example.calendarskill.HelperFiles
+package com.example.componentframework
 
 import android.app.Service
 import android.content.Intent
@@ -12,18 +12,22 @@ import java.io.InputStreamReader
 
 abstract class InstallHelper: Service(){
     val ACTION_TRAIN_PARSER = "assistant.framework.parser.TRAIN"
-    val CATEGORY_PROCESSOR_DATA = "assistant.framework.processor.DATA"
+
     val ACTION_INSTALL_MODULE = "assistant.framework.module.INSTALL"
-    val ACTION_RETRIEVE_DATA = "assistant.framework.module.RETRIEVE_DATA"
-    val EXTRA_DATA_LIST = "assistant.framework.module.DATA_LIST"
 
-    fun getProcessorIntent():Intent{
-        var processorIntent = Intent()
-        processorIntent.addCategory(CATEGORY_PROCESSOR_DATA)
-        processorIntent.setAction(ACTION_INSTALL_MODULE)
-        processorIntent.setClassName(this,"com.example.sapphireassistantframework.CoreService")
+    // This seems ugly as shit
+    fun attachTrainingFiles(files: Array<String>):Intent{
+        var sharingIntent = Intent(ACTION_TRAIN_PARSER)
+        var uriArray = arrayListOf<Uri>()
+        for(filename in files) {
+            var tempFile = convertStreamToFile(filename)
+            var uri = Uri.parse(tempFile.absolutePath)
+            uriArray.add(uri)
+        }
+        sharingIntent.putParcelableArrayListExtra("FILES",uriArray)
+        sharingIntent.addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
 
-        return processorIntent
+        return sharingIntent
     }
 
     fun convertStreamToFile(filename: String): File {

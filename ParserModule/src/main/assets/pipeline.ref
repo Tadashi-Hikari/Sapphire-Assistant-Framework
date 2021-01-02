@@ -1,5 +1,0 @@
-#ClassName|Alias=pipeline,et all
-# Capital words (constants) refer to settings in Core module
-com.example.vosksttmodule.kaldiservice=PROCESSOR,CORE
-# This is an example of an alias (Maybe that's a bad choice?)
-calendar=com.example.calendarskill.calendar
