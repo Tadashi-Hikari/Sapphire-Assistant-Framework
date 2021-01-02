@@ -1,12 +1,7 @@
 package com.example.componentframework
 
 import android.app.Service
-import android.content.ComponentName
 import android.content.Intent
-import android.os.Bundle
-import android.util.Log
-import java.util.regex.Pattern
-import kotlin.math.PI
 
 abstract class SAFService: Service(){
     val STDIO = "ASISTANT_FRAMEWORK_STDIO"
@@ -21,8 +16,6 @@ abstract class SAFService: Service(){
     val PIPELINE = "ASSISTANT_FRAMEWORK_PIPELINE"
     // A reference, to always call back to core
     val CORE = "ASSISTANT_FRAMEWORK_CORE_MODULE"
-    var initialIntent = Intent()
-    var SAFIntent = Intent()
 
 
     // This is for having a SAF compontent pass along the pipeline w/o a callback to core
@@ -30,6 +23,11 @@ abstract class SAFService: Service(){
         var pipeline = emptyList<String>()
         pipeline = string.split(",")
         return pipeline
+    }
+
+    // This doesn't actually impact the list, which I would have to return... Should it take intent?
+    fun getNextInPipeline(pipeline: List<String>): String{
+        return pipeline[0]
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {

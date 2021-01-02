@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:dist="http://schemas.android.com/apk/distribution"
+    package="com.example.processormodule">
+
+    <dist:module
+        dist:instant="false"
+        dist:title="@string/title_parsermodule">
+        <dist:delivery>
+            <dist:install-time />
+        </dist:delivery>
+        <dist:fusing dist:include="true" />
+    </dist:module>
+
+    <application>
+        <service
+            android:name="com.example.processormodule.InstallService"
+            android:enabled="true"
+            android:exported="true">
+        </service>
+        <service android:name="com.example.processormodule.ProcessorCentralService"
+            android:enabled="true"
+            android:exported="true">
+        </service>
+        <service android:name="com.example.processormodule.EntityProcessing"
+            android:exported="true"
+            android:enabled="true">
+        </service>
+    </application>
+</manifest>

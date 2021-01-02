@@ -19,7 +19,6 @@ class PostOffice: SAFService(){
         }catch(exception: Exception){
             Log.e("PostOffice","Some intent error")
         }
-
         return super.onStartCommand(intent, flags, startId)
     }
 
@@ -40,10 +39,12 @@ class PostOffice: SAFService(){
         if(intent.hasExtra(TO)){
             pipelineRequest = intent.getStringExtra(TO)!!
             Log.i("PostOffice","pipelineRequest: ${pipelineRequest}")
+        // Wont FROM inhibit default on a lot of intents?
         }else if(intent.hasExtra(FROM)) {
             pipelineRequest = intent.getStringExtra(FROM)!!
             Log.i("PostOffice","pipelineRequest: ${pipelineRequest}")
         }else{
+            Log.i("PostOffice","Nothing was found, sending it the default way")
             // currently, the default is to return
             return
         }
@@ -62,7 +63,7 @@ class PostOffice: SAFService(){
         var pipelines = mutableMapOf<String,String>()
         // kaldiservice, in this example, is FROM not STDIN
         pipelines.put("com.example.vosksttmodule.KaldiService",
-            "com.example.parsermodule.UtteranceProcessing")
+            "com.example.processormodule.ProcessorCentralService")
         //calendar, in this example, is STDIN, not FROM
         pipelines.put("calendar","com.example.calendarskill.Calendar")
 

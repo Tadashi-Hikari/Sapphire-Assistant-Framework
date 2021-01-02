@@ -1,7 +1,0 @@
-useNB=true
-useClassFeatures=true
-1.splitWordsWithPTBTokenizer=true
-
-goldAnswerColumn=0
-displayAllAnswers
-

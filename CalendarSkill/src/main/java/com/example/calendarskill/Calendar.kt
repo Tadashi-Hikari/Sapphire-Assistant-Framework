@@ -16,24 +16,29 @@ class Calendar: Service(){
     var description = ""
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        Log.i("Caledar","Calendar intent received")
-        getManditoryVariables(intent)
-        checkForOptional(intent)
+        try {
+            Log.i("Caledar", "Calendar intent received")
+            getManditoryVariables(intent)
+            checkForOptional(intent)
 
-        var action = intent.action
-        if (action == "create") {
-            var message = "Created ${eventName} on ${dateTimeStart}/s"
-            if(dateTimeEnd != "") message+="until ${dateTimeEnd}/s"
-            if (description != "") message+="with description ${description}"
-            Log.i("Calendar",message)
+            var action = intent.action
+            if (action == "create") {
+                var message = "Created ${eventName} on ${dateTimeStart}/s"
+                if (dateTimeEnd != "") message += "until ${dateTimeEnd}/s"
+                if (description != "") message += "with description ${description}"
+                Log.i("Calendar", message)
 
-        }else if(action == "retrieve"){
-            Log.i("Calendar","Retrieve action")
-        }else if(action == "update"){
-            Log.i("Calendar","Update action")
-        }else{
-            Log.i("Calendar","Delete action")
+            } else if (action == "retrieve") {
+                Log.i("Calendar", "Retrieve action")
+            } else if (action == "update") {
+                Log.i("Calendar", "Update action")
+            } else {
+                Log.i("Calendar", "Delete action")
+            }
+        }catch(exception: Exception){
+            Log.e("Calendar","Calendar ran into an error")
         }
+
         return super.onStartCommand(intent, flags, startId)
     }
 
