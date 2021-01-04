@@ -41,15 +41,18 @@ class MultiprocessService: SAFService() {
         var pipeline = parsePipeline(pipelineData)
         outgoingIntent.setClassName(this,getNextInPipeline(pipeline))
 
+        // Should this be handled in the multiprocess service? Perhaps it should be in the receiving service
         if(needsAggrigation(id)){
             aggregate(id)
             // What data is sent over STDIO from this?
             outgoingIntent.putExtra(STDIO,"something")
+            // Is there a reason that I am putting this information instead of STDIO?
             outgoingIntent.putStringArrayListExtra("assistant.framework.processor.DATA",datum)
         }else{
             // What data is sent over STDIO from this?
             outgoingIntent.putExtra(STDIO,"something")
             for(data in allData as Map<String,ArrayList<String>>){
+                // Is there a reason that I am putting the data as an Extra instead of STDIO
                 outgoingIntent.putStringArrayListExtra(data.key,data.value)
             }
         }
@@ -64,6 +67,7 @@ class MultiprocessService: SAFService() {
         }
     }
 
+    // Should this be handled in the multiprocess service? Perhaps it should be in the receiving service
     fun needsAggrigation(id: String): Boolean{
         return false
     }
@@ -120,6 +124,7 @@ class MultiprocessService: SAFService() {
         return sharedPreferences.getInt(total, -1)
     }
 
+    // Should this be handled in the multiprocess service? Perhaps it should be in the receiving service
     fun aggregate(filesToAggregate: List<File>): List<String>{
         // This takes files, and turns them into lines in a single file, so it's easy to pass along
         return emptyList()
