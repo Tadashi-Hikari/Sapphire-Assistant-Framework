@@ -30,7 +30,7 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
-    dynamicFeatures = [':VoskSTTModule', ':ParserModule', ':CalendarSkill', ':RunnerModule', ':GenericTemplateModule', ':MultiprocessModule', ':FilterModule', ':SpontaneousDataTracker', ':TermuxSocketModule']
+    dynamicFeatures = [':VoskSTTModule', ':ParserModule', ':CalendarSkill', ':GenericTemplateModule', ':MultiprocessModule']
 }
 
 dependencies {

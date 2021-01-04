@@ -65,7 +65,7 @@ class CoreService: SAFService(){
                 if(intent.hasCategory("assistant.framework.processor.DATA")){
                     Log.i("CoreService","Contains processor data")
                     var processorIntent = Intent(intent)
-                    // This should load from something configurable, and a pipeline
+                    // This should load from something configurable, and a pipeline <- this
                     processorIntent.setClassName(this,"package com.example.parsermodule.ParserTrainService")
                     startService(processorIntent)
                 }

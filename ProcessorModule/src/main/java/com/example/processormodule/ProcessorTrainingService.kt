@@ -20,10 +20,11 @@ class ProcessorTrainingService: SAFService(){
 
     // Does this need to check the intent somehow?
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        var processorFiles = getProcessorFiles(intent)
+        var processorFiles = getProcessorFilesFromString(intent)
         var intentFiles = mutableListOf<File>()
 
-        // Get the files that our processor will use
+        // Training is expecting differently formatted information, in the form of
+        // Android intent bundles. Should this be the case?
         for(name in processorFiles.keys){
             if(name.endsWith(".intent")){
                 intentFiles.add(processorFiles.get(name)!!)
@@ -33,6 +34,7 @@ class ProcessorTrainingService: SAFService(){
             }
         }
 
+        // This is where the combination happens
         var trainingFile = combineFiles(intentFiles)
         trainIntentClassifier(trainingFile)
 
@@ -40,7 +42,8 @@ class ProcessorTrainingService: SAFService(){
     }
 
     // Can I adapt this to work w/ non-text files? Or should I use the socket for that
-    fun getProcessorFiles(intent: Intent): Map<String,File>{
+    // This is actually getting strings
+    fun getProcessorFilesFromString(intent: Intent): Map<String,File>{
         var files = mutableMapOf<String,File>()
 
         try{

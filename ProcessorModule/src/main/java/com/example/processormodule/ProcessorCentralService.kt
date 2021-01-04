@@ -16,7 +16,9 @@ class ProcessorCentralService: SAFService(){
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         Log.i("ProcessorCentralService","Data processing intent received")
         if(intent.action == "assistant.framework.processor.TRAIN") {
-
+            intent.setClassName(this,"com.example.processormodule.ProcessorTrainingService")
+            // Send it to the training service
+            startService(intent)
         }else if(intent.hasExtra(STDIO)){
             // Default to the purpose of the processor
             var text = intent.getStringExtra(STDIO)!!
@@ -70,12 +72,11 @@ class ProcessorCentralService: SAFService(){
         if(classifierFile.exists() != true) {
             Log.e("ProcessorCentralService","There is no saved classifier. Aborting")
 
-            // This is a place where I can request PROCESSOR_DATA from core, how would it
-            // wait for the results? I can add an ID number, or I could try to work it with a
-            // fork-join module
-
-            // Alternatively, I can send a simple pipeline module that loops back in to running
-            // Processor central service when trained
+            /**
+             * I want to append to the pipeline a training/process intent, so that I can train
+             * the processor, and then run it with the supplied information. I suppose this is a
+             * kind of loop. That said, should ProcessorTrainingService be continuing a pipeline?
+             */
         }
 
         return ColumnDataClassifier.getClassifier(classifierFile.canonicalPath)
