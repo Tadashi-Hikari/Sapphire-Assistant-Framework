@@ -1,6 +1,5 @@
 include ':MultiprocessModule'
 include ':ComponentFramework'
-include ':GenericTemplateModule'
 include ':CalendarSkill'
 include ':ProcessorModule'
 include ':VoskSTTModule'
