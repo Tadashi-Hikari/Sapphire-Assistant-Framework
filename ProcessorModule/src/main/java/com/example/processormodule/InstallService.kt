@@ -33,6 +33,7 @@ class InstallService: Service() {
                 "PROCESSOR",
                 "com.example.sapphireassistantframework.ProcessorCentralService"
             )
+            // Do I need or want this?
             installIntent.addCategory("assistant.framework.PROCESSOR_MODULE")
 
             startService(installIntent)

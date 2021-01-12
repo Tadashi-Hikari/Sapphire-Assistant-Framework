@@ -3,139 +3,101 @@ package com.example.multiprocessmodule
 /**
  * This is the multiprocess main service. Right now I am writing it to count the max number of
  * modules, but I suppose I can change it to also put modules in the right order
+ *
+ * Maybe I should have it use a database or flat file, rather than sharedPreferences
+ *
+ * Is there a way I can have it wait for something w/ an externally allocated ID? this would
+ * allow core to send all of its data to the multiprocessor, and it will wait until it's all recieved
+ * Maybe I should make a separate aggriagtor for that.
  */
 
+import android.content.Context
 import android.content.Intent
 import android.os.IBinder
 import android.util.Log
+import androidx.core.content.edit
 import com.example.componentframework.*
 import java.io.File
 import java.lang.Exception
-import kotlin.math.PI
+import java.net.IDN
+import kotlin.random.Random
 
 class MultiprocessService: SAFService() {
-    // Timeout after 3 minutes
-    val TIMEOUT = "180"
-    val ID = "assistant.framework.protocol.ID"
+    //Module specific extras. Should this be moved to SAFService?
+    val MULTIPROCESS_ID = "assistant.framework.multiprocess.protocol.ID"
+    val SEQUENCE_NUMBER = "assistant.framework.multiprocess.protocol.SEQUENCE_NUMBER"
+    // I think I want to replace this with a simple record Jar or JSON file. Whichever is easier to parse
+    var sharedPreferences = getSharedPreferences("com.example.multiprocessmodule", Context.MODE_PRIVATE)
 
     override fun onBind(intent: Intent?): IBinder? {
         TODO("Not yet implemented")
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        Log.i("MultiprocessService","MultiprocessService intent received")
-        bindCoreService()
-        if(verifyID(intent)){
-            updateID(intent)
+        Log.i("MultiprocessService","Multiprocess intent received")
+        // If it is something new, give it an ID and send it out
+        if(intent.hasExtra(MULTIPROCESS_ID)){
+            updateIDCount(intent)
+        }else{
+            var ID = Random.nextInt()
+            intent.putExtra(MULTIPROCESS_ID,ID.toString())
+            sharedPreferences.edit{
+                putInt(ID.toString(),0)
+                apply()
+            }
+            startMultiService(intent)
         }
-        if(allSequencesReceived(intent)){
-            handleAndSend(intent)
-        }
-
         return super.onStartCommand(intent, flags, startId)
     }
 
-    fun handleAndSend(intent: Intent){
-        var outgoingIntent = Intent()
-        var pipelineData = intent.getStringExtra(PIPELINE)!!
-        var pipeline = parsePipeline(pipelineData)
-        outgoingIntent.setClassName(this,getNextInPipeline(pipeline))
+    // This is meant to send them all along
+    fun startMultiService(intent: Intent){
+        var route = intent.getStringExtra(ROUTE)
+        // "(" indicates the start of a multiprocess, ")" indicates a join
+        var intentList = route!!.removeSurrounding("(",")")
+        Log.i("MultiprocessService","The modules to be multiprocessed are as follows: ${intentList}")
+        var intents = intentList.split(",")
+        var sequenceNumber = 0
+        for(intent in intents){
+            sequenceNumber++
+            // I am using ; as the delimeter to separte packageName;className
+            var packageClass = intent.split(";")
+            // Mark which intent in the sequence this is
+            outgoingIntent.putExtra(SEQUENCE_NUMBER,sequenceNumber)
+            // This should send a duplicate intent to each intent in the route
+            outgoingIntent.setClassName(packageClass[0],packageClass[1])
+            startService(outgoingIntent)
+        }
+    }
 
-        // Should this be handled in the multiprocess service? Perhaps it should be in the receiving service
-        if(needsAggrigation(id)){
-            aggregate(id)
-            // What data is sent over STDIO from this?
-            outgoingIntent.putExtra(STDIO,"something")
-            // Is there a reason that I am putting this information instead of STDIO?
-            outgoingIntent.putStringArrayListExtra("assistant.framework.processor.DATA",datum)
-        }else{
-            // What data is sent over STDIO from this?
-            outgoingIntent.putExtra(STDIO,"something")
-            for(data in allData as Map<String,ArrayList<String>>){
-                // Is there a reason that I am putting the data as an Extra instead of STDIO
-                outgoingIntent.putStringArrayListExtra(data.key,data.value)
+    // I need a way to store & aggregate all info. I think a record Jar (or JSON) will work just fine
+    fun updateIDCount(intent: Intent){
+        var id = intent.getStringExtra(MULTIPROCESS_ID)
+        var sequenceNumber = intent.getStringExtra(SEQUENCE_NUMBER)
+        // if sequenceNumber == unique,
+        var count = sharedPreferences.getInt(intent.getStringExtra(MULTIPROCESS_ID),-1)
+        if(count-- == 0){
+            handleAndSend(intent)
+        }else {
+            sharedPreferences.edit {
+                putInt(id.toString(), count)
+                apply()
             }
         }
+    }
+
+    // It shouldn't matter which intent was received. They should all have the same ID
+    fun handleAndSend(intent: Intent){
+        // How should I send the information? Aggregated? Marked up? I'm inclined to send it record jar or JSON style
+        // I can have it retrieve a host and port, then it can also make socket connections
+        intent.putExtra(MESSAGE, getFinalMessage(intent.getStringExtra(MULTIPROCESS_ID)!!))
+        var routeData = intent.getStringExtra(ROUTE)!!
+        var route = parseRoute(routeData)
+        outgoingIntent.setClassName(this,getNextAlongRoute(route))
         startService(outgoingIntent)
     }
 
-    fun countSequence(intent: Intent){
-        try{
-
-        }catch(exception: Exception){
-            Log.e("MultiprocessService","There was an error with the sequencing of this intent")
-        }
-    }
-
-    // Should this be handled in the multiprocess service? Perhaps it should be in the receiving service
-    fun needsAggrigation(id: String): Boolean{
-        return false
-    }
-
-    fun verifyID(intent: Intent): Boolean{
-        try{
-            var id = intent.getStringExtra(ID)!!
-            // How does this return if it doesn't exist
-            // Can I just use getPreferences (can it be called from a Service?)
-            var sharedPreferences = this.getSharedPreferences(id, MODE_PRIVATE)
-            if(sharedPreferences == null) {
-                createIDTracker(id)
-                // This doesn't work w/ the returned value
-                updateID(intent)
-                return false
-            }
-        }catch(exception: Exception){
-            Log.e("MultiprocessService","There was an error with the ID of this intent")
-        }
-
-        return true
-    }
-
-    fun createIDTracker(id: String){
-        var sharedPreferences = this.getSharedPreferences(id, MODE_PRIVATE)
-    }
-
-    fun allSequencesReceived(intent: Intent): Boolean{
-        return true
-    }
-
-    fun updateID(intent: Intent): Boolean{
-        var id = intent.getStringExtra(ID)!!
-        var KEY = "assistant.framework.protocol.SEQUENCE_NUMBER"
-        var total = totalNumberOfModules(id)
-        var sharedPreferences = this.getSharedPreferences(id, MODE_PRIVATE)
-        var count = sharedPreferences.getInt(KEY,-1)
-        // I should probably do something to handle an error
-        if(count != -1){
-            count++
-        }
-
-        if(count == total){
-            return true
-        }
-
-        return false
-    }
-
-    fun totalNumberOfModules(id: String): Int{
-        var sharedPreferences = this.getSharedPreferences(id, MODE_PRIVATE)
-        val total = "assistant.framework.protocol.SEQUENCE_TOTAL"
-        // I need to do some kind of error checking
-        return sharedPreferences.getInt(total, -1)
-    }
-
-    // Should this be handled in the multiprocess service? Perhaps it should be in the receiving service
-    fun aggregate(filesToAggregate: List<File>): List<String>{
-        // This takes files, and turns them into lines in a single file, so it's easy to pass along
-        return emptyList()
-    }
-
-    // This needs to bind the core service until either TIMEOUT
-    fun bindCoreService(){
-        // Should I formally incorporate this?
-        //intent.putExtra(timeout,TIMEOUT)
-    }
-
-    fun unbindCoreService(){
+    fun getFinalMessage(id: String): String{
+        return ""
     }
 }

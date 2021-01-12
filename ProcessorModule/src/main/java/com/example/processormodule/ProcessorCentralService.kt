@@ -15,13 +15,13 @@ class ProcessorCentralService: SAFService(){
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         Log.i("ProcessorCentralService","Data processing intent received")
-        if(intent.action == "assistant.framework.processor.TRAIN") {
+        if(intent.action == ACTION_SAPPHIRE_TRAIN) {
             intent.setClassName(this,"com.example.processormodule.ProcessorTrainingService")
             // Send it to the training service
             startService(intent)
-        }else if(intent.hasExtra(STDIO)){
+        }else if(intent.hasExtra(MESSAGE)){
             // Default to the purpose of the processor
-            var text = intent.getStringExtra(STDIO)!!
+            var text = intent.getStringExtra(MESSAGE)!!
             process(text)
         }
 
@@ -43,11 +43,11 @@ class ProcessorCentralService: SAFService(){
                 // This is an arbitrary number, and should probably be a configurable variable
                 if(classifiedScores.getCount(classifiedDatum) >= .04){
                     Log.i("ProcessorCentralService","Text matches class ${classifiedDatum}")
-                    outgoingIntent.putExtra(TO,classifiedDatum)
+                    outgoingIntent.putExtra(POSTAGE,classifiedDatum)
                 }else {
                     Log.i("ProcessorCentralService","Text does not match a class. Using default")
                     // This could generate an error
-                    outgoingIntent.putExtra(TO,"DEFAULT")
+                    outgoingIntent.putExtra(POSTAGE,"DEFAULT")
                 }
 
                 /**
@@ -56,7 +56,7 @@ class ProcessorCentralService: SAFService(){
                  * for text & binary sources, so that if a module needs it then a request can be made for
                  * the base data along the pipeline. This prevents overcomplicating the protocol
                   */
-                outgoingIntent.putExtra(STDIO,text)
+                outgoingIntent.putExtra(MESSAGE,text)
                 startService(outgoingIntent)
             }
         }catch(exception: Exception){
@@ -70,13 +70,9 @@ class ProcessorCentralService: SAFService(){
 
         // I can't spontaneously train without requesting the data. Can this be overcome?
         if(classifierFile.exists() != true) {
-            Log.e("ProcessorCentralService","There is no saved classifier. Aborting")
-
-            /**
-             * I want to append to the pipeline a training/process intent, so that I can train
-             * the processor, and then run it with the supplied information. I suppose this is a
-             * kind of loop. That said, should ProcessorTrainingService be continuing a pipeline?
-             */
+            Log.e("ProcessorCentralService","There is no saved classifier. Requesting training data from core")
+            var coreDataRequestIntent = Intent()
+            coreDataRequestIntent.action = ACTION_SAPPHIRE_CORE_REQUEST_DATA
         }
 
         return ColumnDataClassifier.getClassifier(classifierFile.canonicalPath)

@@ -13,14 +13,14 @@
     </dist:module>
 
     <application>
-        <meta-data
-            android:name="com.example.calendarskill.SAPPHIRE_ASSISTANT_MODULE"
-            android:value="com.example.calendarskill.SkillInstallService">
-        </meta-data>
         <service
             android:name=".SkillInstallService"
             android:exported="true"
             android:enabled="true">
+            <intent-filter>
+                <action android:name="assistant.framework.module.action.REGISTER"/>
+                <action android:name="assistant.framework.module.action.REQUEST_DATA"/>
+            </intent-filter>
         </service>
         <service android:name=".Calendar"
             android:exported="true"
