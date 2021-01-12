@@ -4,33 +4,53 @@ import android.app.Service
 import android.content.Intent
 
 abstract class SAFService: Service(){
-    val STDIO = "ASISTANT_FRAMEWORK_STDIO"
-    // This *could* call chatbot....
-    val STDERR = "ASSISTANT_FRAMEWORK_STDERR"
-    // I don't need this. It's held in intent.component.getClassName
-    val FROM = "ASSISTANT_FRAMEWORK_SENDING_MODULE"
-    val TO = "ASSISANT_FRAMEWORK_RECEIVENG_MODULE"
-    // I think this value is inherently returned in "onStartCommand"
-    val PID = "ASSISTANT_FRAMEWORK_PROCESS_ID"
-    // The chain the app is supposed to follow
-    val PIPELINE = "ASSISTANT_FRAMEWORK_PIPELINE"
-    // A reference, to always call back to core
-    val CORE = "ASSISTANT_FRAMEWORK_CORE_MODULE"
+    // Standard extras
+    val MESSAGE="assistant.framework.protocol.MESSAGE"
+    val STDERR="assistant.framework.protocol.STDERR"
+    val POSTAGE="assistant.framework.protocol.POSTAGE"
+    val ROUTE="assistant.framework.protocol.ROUTE"
+    val CORE="assistant.framework.protocol.CORE"
+
+    // Module specific extras
+    val PROCESSOR_ENGINE="assistant.framework.processor.protocol.ENGINE"
+    val PROCESSOR_VERSION="assistant.framework.processor.protocol.VERSION"
+    val DATA_KEYS="assistant.framework.module.protocol.DATA_KEYS"
+
+    // Actions
+    val ACTION_SAPPHIRE_CORE_BIND="assistant.framework.core.action.BIND"
+    // This is sent to the CORE from the module, so the core can handle the registration process
+    val ACTION_SAPPHIRE_CORE_REGISTER = "assistant.framework.core.action.REGISTER"
+    // This is for a module to request *all* data from the core (implicit intent style)
+    val ACTION_SAPPHIRE_CORE_REQUEST_DATA="assistant.framework.core.action.REQUEST_DATA"
+
+    val ACTION_SAPPHIRE_MODULE_REGISTER = "assistant.framework.module.action.REGISTER"
+    // This is for core to request data from a specific module
+    val ACTION_SAPPHIRE_MODULE_REQUEST_DATA="assistant.framework.module.action.REQUEST_DATA"
+    val ACTION_SAPPHIRE_TRAIN="assistant.framework.processor.action.TRAIN"
 
 
-    // This is for having a SAF compontent pass along the pipeline w/o a callback to core
-    fun parsePipeline(string: String): List<String>{
-        var pipeline = emptyList<String>()
-        pipeline = string.split(",")
-        return pipeline
+    var outgoingIntent = Intent()
+
+    // This is for having a SAF compontent pass along the route w/o a callback to core
+    fun parseRoute(string: String): List<String>{
+        var route = emptyList<String>()
+        route = string.split(",")
+        return route
     }
 
     // This doesn't actually impact the list, which I would have to return... Should it take intent?
-    fun getNextInPipeline(pipeline: List<String>): String{
-        return pipeline[0]
+    fun getNextAlongRoute(route: List<String>): String{
+        return route[0]
+    }
+
+    fun addToRoute(newRoute: String){
+        // This takes the existing route and adds some modules in to it
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+        outgoingIntent = intent
+        // Clear out the ClassName. Everything else is the same to pass along
+        outgoingIntent.setClassName("","")
         return super.onStartCommand(intent, flags, startId)
     }
 }

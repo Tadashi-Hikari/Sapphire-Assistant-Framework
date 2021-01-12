@@ -24,8 +24,7 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity> <!-- Trying to take the Unix approach to process, not the Android approach to threads -->
-        <!-- Do I need the process to be private? or global? -->
+        </activity>
         <service
             android:name=".CoreService"
             android:enabled="true"
@@ -34,8 +33,10 @@
             android:name=".CoreInstallService"
             android:enabled="true"
             android:exported="true"/>
+        <!-- This should probably run in a separate process, so the system doesn't get bottlenecked -->
         <service
             android:name=".PostOffice"
+            android:process="PostOffice.service"
             android:enabled="true"
             android:exported="true"/>
     </application>

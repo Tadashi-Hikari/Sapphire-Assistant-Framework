@@ -1,8 +1,10 @@
 package com.example.sapphireassistantframework
 
 /**
- * This module is the foreground service that is run by the assistant framework. It dos the primary
- * sorting for modules, and then passes off the remaining tasks to a secondary service for sorting
+ * This module exists to handle start up and shut down tasks for the assistant framework, as well
+ * as acts as a bind-able anchor for any other services. Does moving NotificationService to its own
+ * file cause an issue with this service as long running? Does NotificationService need to bind this,
+ * so that this doesn't shut down?
  */
 
 import android.app.NotificationChannel
@@ -28,10 +30,8 @@ class CoreService: SAFService(){
     private lateinit var notificationManager: NotificationManager
     private val CHANNEL_ID = "SAF"
     private val NAME = "Sapphire Assistant Framework"
-    private val INSTALL = "assistant.framework.module.INSTALL"
     private val SERVICE_TEXT = "Sapphire Assistant Framework"
     private lateinit var sapphire_apps: LinkedList<Pair<String, String>>
-    private var pipeline: LinkedList<String> = LinkedList<String>()
 
     override fun onBind(intent: Intent?): IBinder? {
         TODO("Not yet implemented")
@@ -45,7 +45,7 @@ class CoreService: SAFService(){
          * is launched.
          */
         buildForegroundNotification()
-        scanInstalledApps()
+        scanInstalledModules()
         mockStartBackgroundServices()
         Log.i("CoreService", "Everything should be starting up now")
     }
@@ -53,29 +53,9 @@ class CoreService: SAFService(){
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         // Should this sorting be done in PostOffice?
         try {
-            if (intent.action == "sapphire_assistant_framework.BIND") {
-                /**
-                 * This handles finding pipelines for installation, which can be configured, but may be
-                 * different from the standard pipeline
-                 **/
-            // both the action and category should be values, not variables. This is too static
-            }else if(intent.action == INSTALL){
-                Log.i("CoreService","Install action found")
-                // This doesn't have to be processor.DATA exclusive
-                if(intent.hasCategory("assistant.framework.processor.DATA")){
-                    Log.i("CoreService","Contains processor data")
-                    var processorIntent = Intent(intent)
-                    // This should load from something configurable, and a pipeline <- this
-                    processorIntent.setClassName(this,"package com.example.parsermodule.ParserTrainService")
-                    startService(processorIntent)
-                }
-            } else {
-                Log.i(
-                    "CoreService",
-                    "CoreService just received a command from ${intent.getStringExtra(FROM)}," +
-                            " containing data: ${intent.getStringExtra(STDIO)}"
-                )
-                // This needs to be replaced with some kind of wildcard
+            if (intent.action == ACTION_SAPPHIRE_CORE_BIND) {
+                // Do the binding
+            }else{
                 intent.setClassName(
                     "com.example.sapphireassistantframework",
                     "com.example.sapphireassistantframework.PostOffice"
@@ -114,27 +94,19 @@ class CoreService: SAFService(){
         }
     }
 
-    // This is intended to replace scanApplicationManifest
-    fun scanInstalledApps(){
-        var intent = Intent().setAction("assistant.framework.module.INSTALL")
-        intent.addCategory("assistant.framework.module.CATEGORY_DEFAULT")
-        var installedApplications = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
+    // There could be an issue here, since it isn't waiting for a callback. I may need to run this through the multiprocess module
+    fun scanInstalledModules(){
+        var intent = Intent().setAction(ACTION_SAPPHIRE_MODULE_REGISTER)
+        var installedSapphireModules = packageManager.queryIntentServices(intent, 0)
 
-        for(installedApplication in installedApplications) {
+        for(module in installedSapphireModules) {
             try{
-                var metadataBundle = installedApplication.metaData
-                if(installedApplication.packageName == "com.example.sapphireassistantframework"){
-                    for(key in metadataBundle.keySet()){
-                        // This is useful for replacing all "this" in other modules.
-                        Log.i("CoreService","Package name: ${installedApplication.packageName}")
-                        Log.i("CoreService","Install Service: ${metadataBundle.getString(key)}")
-                        // just a placeholder method for now
-                        isItRegistered(installedApplication.packageName)
-                        var installIntent = Intent().setClassName(installedApplication.packageName,metadataBundle.getString(key)!!)
-                        installIntent.action = "assistant.framework.module.INSTALL"
-                        startService(installIntent)
-                    }
-                }
+                var packageName = module.resolvePackageName
+                var className = module.serviceInfo.name
+                // Check the internal log to see if it's installed or updated
+                isItRegistered(packageName)
+                intent.setClassName(packageName,className)
+                startService(intent)
             }catch(exception: Exception){
                 continue
             }
@@ -144,6 +116,7 @@ class CoreService: SAFService(){
     // This isn't really used yet, but it's just meant for internal tracking of apps & updates
     fun isItRegistered(packageName: String): Boolean {
         var installedData = this.getSharedPreferences(
+            // This is a terrible name
             "com.example.sapphireassistantframework.CORE_PREFERENCES",
             Context.MODE_PRIVATE
         )
@@ -160,9 +133,9 @@ class CoreService: SAFService(){
     }
 
     override fun onDestroy() {
-        super.onDestroy()
         stopBackgroundServices(sapphire_apps, connections)
         notificationManager.cancel(1337)
+        super.onDestroy()
     }
 
     // I want to change this to the flat file database
@@ -204,6 +177,7 @@ class CoreService: SAFService(){
         }
     }
 
+    // These are services that CoreService is creating, and binding to. They're other modules
     fun startBoundService(pkg: String, classname: String): Connection{
         Log.i("CoreService", "binding ${pkg}, ${classname}")
         // This needs to be changed to not pseudocode

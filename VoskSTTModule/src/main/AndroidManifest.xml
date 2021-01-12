@@ -16,6 +16,7 @@
     </dist:module>
 
     <application>
+        <!-- This runs in a separate service so it doesn't bog down the app. I don't think it needs to though, since it's a separate module -->
         <service
             android:name=".KaldiService"
             android:exported="true"
