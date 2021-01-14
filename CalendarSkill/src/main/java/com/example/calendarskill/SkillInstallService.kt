@@ -17,39 +17,48 @@ import java.io.File
 
 class SkillInstallService: InstallHelper(){
     // I don't like that this is hard installed
-    var parserFiles = listOf("date.entity","get.intent","alarm.intent")
+    var intentFiles = arrayListOf<String>("get.intent","alarm.intent")
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         // This should broadcast/ordered broadcast
-        if(intent.action == ACTION_INSTALL_MODULE) {
-            Log.i("SkillInstallService","Install intent received. Installing CalendarSkill")
+        if(intent.action == ACTION_SAPPHIRE_MODULE_REGISTER) {
+            Log.i("SkillInstallService","Register intent received. Installing CalendarSkill")
             var installIntent = Intent()
-            installIntent.setClassName(this,"com.example.sapphireassistantframework.CoreService")
-            var keys = arrayListOf<String>()
+            // This should be in the sent intent. I can simplify this
+            installIntent.setClassName("com.example.sapphireassistantframework","com.example.sapphireassistantframework.CoreService")
+            installIntent.setAction(ACTION_SAPPHIRE_MODULE_REGISTER)
+            //var keys = arrayListOf<String>()
             // Processor data may be a bad name, since this doesn't HAVE to send to processor
-            var processorData = retrieveProcessorData()
-            for(datum in processorData){
-                keys.add(datum.key)
-                installIntent.putExtra(datum.key,datum.value)
-            }
-            installIntent.putExtra("assistant.framework.DATA_KEYS",keys)
+            //var processorData = retrieveData()
+            //for(datum in processorData){
+            //    keys.add(datum.key)
+            //    installIntent.putExtra(datum.key,datum.value)
+            //}
+            //installIntent.putExtra("assistant.framework.DATA_KEYS",keys)
             startService(installIntent)
         // This will use a pre-prepared intent, to send it through the pipeline for the reuqesting module
-        }else if(intent.action == ACTION_RETRIEVE_DATA){
-            var processorIntent = getProcessorIntent()
+        }else if(intent.action == ACTION_SAPPHIRE_MODULE_REQUEST_DATA){
+            Log.i("SkillInstallService","Data request received. gathering data")
+            // This is the same as outgoingIntent
+            var dataRequestIntent = Intent(intent)
             // This could be reeeeeal wonky. Keep an eye out on it
-            processorIntent.putStringArrayListExtra("assistant.framework.process.DATA_FILENAMES",parserFiles as ArrayList<String>)
-
-            var processorData = retrieveProcessorData()
-            for(datum in processorData){
-                processorIntent.putExtra(datum.key,datum.value)
+            for(key in intent.getStringArrayListExtra(DATA_KEYS)!!){
+                if(key == "intent") {
+                    // This adds the file name as the key. i don't like how confusing the multi use is. Maybe just add some more protocol?
+                    dataRequestIntent.putStringArrayListExtra(DATA_KEYS, intentFiles as ArrayList<String>)
+                    var data = retrieveData()
+                    for (datum in data) {
+                        dataRequestIntent.putExtra(datum.key, datum.value)
+                    }
+                }
             }
-            startService(processorIntent)
+            Log.i("SkillInstallService","Sending back the data")
+            startService(dataRequestIntent)
         }
         return super.onStartCommand(intent, flags, startId)
     }
 
-    fun retrieveProcessorData(): Map<String,ArrayList<String>> {
+    fun retrieveData(): Map<String,ArrayList<String>> {
         var fileNames = loadFileNames()
         var processorData = mutableMapOf<String,ArrayList<String>>()
         //var something = convertFilesToSomething()
@@ -72,7 +81,7 @@ class SkillInstallService: InstallHelper(){
 
     fun loadFileNames(): List<String>{
         // I need to get this info from an XML file, or some such thing
-        var fileNames = parserFiles
+        var fileNames = intentFiles
 
         return fileNames
     }

@@ -2,6 +2,7 @@ package com.example.componentframework
 
 import android.app.Service
 import android.content.Intent
+import android.os.IBinder
 
 abstract class SAFService: Service(){
     // Standard extras
@@ -19,7 +20,6 @@ abstract class SAFService: Service(){
     // Actions
     val ACTION_SAPPHIRE_CORE_BIND="assistant.framework.core.action.BIND"
     // This is sent to the CORE from the module, so the core can handle the registration process
-    val ACTION_SAPPHIRE_CORE_REGISTER = "assistant.framework.core.action.REGISTER"
     // This is for a module to request *all* data from the core (implicit intent style)
     val ACTION_SAPPHIRE_CORE_REQUEST_DATA="assistant.framework.core.action.REQUEST_DATA"
 
@@ -27,9 +27,6 @@ abstract class SAFService: Service(){
     // This is for core to request data from a specific module
     val ACTION_SAPPHIRE_MODULE_REQUEST_DATA="assistant.framework.module.action.REQUEST_DATA"
     val ACTION_SAPPHIRE_TRAIN="assistant.framework.processor.action.TRAIN"
-
-
-    var outgoingIntent = Intent()
 
     // This is for having a SAF compontent pass along the route w/o a callback to core
     fun parseRoute(string: String): List<String>{
@@ -45,12 +42,5 @@ abstract class SAFService: Service(){
 
     fun addToRoute(newRoute: String){
         // This takes the existing route and adds some modules in to it
-    }
-
-    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        outgoingIntent = intent
-        // Clear out the ClassName. Everything else is the same to pass along
-        outgoingIntent.setClassName("","")
-        return super.onStartCommand(intent, flags, startId)
     }
 }

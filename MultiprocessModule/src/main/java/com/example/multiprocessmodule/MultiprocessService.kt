@@ -11,79 +11,112 @@ package com.example.multiprocessmodule
  * Maybe I should make a separate aggriagtor for that.
  */
 
-import android.content.Context
 import android.content.Intent
 import android.os.IBinder
 import android.util.Log
-import androidx.core.content.edit
 import com.example.componentframework.*
+import org.json.JSONObject
 import java.io.File
-import java.lang.Exception
-import java.net.IDN
 import kotlin.random.Random
 
 class MultiprocessService: SAFService() {
     //Module specific extras. Should this be moved to SAFService?
     val MULTIPROCESS_ID = "assistant.framework.multiprocess.protocol.ID"
     val SEQUENCE_NUMBER = "assistant.framework.multiprocess.protocol.SEQUENCE_NUMBER"
-    // I think I want to replace this with a simple record Jar or JSON file. Whichever is easier to parse
-    var sharedPreferences = getSharedPreferences("com.example.multiprocessmodule", Context.MODE_PRIVATE)
 
     override fun onBind(intent: Intent?): IBinder? {
         TODO("Not yet implemented")
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+        Log.i("MultiprocessService","Data keys ${intent.getStringArrayListExtra(DATA_KEYS)}")
+        var file = File(filesDir,"MulitprocessDatabase.txt")
+        var databaseJSON = JSONObject()
+        if(file.exists()) {
+            databaseJSON = JSONObject(file.readText())
+        }
+
         Log.i("MultiprocessService","Multiprocess intent received")
         // If it is something new, give it an ID and send it out
         if(intent.hasExtra(MULTIPROCESS_ID)){
-            updateIDCount(intent)
-        }else{
-            var ID = Random.nextInt()
-            intent.putExtra(MULTIPROCESS_ID,ID.toString())
-            sharedPreferences.edit{
-                putInt(ID.toString(),0)
-                apply()
+            if(updateIDCount(intent)){
+                handleAndSend(intent)
             }
-            startMultiService(intent)
+        }else{
+            var id = Random.nextInt()
+            intent.putExtra(MULTIPROCESS_ID,id)
+            var recordJSON = JSONObject()
+            recordJSON.put(MULTIPROCESS_ID,id)
+            recordJSON.put("COUNT",0)
+            databaseJSON.put(id.toString(),recordJSON.toString())
+            file.writeText(databaseJSON.toString())
+
+            broadcastMultiService(intent)
         }
         return super.onStartCommand(intent, flags, startId)
     }
 
     // This is meant to send them all along
-    fun startMultiService(intent: Intent){
-        var route = intent.getStringExtra(ROUTE)
+    fun broadcastMultiService(intent: Intent){
+        var route = intent.getStringExtra(ROUTE)!!
         // "(" indicates the start of a multiprocess, ")" indicates a join
-        var intentList = route!!.removeSurrounding("(",")")
-        Log.i("MultiprocessService","The modules to be multiprocessed are as follows: ${intentList}")
-        var intents = intentList.split(",")
+        //var intentList = route!!.removeSurrounding("(",")")
+        var intentListPartial = route.split("(")
+        var multiprocessList = mutableListOf<String>()
+        for(intentString in intentListPartial){
+            if(intentString.contains(")")){
+                var temp = intentString.split(")")
+                multiprocessList.add(temp[0])
+            }else{
+                continue
+            }
+        }
+        // I am assuming that there is a () in this intent. I need to fix otherwise it will crash
+        Log.i("MultiprocessService","The modules to be multiprocessed are as follows: ${multiprocessList}")
+        var intents = multiprocessList[0].split(",")
         var sequenceNumber = 0
-        for(intent in intents){
+        for(intentString in intents){
             sequenceNumber++
             // I am using ; as the delimeter to separte packageName;className
-            var packageClass = intent.split(";")
+            var packageClass = intentString.split(";")
             // Mark which intent in the sequence this is
-            outgoingIntent.putExtra(SEQUENCE_NUMBER,sequenceNumber)
+            intent.putExtra(SEQUENCE_NUMBER,sequenceNumber)
             // This should send a duplicate intent to each intent in the route
-            outgoingIntent.setClassName(packageClass[0],packageClass[1])
-            startService(outgoingIntent)
+            intent.setClassName(packageClass[0],packageClass[1])
+            intent.setAction(ACTION_SAPPHIRE_MODULE_REQUEST_DATA)
+            Log.i("MultiprocessService","Dispatching intent to ${packageClass[0]};${packageClass[1]}")
+            Log.i("MultiprocessService","Requesting data keys ${intent.getStringArrayListExtra(DATA_KEYS)}" )
+            startService(intent)
         }
+        // I don't like how ugly and not-understandable this is
+        var newRoute = "com.example.sapphireassistantframework;com.example.processormodule.ProcessorCentralService"
+        var file = File(filesDir,"MultiprocessDatabase.txt")
+        Log.i("MultiprocessService","New route is as follows: ${newRoute}")
+        var databaseJSON = JSONObject()
+        var recordJSON = JSONObject()
+        recordJSON.put(ROUTE,newRoute)
+        databaseJSON.put(intent.getIntExtra(MULTIPROCESS_ID,0).toString(),recordJSON)
     }
 
     // I need a way to store & aggregate all info. I think a record Jar (or JSON) will work just fine
-    fun updateIDCount(intent: Intent){
+    // I don't like that updateID count itself is has handleAndSend
+    fun updateIDCount(intent: Intent): Boolean{
         var id = intent.getStringExtra(MULTIPROCESS_ID)
         var sequenceNumber = intent.getStringExtra(SEQUENCE_NUMBER)
+        var file = File(filesDir,"MulitprocessDatabase.txt")
+        var databaseJSON = JSONObject(file.readText())
+        var recordJSON = databaseJSON.getJSONObject(id)
+
         // if sequenceNumber == unique,
-        var count = sharedPreferences.getInt(intent.getStringExtra(MULTIPROCESS_ID),-1)
+        var count = recordJSON.getInt("COUNT")
         if(count-- == 0){
-            handleAndSend(intent)
+            return true
         }else {
-            sharedPreferences.edit {
-                putInt(id.toString(), count)
-                apply()
+            recordJSON.put("COUNT",count)
             }
-        }
+        databaseJSON.put(id,recordJSON.toString())
+        file.writeText(databaseJSON.toString())
+        return false
     }
 
     // It shouldn't matter which intent was received. They should all have the same ID
@@ -93,8 +126,8 @@ class MultiprocessService: SAFService() {
         intent.putExtra(MESSAGE, getFinalMessage(intent.getStringExtra(MULTIPROCESS_ID)!!))
         var routeData = intent.getStringExtra(ROUTE)!!
         var route = parseRoute(routeData)
-        outgoingIntent.setClassName(this,getNextAlongRoute(route))
-        startService(outgoingIntent)
+        intent.setClassName(this,getNextAlongRoute(route))
+        startService(intent)
     }
 
     fun getFinalMessage(id: String): String{

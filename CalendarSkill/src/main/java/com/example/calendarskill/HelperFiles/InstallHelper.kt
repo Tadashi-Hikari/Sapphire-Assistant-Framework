@@ -5,22 +5,17 @@ import android.content.Intent
 import android.net.Uri
 import android.os.IBinder
 import androidx.core.content.FileProvider
+import com.example.componentframework.SAFService
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
 import java.io.InputStreamReader
 
-abstract class InstallHelper: Service(){
-    val ACTION_TRAIN_PARSER = "assistant.framework.parser.TRAIN"
-    val CATEGORY_PROCESSOR_DATA = "assistant.framework.processor.DATA"
-    val ACTION_INSTALL_MODULE = "assistant.framework.module.INSTALL"
-    val ACTION_RETRIEVE_DATA = "assistant.framework.module.RETRIEVE_DATA"
-    val EXTRA_DATA_LIST = "assistant.framework.module.DATA_LIST"
+abstract class InstallHelper: SAFService(){
 
     fun getProcessorIntent():Intent{
         var processorIntent = Intent()
-        processorIntent.addCategory(CATEGORY_PROCESSOR_DATA)
-        processorIntent.setAction(ACTION_INSTALL_MODULE)
+        processorIntent.setAction(ACTION_SAPPHIRE_MODULE_REGISTER)
         processorIntent.setClassName(this,"com.example.sapphireassistantframework.CoreService")
 
         return processorIntent
