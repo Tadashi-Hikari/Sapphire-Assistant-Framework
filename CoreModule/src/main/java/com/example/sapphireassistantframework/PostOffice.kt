@@ -16,9 +16,8 @@ class PostOffice: SAFService(){
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         try {
-
-            if(intent.action == ACTION_SAPPHIRE_CORE_REGISTER) {
-                Log.i("PostOffice", "Registration action received")
+            if(intent.action == ACTION_SAPPHIRE_MODULE_REGISTER){
+                Log.i("PostOffice", "Module registration action received")
                 // This doesn't have to be processor.DATA exclusive
                 if (intent.hasExtra(DATA_KEYS)) {
                     Log.i("PostOffice", "Registration intent contains data keys")
@@ -30,24 +29,43 @@ class PostOffice: SAFService(){
                     )
                     startService(processorIntent)
                 }
+            /**
+            * If it is a data request, it sends the message to all modules w/ data, and if the module
+             * has the data, then it responds. Otherwise it ignores the request. I'd make it a
+             * broadcast, but delivery needs to be ensured. I will need multiprocessor to wait until
+             * all modules have responded before continuing along the pipeline
+            */
             }else if(intent.action == ACTION_SAPPHIRE_CORE_REQUEST_DATA){
                 // I need to use the CoreService install process somehow, without duplicating code
-                checkInstalledModules()
-                for(module in uninstalledModules){
-                    installModule()
-                }
-                checkForModulesWithData()
+                var queryIntent = Intent(ACTION_SAPPHIRE_MODULE_REQUEST_DATA)
+                var modulesWithData = packageManager.queryIntentServices(queryIntent, 0)
 
-                var multiprocessIntent = Intent().setClassName(this,"com.example.multiprocessmodule.MultiprocessService")
-                // var route = loadRoute("sapphire_processor_training_route")
-                // This is an example of a multiprocess route
-                multiprocessIntent.putExtra(ROUTE,"(package1;class1,package2;class2)")
-                // -a means aggrigate. I'm using a unix like flag for an example
-                multiprocessIntent.putExtra(POSTAGE,"-a")
-                for(module: ResolveInfo in modulesWithData){
-                    modules.put("PACKAGENAME",module.serviceInfo.packageName)
-                    modules.put("CLASSNAME",module.serviceInfo.name)
+                // This sends intents to all modules w/ data. The modules themselves
+                // decide if they need to respond
+                var multiprocessRoute = "("
+                for(dataModule in modulesWithData) {
+                    try{
+                        var packageName = dataModule.serviceInfo.packageName
+                        var className = dataModule.serviceInfo.name
+                        // Should I check if it's registered?
+                        // This is making a multiprocess route
+                        multiprocessRoute+="${packageName};${className},"
+                    }catch(exception: Exception){
+                        continue
+                    }
                 }
+                // Janky, but should do. I just made a (multiprocess route)
+                multiprocessRoute = multiprocessRoute.subSequence(0,multiprocessRoute.length-1) as String
+                multiprocessRoute+=")"
+                Log.i("PostOffice","Multiprocess route: ${multiprocessRoute}")
+                // Is there a reason to switch intents and not just use the original?
+                var multiprocessIntent = Intent(intent).setClassName(this,"com.example.multiprocessmodule.MultiprocessService")
+                Log.i("PostOffice","Tacking ${intent.getStringExtra(ROUTE)!!} on to ROUTE")
+                multiprocessIntent.putExtra(ROUTE,"${multiprocessRoute},${intent.getStringExtra(ROUTE)}")
+                // -a means aggregate. I'm using a unix like flag for an example
+                multiprocessIntent.putExtra(POSTAGE,"-a")
+                Log.i("PostOffice","Requesting data keys ${multiprocessIntent.getStringArrayListExtra(DATA_KEYS)}" )
+                startService(multiprocessIntent)
             }else {
                 sortMail(intent)
             }
@@ -55,6 +73,10 @@ class PostOffice: SAFService(){
             Log.e("PostOffice","Some intent error")
         }
         return super.onStartCommand(intent, flags, startId)
+    }
+
+    fun isItRegistered(packageName: String){
+
     }
 
     // This needs to be totally reworked
@@ -82,11 +104,11 @@ class PostOffice: SAFService(){
         var routeData = routes.get(routeRequest)!!
         var route = parseRoute(routeData)
         // It's going to be the first in the pipeline, right?
-        outgoingIntent.setClassName(this,route.first())
-        outgoingIntent.putExtra(MESSAGE,intent.getStringExtra(MESSAGE))
-        outgoingIntent.putExtra(ROUTE,routeData)
+        intent.setClassName(this,route.first())
+        intent.putExtra(MESSAGE,intent.getStringExtra(MESSAGE))
+        intent.putExtra(ROUTE,routeData)
 
-        startService(outgoingIntent)
+        startService(intent)
     }
 
     fun loadRoutes(): Map<String,String>{

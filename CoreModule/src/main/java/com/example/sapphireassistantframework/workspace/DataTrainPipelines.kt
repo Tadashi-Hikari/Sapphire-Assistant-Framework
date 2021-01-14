@@ -29,11 +29,11 @@ class DataTrainPipelines: SAFService() {
             counter++
             var trainingIntent = Intent()
             var pipelineData = getTrainingPipeline(module)
-            var pipeline = parsePipeline(pipelineData)
-            trainingIntent.putExtra(PIPELINE,pipelineData)
+            var pipeline = parseRoute(pipelineData)
+            trainingIntent.putExtra(ROUTE,pipelineData)
             trainingIntent.putExtra(SEQUENCE_NUMBER, "${counter}:${numberOfModules}")
             trainingIntent.putExtra(ID,id)
-            trainingIntent.setClassName(this,getNextInPipeline(pipeline))
+            trainingIntent.setClassName(this,getNextAlongRoute(pipeline))
             /**
              * This sends off an intent that is meant to be aggrigated, upon aggregation it gets
              * aggregated and sent along to the processor to be filtered as needed

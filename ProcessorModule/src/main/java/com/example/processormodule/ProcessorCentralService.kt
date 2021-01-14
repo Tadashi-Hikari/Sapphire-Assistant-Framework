@@ -16,7 +16,7 @@ class ProcessorCentralService: SAFService(){
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         Log.i("ProcessorCentralService","Data processing intent received")
         if(intent.action == ACTION_SAPPHIRE_TRAIN) {
-            intent.setClassName(this,"com.example.processormodule.ProcessorTrainingService")
+            intent.setClassName(this, "com.example.processormodule.ProcessorTrainingService")
             // Send it to the training service
             startService(intent)
         }else if(intent.hasExtra(MESSAGE)){
@@ -33,6 +33,7 @@ class ProcessorCentralService: SAFService(){
 
         try{
             if(text != ""){
+                Log.i("ProcessorCentralService","Loading the classifier")
                 var classifier = loadClassifier()
                 // This is specific to how CoreNLP works
                 var datumToClassify = classifier.makeDatumFromLine("none\t${text}")
@@ -66,13 +67,19 @@ class ProcessorCentralService: SAFService(){
 
     fun loadClassifier(): ColumnDataClassifier{
         var classifierFile = File(this.filesDir,"Intent.classifier")
-
-
         // I can't spontaneously train without requesting the data. Can this be overcome?
         if(classifierFile.exists() != true) {
+            // This is the data type being requested by
+            var requestedDataKeys = arrayListOf<String>("intent")
+
             Log.e("ProcessorCentralService","There is no saved classifier. Requesting training data from core")
-            var coreDataRequestIntent = Intent()
+            // I don't like how bulky this is
+            var coreDataRequestIntent = Intent().setClassName(this,"com.example.sapphireassistantframework.CoreService")
             coreDataRequestIntent.action = ACTION_SAPPHIRE_CORE_REQUEST_DATA
+            coreDataRequestIntent.putExtra(ROUTE,"com.example.sapphireassistantframework;com.example.processormodule.ProcessorCentralService")
+            coreDataRequestIntent.putStringArrayListExtra(DATA_KEYS,requestedDataKeys)
+            Log.i("ProcessorCentralService","Requesting data keys ${coreDataRequestIntent.getStringArrayListExtra(DATA_KEYS)}" )
+            startService(coreDataRequestIntent)
         }
 
         return ColumnDataClassifier.getClassifier(classifierFile.canonicalPath)

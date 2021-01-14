@@ -15,6 +15,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
+import android.content.pm.ResolveInfo
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
@@ -56,6 +57,8 @@ class CoreService: SAFService(){
             if (intent.action == ACTION_SAPPHIRE_CORE_BIND) {
                 // Do the binding
             }else{
+                // redirect the intent to the PostOffice
+                Log.i("CoreService","Intent received. Check PostOffice process for info")
                 intent.setClassName(
                     "com.example.sapphireassistantframework",
                     "com.example.sapphireassistantframework.PostOffice"
@@ -101,10 +104,12 @@ class CoreService: SAFService(){
 
         for(module in installedSapphireModules) {
             try{
-                var packageName = module.resolvePackageName
+                var packageName = module.serviceInfo.packageName
                 var className = module.serviceInfo.name
+                // This is called twice. Why?
+                Log.i("CoreService","Found a module. Checking if it's registered: ${packageName};${className}")
                 // Check the internal log to see if it's installed or updated
-                isItRegistered(packageName)
+                //isItRegistered(packageName)
                 intent.setClassName(packageName,className)
                 startService(intent)
             }catch(exception: Exception){
