@@ -7,4 +7,5 @@
     values-round/strings.xml for round devices.
     -->
     <string name="hello_world">Hello Square World!</string>
+    <string name="title_activity_vosk_assistant">VoskAssistantActivity</string>
 </resources>

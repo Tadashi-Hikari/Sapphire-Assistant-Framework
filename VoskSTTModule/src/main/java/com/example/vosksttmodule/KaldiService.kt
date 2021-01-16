@@ -1,14 +1,23 @@
 package com.example.vosksttmodule
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Binder
+import android.os.Build
 import android.os.IBinder
 import android.util.Log
+import androidx.core.app.ActivityCompat.requestPermissions
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import com.example.componentframework.SAFService
 import org.json.JSONObject
 import org.kaldi.*
 import java.io.File
-import java.io.InputStream
 import java.lang.Exception
 
 // This is an extension of service, but it could use a MycroftSkill interface which my help developers
