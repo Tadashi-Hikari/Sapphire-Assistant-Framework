@@ -53,6 +53,8 @@ class SkillInstallService: InstallHelper(){
                 }
             }
             Log.i("SkillInstallService","Sending back the data")
+            dataRequestIntent.setClassName(this,"com.example.multiprocessmodule.MultiprocessService")
+            dataRequestIntent.putExtra("assistant.framework.multiprocess.protocol.SEQUENCE_NUMBER",2)
             startService(dataRequestIntent)
         }
         return super.onStartCommand(intent, flags, startId)
