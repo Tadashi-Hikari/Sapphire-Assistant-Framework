@@ -39,11 +39,12 @@ class PostOffice: SAFService(){
                 // I need to use the CoreService install process somehow, without duplicating code
                 var queryIntent = Intent(ACTION_SAPPHIRE_MODULE_REQUEST_DATA)
                 var modulesWithData = packageManager.queryIntentServices(queryIntent, 0)
+                Log.i("PostOffice","Query results ${modulesWithData}")
 
                 // This sends intents to all modules w/ data. The modules themselves
                 // decide if they need to respond
                 var multiprocessRoute = "("
-                for(dataModule in modulesWithData) {
+                for(dataModule in modulesWithData.take(1)) {
                     try{
                         var packageName = dataModule.serviceInfo.packageName
                         var className = dataModule.serviceInfo.name

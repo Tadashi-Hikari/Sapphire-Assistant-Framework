@@ -27,17 +27,20 @@
         </activity>
         <service
             android:name=".CoreService"
-            android:enabled="true"
             android:exported="true"/>
         <service
             android:name=".CoreInstallService"
-            android:enabled="true"
             android:exported="true"/>
         <!-- This should probably run in a separate process, so the system doesn't get bottlenecked -->
         <service
             android:name=".PostOffice"
-            android:process="PostOffice.service"
-            android:enabled="true"
+            android:process=":PostOffice"
             android:exported="true"/>
+        <service
+            android:name=".CoreKaldiService"
+            android:exported="true"
+            android:process=":CoreKaldiService"
+            android:foregroundServiceType="microphone"
+            android:permission="android.permission.RECORD_AUDIO"/>
     </application>
 </manifest>

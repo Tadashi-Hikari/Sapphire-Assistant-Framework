@@ -16,6 +16,7 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
+import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
@@ -26,6 +27,7 @@ import java.lang.Exception
 import java.util.*
 import org.json.JSONObject
 
+// This needs to provide the VoiceInteractionService. Other apps may be subject to While-in-use restrictions
 class CoreService: SAFService(){
     private var connections: LinkedList<Pair<String, Connection>> = LinkedList()
     private lateinit var notificationManager: NotificationManager
@@ -84,17 +86,15 @@ class CoreService: SAFService(){
         }
 
         // This is the notification for the foreground service. Maybe have it lead into other bound services
-        var builder = NotificationCompat.Builder(this, CHANNEL_ID)
+        var notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.assistant)
             .setContentTitle("Sapphire Assistant Framework")
             .setContentText("SAF is running")
             .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .build()
 
-        with(NotificationManagerCompat.from(this)) {
-            // I defined notification id as 1, may need to change this later
-            notify(1337, builder.build())
-        }
+        startForeground(1337,notification)
     }
 
     // There could be an issue here, since it isn't waiting for a callback. I may need to run this through the multiprocess module
@@ -102,7 +102,9 @@ class CoreService: SAFService(){
         var intent = Intent().setAction(ACTION_SAPPHIRE_MODULE_REGISTER)
         var installedSapphireModules = packageManager.queryIntentServices(intent, 0)
 
-        for(module in installedSapphireModules) {
+        // I believe installedSapphireModules is a collection of collections (List & MutableList). I just
+        // need one, otherwise it gives me a duplicate thing
+        for(module in installedSapphireModules.take(1)) {
             try{
                 var packageName = module.serviceInfo.packageName
                 var className = module.serviceInfo.name
@@ -147,6 +149,7 @@ class CoreService: SAFService(){
     fun mockStartBackgroundServices(){
         var speechToText = Pair(
             "com.example.sapphireassistantframework",
+            //"com.example.sapphireassistantframework.CoreKaldiService")
             "com.example.vosksttmodule.KaldiService")
         var startupApps = listOf(speechToText)
 

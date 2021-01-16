@@ -5,6 +5,11 @@
 
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
     <dist:module
         dist:instant="false"
         dist:title="@string/title_vosk_stt_module">
@@ -12,16 +17,16 @@
             <dist:install-time />
         </dist:delivery>
 
-        <dist:fusing dist:include="true"/>
+        <dist:fusing dist:include="true" />
     </dist:module>
 
     <application>
-        <!-- This runs in a separate service so it doesn't bog down the app. I don't think it needs to though, since it's a separate module -->
         <service
             android:name=".KaldiService"
             android:exported="true"
-            android:process="vosk.service">
-        </service>
+            android:process="vosk.service"
+            android:foregroundServiceType="microphone"
+            android:permission="android.permission.RECORD_AUDIO"/>
     </application>
 
 </manifest>

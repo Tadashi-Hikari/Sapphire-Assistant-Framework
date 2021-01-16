@@ -14,15 +14,19 @@ class ProcessorCentralService: SAFService(){
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        Log.i("ProcessorCentralService","Data processing intent received")
-        if(intent.action == ACTION_SAPPHIRE_TRAIN) {
-            intent.setClassName(this, "com.example.processormodule.ProcessorTrainingService")
-            // Send it to the training service
-            startService(intent)
-        }else if(intent.hasExtra(MESSAGE)){
-            // Default to the purpose of the processor
-            var text = intent.getStringExtra(MESSAGE)!!
-            process(text)
+        try {
+            Log.i("ProcessorCentralService", "Data processing intent received")
+            if (intent.action == ACTION_SAPPHIRE_TRAIN) {
+                intent.setClassName(this, "com.example.processormodule.ProcessorTrainingService")
+                // Send it to the training service
+                startService(intent)
+            } else if (intent.hasExtra(MESSAGE)) {
+                // Default to the purpose of the processor
+                var text = intent.getStringExtra(MESSAGE)!!
+                process(text)
+            }
+        }catch(exception: Exception){
+            Log.e("ProcessorCentralService","Something went wrong receiving the intent")
         }
 
         return super.onStartCommand(intent, flags, startId)

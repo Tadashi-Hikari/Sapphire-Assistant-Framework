@@ -29,35 +29,43 @@ class MultiprocessService: SAFService() {
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        Log.i("MultiprocessService","Data keys ${intent.getStringArrayListExtra(DATA_KEYS)}")
-        var file = File(filesDir,"MulitprocessDatabase.txt")
-        var databaseJSON = JSONObject()
-        if(file.exists()) {
-            databaseJSON = JSONObject(file.readText())
-        }
-
-        Log.i("MultiprocessService","Multiprocess intent received")
-        // If it is something new, give it an ID and send it out
-        if(intent.hasExtra(MULTIPROCESS_ID)){
-            if(updateIDCount(intent)){
-                handleAndSend(intent)
+        try {
+            Log.i("MultiprocessService", "Data keys ${intent.getStringArrayListExtra(DATA_KEYS)}")
+                        Log.i("MultiprocessService", "Multiprocess intent received")
+            // If it exists, put them all together and send them out
+            if (intent.hasExtra(MULTIPROCESS_ID)) {
+                Log.i(
+                    "MultiprocessService",
+                    "Intent has MULTIPROCESS_ID: ${intent.getIntExtra(MULTIPROCESS_ID, -1)!!.toString()}"
+                )
+                if (updateIDCount(intent)) {
+                    handleAndSend(intent)
+                }
+            // else, give it an ID and start the broadcast
+            } else {
+                // This is poorly named
+                broadcastMultiService(intent)
             }
-        }else{
-            var id = Random.nextInt()
-            intent.putExtra(MULTIPROCESS_ID,id)
-            var recordJSON = JSONObject()
-            recordJSON.put(MULTIPROCESS_ID,id)
-            recordJSON.put("COUNT",0)
-            databaseJSON.put(id.toString(),recordJSON.toString())
-            file.writeText(databaseJSON.toString())
-
-            broadcastMultiService(intent)
+        }catch(exception: Exception){
+            Log.e("MultiprocessService","There was an error with the Multiprocess intent")
         }
         return super.onStartCommand(intent, flags, startId)
     }
 
     // This is meant to send them all along
     fun broadcastMultiService(intent: Intent){
+        var file = File(filesDir, "MulitprocessDatabase.txt")
+        var databaseJSON = JSONObject()
+        if (file.exists()) {
+            databaseJSON = JSONObject(file.readText())
+        }
+        var id = Random.nextInt()
+        intent.putExtra(MULTIPROCESS_ID, id)
+        var recordJSON = JSONObject()
+        recordJSON.put(MULTIPROCESS_ID, id)
+        recordJSON.put("COUNT", 0)
+        databaseJSON.put(id.toString(), recordJSON.toString())
+        file.writeText(databaseJSON.toString())
         var route = intent.getStringExtra(ROUTE)!!
         // "(" indicates the start of a multiprocess, ")" indicates a join
         //var intentList = route!!.removeSurrounding("(",")")
@@ -70,6 +78,7 @@ class MultiprocessService: SAFService() {
             }else{
                 continue
             }
+            Log.i("MultiprocessService","Launched multiple intents for MULTIPROCESS_ID: ${intent.getIntExtra(MULTIPROCESS_ID,-1)}")
         }
         // I am assuming that there is a () in this intent. I need to fix otherwise it will crash
         Log.i("MultiprocessService","The modules to be multiprocessed are as follows: ${multiprocessList}")
@@ -90,32 +99,36 @@ class MultiprocessService: SAFService() {
         }
         // I don't like how ugly and not-understandable this is
         var newRoute = "com.example.sapphireassistantframework;com.example.processormodule.ProcessorCentralService"
-        var file = File(filesDir,"MultiprocessDatabase.txt")
         Log.i("MultiprocessService","New route is as follows: ${newRoute}")
-        var databaseJSON = JSONObject()
-        var recordJSON = JSONObject()
         recordJSON.put(ROUTE,newRoute)
-        databaseJSON.put(intent.getIntExtra(MULTIPROCESS_ID,0).toString(),recordJSON)
+        databaseJSON.put(intent.getIntExtra(MULTIPROCESS_ID,-1).toString(),recordJSON)
     }
 
     // I need a way to store & aggregate all info. I think a record Jar (or JSON) will work just fine
     // I don't like that updateID count itself is has handleAndSend
     fun updateIDCount(intent: Intent): Boolean{
-        var id = intent.getStringExtra(MULTIPROCESS_ID)
-        var sequenceNumber = intent.getStringExtra(SEQUENCE_NUMBER)
+        Log.i("MultiprocessService","Updating ID count")
+        var id = intent.getIntExtra(MULTIPROCESS_ID,-1)
+        var sequenceNumber = intent.getIntExtra(SEQUENCE_NUMBER,-1)
         var file = File(filesDir,"MulitprocessDatabase.txt")
         var databaseJSON = JSONObject(file.readText())
-        var recordJSON = databaseJSON.getJSONObject(id)
+        try {
+            var recordJSON = databaseJSON.getJSONObject(id.toString())
 
-        // if sequenceNumber == unique,
-        var count = recordJSON.getInt("COUNT")
-        if(count-- == 0){
-            return true
-        }else {
-            recordJSON.put("COUNT",count)
+            // if sequenceNumber == unique,
+            var count = recordJSON.getInt("COUNT")
+            if (count-- <= 1) {
+                Log.i("MultiprocessService", "This was the last intent for the multiprocess")
+                return true
+            } else {
+                Log.i("MultiprocessService", "Logging received intent")
+                recordJSON.put("COUNT", count)
             }
-        databaseJSON.put(id,recordJSON.toString())
-        file.writeText(databaseJSON.toString())
+            databaseJSON.put(id.toString(), recordJSON.toString())
+            file.writeText(databaseJSON.toString())
+        }catch(exception: Exception){
+            Log.e("MultiprocessService","A value was not in the file!")
+        }
         return false
     }
 
