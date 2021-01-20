@@ -36,11 +36,5 @@
             android:name=".PostOffice"
             android:process=":PostOffice"
             android:exported="true"/>
-        <service
-            android:name=".CoreKaldiService"
-            android:exported="true"
-            android:process=":CoreKaldiService"
-            android:foregroundServiceType="microphone"
-            android:permission="android.permission.RECORD_AUDIO"/>
     </application>
 </manifest>

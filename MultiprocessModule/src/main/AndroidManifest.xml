@@ -15,7 +15,6 @@
     <application>
         <service
             android:name=".MultiprocessService"
-            android:enabled="true"
             android:exported="true"/>
     </application>
 </manifest>

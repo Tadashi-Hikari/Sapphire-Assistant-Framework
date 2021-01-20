@@ -15,16 +15,15 @@
     <application>
         <service
             android:name="com.example.processormodule.InstallService"
-            android:enabled="true"
-            android:exported="true">
-        </service>
-        <service android:name="com.example.processormodule.ProcessorCentralService"
-            android:enabled="true"
-            android:exported="true">
-        </service>
-        <service android:name="com.example.processormodule.EntityProcessing"
-            android:exported="true"
             android:enabled="true">
         </service>
+        <service android:name="com.example.processormodule.ProcessorCentralService"
+            android:enabled="true">
+        </service>
+        <service android:name="com.example.processormodule.EntityProcessing"
+            android:exported="true">
+        </service>
+        <service android:name=".ProcessorTrainingService"
+            android:exported="true"/>
     </application>
 </manifest>
