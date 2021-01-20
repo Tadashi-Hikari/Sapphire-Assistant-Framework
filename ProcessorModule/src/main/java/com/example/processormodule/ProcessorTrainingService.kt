@@ -20,12 +20,16 @@ class ProcessorTrainingService: SAFService(){
 
     // Does this need to check the intent somehow?
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+        Log.i("ProcessorTrainingService","Training intent received")
+        Log.i("ProcessorTrainingService","Data keys are as follows: ${intent.getStringArrayListExtra(DATA_KEYS)}")
+        // This is a terribly named function. It is converting the strings to files, supposedly
         var processorFiles = getProcessorFilesFromString(intent)
         var intentFiles = mutableListOf<File>()
 
         // Training is expecting differently formatted information, in the form of
         // Android intent bundles. Should this be the case?
         for(name in processorFiles.keys){
+            Log.i("ProcessorTrainingService","Key: ${name}")
             if(name.endsWith(".intent")){
                 intentFiles.add(processorFiles.get(name)!!)
             }else{
@@ -34,6 +38,7 @@ class ProcessorTrainingService: SAFService(){
             }
         }
 
+        Log.i("ProcessorTrainingService","All of the relavent files were loaded. Combining")
         // This is where the combination happens
         var trainingFile = combineFiles(intentFiles)
         trainIntentClassifier(trainingFile)
@@ -47,7 +52,7 @@ class ProcessorTrainingService: SAFService(){
         var files = mutableMapOf<String,File>()
 
         try{
-            var fileNames = intent.getStringArrayExtra("assistant.framework.processor.DATA_FILENAMES")!!
+            var fileNames = intent.getStringArrayExtra(DATA_KEYS)!!
             for(fileName in fileNames){
                 var lines = intent.getStringArrayExtra(fileName)!!
                 // This seems poorly constructed
@@ -60,11 +65,14 @@ class ProcessorTrainingService: SAFService(){
         return files
     }
 
+
+    // Currently, this isn't run because of the keys situation
     fun combineFiles(files: List<File>): File{
         var combinedFile = File.createTempFile("trainingFile",".tmp")
 
         for(file in files){
             for(line in file.readLines()){
+                Log.i("ProcessorTrainingService","Line being added: ${line}")
                 // I need to be careful. I could be adding unneeded white space
                 combinedFile.writeText("${line}/n")
             }
