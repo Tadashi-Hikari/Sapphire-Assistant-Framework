@@ -2,16 +2,23 @@ package com.example.multiprocessmodule
 
 import android.content.Intent
 import android.os.IBinder
+import android.os.Message
 import android.util.JsonReader
 import android.util.Log
 import com.example.componentframework.SAFService
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 
 /**
- * I may need to queue the intents coming in, so that I don't run in to database issues.
+ * I may need to queue this module, to prevent an intent from coming in the same time its file is
+ * being read.
+ *
+ * I really need to redesign this module. The text is sent back under data_keys, but MESSAGE is not
+ * used. I feel that this is unexpected compared to all other modules, and doesn't follow a textual
+ * command line example
  */
 
 class MultiprocessService: SAFService(){
@@ -19,6 +26,8 @@ class MultiprocessService: SAFService(){
     val MULTIPROCESS_ID = "assistant.framework.multiprocess.protocol.ID"
     val SEQUENCE_NUMBER = "assistant.framework.multiprocess.protocol.SEQUENCE_NUMBER"
     val SEQUENCE_TOTAL = "assistant.framework.multiprocess.column.SEQUENCE_TOTAL"
+    var PRIMARY_KEY = "assistant.framewokr.multiprocess.column.PRIMARY_KEY"
+
     lateinit var databaseFile: File
     lateinit var JSONDatabase: JSONObject
 
@@ -51,19 +60,23 @@ class MultiprocessService: SAFService(){
     }
 
     fun sendFinalData(intent: Intent){
-        var JSONRecord = JSONDatabase.getJSONObject(intent.getStringExtra(MULTIPROCESS_ID))
+        // The multiprocess record name is the multiprocess ID
+        var JSONMultiprocessRecord = JSONDatabase.getJSONObject(intent.getStringExtra(MULTIPROCESS_ID))
         var ignore = listOf(SEQUENCE_NUMBER,SEQUENCE_TOTAL,ROUTE)
         var message = ""
         var intent = Intent()
 
-        // I don't like how this is laid out. It's kind of a bitch. maybe I should have an identifier
-        // to make a regex easy. I'm hesitent to store another nested JSON
-        for(key in JSONRecord.keys()){
+        // This is changing. each JSONRecord will have a PRIMARY_KEY category, which I'll just check for
+        for(key in JSONMultiprocessRecord.keys()){
+            // Load the record for the key
             if(ignore.contains(key) == false){
-                message += JSONRecord.getString(key)
+                // load the individual returned intents using their sequence key
+                var JSONIntentRecord = JSONMultiprocessRecord.getJSONObject(key)
+                // Load the message payload for that specific intent
+                message += JSONIntentRecord.getString(MESSAGE)
             }
         }
-        intent.putExtra(ROUTE,JSONRecord.getString(ROUTE))
+        intent.putExtra(ROUTE,JSONMultiprocessRecord.getString(ROUTE))
         intent.putExtra(MESSAGE,message)
         // This needs to be accountet for, not hardcoded
         intent.setClassName(this,"com.example.processormodule.ProcessorTrainingService")
@@ -72,24 +85,37 @@ class MultiprocessService: SAFService(){
 
     // Shiiiiit. This is about to get a lot more complex
     fun evaluateMultiprocessIntent(intent: Intent){
-        var JSONRecord = JSONObject()
+        var JSONMultiprocessRecord = JSONObject()
         try {
-             JSONRecord = JSONDatabase.getJSONObject(intent.getStringExtra(MULTIPROCESS_ID))
+            // Get the multiprocess record for the multiprocess id
+            JSONMultiprocessRecord = JSONDatabase.getJSONObject(intent.getStringExtra(MULTIPROCESS_ID))
         }catch(exception: Exception){
             Log.e("MultiprocessService","There was an error loading the JSONRecord")
         }
+        // get its sequence id
         var sequenceNumber = intent.getIntExtra(SEQUENCE_NUMBER, -1).toString()
-        var sequeceTotal = JSONRecord.getInt(SEQUENCE_TOTAL)
+        // get the total number of sequences
+        var sequeceTotal = JSONMultiprocessRecord.getInt(SEQUENCE_TOTAL)
 
-        if(JSONRecord.isNull(sequenceNumber)){
-            // This maps the unique repsonses of each intent
-            JSONRecord.put(sequenceNumber,intent.getStringExtra(MESSAGE))
+        // if there is no record for the sequence number
+        if(JSONMultiprocessRecord.isNull(sequenceNumber)){
+            // Then it is unique. Save the data
+            var JSONIntentRecord = JSONObject()
+            // make the intent record
+            JSONIntentRecord.put(MESSAGE,intent.getStringExtra(MESSAGE))
+            // save the intent record with its sequence number as its unique ID
+            JSONMultiprocessRecord.put(sequenceNumber,JSONIntentRecord)
+            // if it is the last in the sequence, process all the data out
             if(sequeceTotal-- <= 1){
-                Log.i("MultiprocessService","This is the last intent for this multiprocess. Sending all the data down the line")
+                Log.i("MultiprocessService","This is the last intent for multiprocess ${intent.getStringExtra(MULTIPROCESS_ID)}. Sending all the data down the line")
+                databaseFile.writeText(JSONDatabase.toString())
                 sendFinalData(intent)
+            // else just wait around for the rest
             }else{
                 Log.i("MultiprocessService","Logged the multiprocess intent data. Now waiting for the rest")
-                JSONRecord.put(SEQUENCE_TOTAL,sequeceTotal)
+                // Log how many more are being waited for
+                JSONMultiprocessRecord.put(SEQUENCE_TOTAL,sequeceTotal)
+                databaseFile.writeText(JSONDatabase.toString())
             }
         }else{
             // Its a duplicate. Ignore it
@@ -102,16 +128,17 @@ class MultiprocessService: SAFService(){
         // Get the ID for this multiprocess
         var id = getNewID()
         // Create an empty record for this multiprocess
-        var JSONRecord = JSONObject()
-        JSONRecord.put(MULTIPROCESS_ID,id)
+        var JSONMultiprocessRecord = JSONObject()
         // Put the ID in the outgoing intent
         var outgoingIntent = Intent(initialIntent).putExtra(MULTIPROCESS_ID,id)
         outgoingIntent.setAction(ACTION_SAPPHIRE_MODULE_REQUEST_DATA)
 
         var routes = routeParser(initialIntent)
         var multiprocessRoute = routes.first.split(",")
-        JSONRecord.put(SEQUENCE_TOTAL,multiprocessRoute.size)
-        JSONRecord.put(ROUTE,routes.second)
+        // This is how many individual Intents will be coming back for this multiprocess
+        JSONMultiprocessRecord.put(SEQUENCE_TOTAL,multiprocessRoute.size)
+        // This is the route for it to traverse once all the data comes back
+        JSONMultiprocessRecord.put(ROUTE,routes.second)
         for(route in multiprocessRoute){
             // I am using ; as the delimeter to separte packageName;className
             var packageClass = route.split(";")
@@ -121,11 +148,11 @@ class MultiprocessService: SAFService(){
             outgoingIntent.putExtra(SEQUENCE_NUMBER,multiprocessRoute.indexOf(route))
             // So the retrieveal skill knows to return here
             outgoingIntent.putExtra(ROUTE,"${packageName};com.example.multiprocessmodule.MultiprocessService")
-            Log.i("MultiprocessService","Starting outgoing intent")
+            Log.i("MultiprocessService","Starting outgoing intent for MULTIPROCESS_ID ${id}")
             startService(outgoingIntent)
         }
-        // The ID can be used to look up the record, so thats its primary key
-        JSONDatabase.put(id,JSONRecord)
+        // The ID can be used to look up the record, so that its key
+        JSONDatabase.put(id,JSONMultiprocessRecord)
         databaseFile.writeText(JSONDatabase.toString())
     }
 

@@ -41,19 +41,6 @@ class SkillInstallService: InstallHelper(){
             Log.i("SkillInstallService","Data request received. gathering data")
             // This is the same as outgoingIntent
             var dataRequestIntent = Intent(intent)
-            // This could be reeeeeal wonky. Keep an eye out on it. Oh, this is expecting the training service to request the keys? That's stupid
-            // The processor wouldn't know what data this thing has. at the MOST it should be a contingency, and otherwise just send it ALL out
-            /**
-            for(key in intent.getStringArrayListExtra(DATA_KEYS)!!){
-                if(key == "intent") {
-                    // This adds the file name as the key. i don't like how confusing the multi use is. Maybe just add some more protocol
-                    var data = retrieveData()
-                    for (datum in data) {
-                        dataRequestIntent.putExtra(datum.key, datum.value)
-                    }
-                }
-            }
-            **/
             dataRequestIntent.putStringArrayListExtra(DATA_KEYS,intentFiles)
             // This is poorly coded. It should retrieve the data per file, not in bulk
             var data = retrieveData()
@@ -62,7 +49,7 @@ class SkillInstallService: InstallHelper(){
             }
             Log.i("SkillInstallService","Sending back the data")
             dataRequestIntent.setClassName(this,"com.example.multiprocessmodule.MultiprocessService")
-            // Why did I hardcode this? This should be sent with the multiprocess service, and just returned
+            // Why did I hardcode this?
             dataRequestIntent.putExtra("assistant.framework.multiprocess.protocol.SEQUENCE_NUMBER",2)
             Log.i("SkillInstallService","Keys being sent back are as follows: ${dataRequestIntent.getStringArrayListExtra(DATA_KEYS)!!}")
             startService(dataRequestIntent)
