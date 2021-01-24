@@ -62,25 +62,30 @@ class MultiprocessService: SAFService(){
     fun sendFinalData(intent: Intent){
         // The multiprocess record name is the multiprocess ID
         var JSONMultiprocessRecord = JSONDatabase.getJSONObject(intent.getStringExtra(MULTIPROCESS_ID))
-        var ignore = listOf(SEQUENCE_NUMBER,SEQUENCE_TOTAL,ROUTE)
-        var message = ""
-        var intent = Intent()
+        var dataKeys = arrayListOf<String>()
+        var outgoingIntent = Intent()
 
         // This is changing. each JSONRecord will have a PRIMARY_KEY category, which I'll just check for
         for(key in JSONMultiprocessRecord.keys()){
             // Load the record for the key
-            if(ignore.contains(key) == false){
-                // load the individual returned intents using their sequence key
+            if(key.contains(MULTIPROCESS_ID)){
                 var JSONIntentRecord = JSONMultiprocessRecord.getJSONObject(key)
-                // Load the message payload for that specific intent
-                message += JSONIntentRecord.getString(MESSAGE)
+                dataKeys.add(JSONIntentRecord.getString(DATA_KEYS))
+                for(dataKey in dataKeys){
+                    outgoingIntent.putExtra(dataKey,JSONIntentRecord.getString(dataKey))
+                }
+                // Do I need to copy any data other than the DATA_KEYs? I may need to
+            }else{
+                // Copy whatever original data was associated w/ the intent
+                outgoingIntent.putExtra(key,JSONMultiprocessRecord.getString(key))
             }
         }
-        intent.putExtra(ROUTE,JSONMultiprocessRecord.getString(ROUTE))
-        intent.putExtra(MESSAGE,message)
-        // This needs to be accountet for, not hardcoded
-        intent.setClassName(this,"com.example.processormodule.ProcessorTrainingService")
-        startService(intent)
+        //outgoingIntent.putExtra(ROUTE,JSONMultiprocessRecord.getString(ROUTE))
+        //outgoingIntent.putExtra(MESSAGE,message)
+        // This needs to be accountet for, not hardcoded. It would just be the next in the pipeline
+        // proper
+        outgoingIntent.setClassName(this,"com.example.processormodule.ProcessorTrainingService")
+        startService(outgoingIntent)
     }
 
     // Shiiiiit. This is about to get a lot more complex
@@ -102,9 +107,16 @@ class MultiprocessService: SAFService(){
             // Then it is unique. Save the data
             var JSONIntentRecord = JSONObject()
             // make the intent record
-            JSONIntentRecord.put(MESSAGE,intent.getStringExtra(MESSAGE))
+            JSONIntentRecord.put(DATA_KEYS,intent.getStringArrayListExtra(DATA_KEYS))
+            for(dataKey in intent.getStringArrayListExtra(DATA_KEYS)!!){
+                //Bold to assume that it will only ever be data keys
+                // I need to do something to account for duplicate names
+                JSONIntentRecord.put(dataKey,intent.getStringExtra(dataKey))
+            }
             // save the intent record with its sequence number as its unique ID
-            JSONMultiprocessRecord.put(sequenceNumber,JSONIntentRecord)
+            var id = intent.getStringExtra(MULTIPROCESS_ID)
+            // Should I change anything about how this is saved?
+            JSONMultiprocessRecord.put(id+sequenceNumber,JSONIntentRecord)
             // if it is the last in the sequence, process all the data out
             if(sequeceTotal-- <= 1){
                 Log.i("MultiprocessService","This is the last intent for multiprocess ${intent.getStringExtra(MULTIPROCESS_ID)}. Sending all the data down the line")
@@ -113,7 +125,7 @@ class MultiprocessService: SAFService(){
             // else just wait around for the rest
             }else{
                 Log.i("MultiprocessService","Logged the multiprocess intent data. Now waiting for the rest")
-                // Log how many more are being waited for
+                // update the counter
                 JSONMultiprocessRecord.put(SEQUENCE_TOTAL,sequeceTotal)
                 databaseFile.writeText(JSONDatabase.toString())
             }
