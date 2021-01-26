@@ -53,7 +53,7 @@ class MultiprocessSimplified: SAFService(){
         // Should this be JSONMultiprocessRecord, not JSONDatabase?
         // See sendFinalData for this in action
         JSONDatabase.put(MULTIPROCESS_ID+SEQUENCE_NUMBER, JSONIntentRecord)
-        databaseFile.writeText(JSONDatabase.toString())
+        //databaseFile.writeText(JSONDatabase.toString())
     }
 
     fun sendFinalData(intent: Intent){

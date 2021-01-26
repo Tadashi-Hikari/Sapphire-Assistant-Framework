@@ -60,19 +60,25 @@ class MultiprocessService: SAFService(){
     }
 
     fun sendFinalData(intent: Intent){
+        var id = intent.getStringExtra(MULTIPROCESS_ID)
         // The multiprocess record name is the multiprocess ID
-        var JSONMultiprocessRecord = JSONDatabase.getJSONObject(intent.getStringExtra(MULTIPROCESS_ID))
+        // may need to read the file instead
+        var JSONMultiprocessRecord = JSONDatabase.getJSONObject(id)
         var dataKeys = arrayListOf<String>()
         var outgoingIntent = Intent()
+        // This is taking it from the last intent. This WILL cause an error where only one intents keys are gotten
+        outgoingIntent.putStringArrayListExtra(DATA_KEYS, intent.getStringArrayListExtra(DATA_KEYS)!!)
 
         // This is changing. each JSONRecord will have a PRIMARY_KEY category, which I'll just check for
         for(key in JSONMultiprocessRecord.keys()){
             // Load the record for the key
-            if(key.contains(MULTIPROCESS_ID)){
+            if(key.contains(id.toString())){
                 var JSONIntentRecord = JSONMultiprocessRecord.getJSONObject(key)
-                dataKeys.add(JSONIntentRecord.getString(DATA_KEYS))
+                var dataKeyString = JSONIntentRecord.getString(DATA_KEYS)
+                dataKeyString = dataKeyString.substring(1,dataKeyString.length-1)
+                dataKeys.addAll(dataKeyString.split(","))
                 for(dataKey in dataKeys){
-                    outgoingIntent.putExtra(dataKey,JSONIntentRecord.getString(dataKey))
+                    outgoingIntent.putExtra(dataKey.trim(),JSONIntentRecord.getString(dataKey.trim()))
                 }
                 // Do I need to copy any data other than the DATA_KEYs? I may need to
             }else{
@@ -108,15 +114,18 @@ class MultiprocessService: SAFService(){
             var JSONIntentRecord = JSONObject()
             // make the intent record
             JSONIntentRecord.put(DATA_KEYS,intent.getStringArrayListExtra(DATA_KEYS))
+            Log.i("MultiprocessService","Getting DATA_KEYS from intent. Keys are ${intent.getStringArrayListExtra(DATA_KEYS)}")
             for(dataKey in intent.getStringArrayListExtra(DATA_KEYS)!!){
+                Log.i("MultiprocessService","Logging key ${dataKey}, value ${intent.getStringArrayListExtra(dataKey)}")
                 //Bold to assume that it will only ever be data keys
                 // I need to do something to account for duplicate names
-                JSONIntentRecord.put(dataKey,intent.getStringExtra(dataKey))
+                JSONIntentRecord.put(dataKey,intent.getStringArrayListExtra(dataKey))
             }
             // save the intent record with its sequence number as its unique ID
             var id = intent.getStringExtra(MULTIPROCESS_ID)
             // Should I change anything about how this is saved?
             JSONMultiprocessRecord.put(id+sequenceNumber,JSONIntentRecord)
+            JSONDatabase.put(id,JSONMultiprocessRecord)
             // if it is the last in the sequence, process all the data out
             if(sequeceTotal-- <= 1){
                 Log.i("MultiprocessService","This is the last intent for multiprocess ${intent.getStringExtra(MULTIPROCESS_ID)}. Sending all the data down the line")
@@ -127,6 +136,7 @@ class MultiprocessService: SAFService(){
                 Log.i("MultiprocessService","Logged the multiprocess intent data. Now waiting for the rest")
                 // update the counter
                 JSONMultiprocessRecord.put(SEQUENCE_TOTAL,sequeceTotal)
+                JSONDatabase.put(id,JSONMultiprocessRecord)
                 databaseFile.writeText(JSONDatabase.toString())
             }
         }else{
