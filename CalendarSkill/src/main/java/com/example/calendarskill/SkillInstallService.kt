@@ -45,6 +45,7 @@ class SkillInstallService: InstallHelper(){
             // This is poorly coded. It should retrieve the data per file, not in bulk
             var data = retrieveData()
             for(datum in data){
+                Log.i("SkillInstallService","Inserting key: ${datum.key}, and value: ${datum.value}")
                 dataRequestIntent.putExtra(datum.key,datum.value)
             }
             Log.i("SkillInstallService","Sending back the data")

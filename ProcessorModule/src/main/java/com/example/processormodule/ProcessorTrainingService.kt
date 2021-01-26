@@ -52,9 +52,11 @@ class ProcessorTrainingService: SAFService(){
         var files = mutableMapOf<String,File>()
 
         try{
-            var fileNames = intent.getStringArrayExtra(DATA_KEYS)!!
+            var fileNames = intent.getStringArrayListExtra(DATA_KEYS)!!
             for(fileName in fileNames){
-                var lines = intent.getStringArrayExtra(fileName)!!
+                var lineString = intent.getStringExtra(fileName)!!
+                lineString = lineString.removeSurrounding("[","]")
+                var lines = lineString.split(",")
                 // This seems poorly constructed
                 files.put(fileName,convertStringsToFile(fileName, lines.toList()))
             }
