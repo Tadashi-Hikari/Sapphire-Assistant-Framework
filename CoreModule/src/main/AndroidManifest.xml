@@ -6,7 +6,6 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
 
     <application
         android:allowBackup="true"
@@ -30,7 +29,8 @@
             android:exported="true"/>
         <service
             android:name=".CoreInstallService"
-            android:exported="true"/>
+            android:exported="true"
+            android:permission="android.permission.QUERY_ALL_PACKAGES"/>
         <!-- This should probably run in a separate process, so the system doesn't get bottlenecked -->
         <service
             android:name=".PostOffice"
