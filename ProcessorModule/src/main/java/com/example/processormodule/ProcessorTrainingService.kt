@@ -10,6 +10,7 @@ import android.util.Log
 import com.example.componentframework.SAFService
 import edu.stanford.nlp.classify.ColumnDataClassifier
 import java.io.File
+import java.io.ObjectOutputStream
 import java.util.*
 
 class ProcessorTrainingService: SAFService(){
@@ -29,8 +30,8 @@ class ProcessorTrainingService: SAFService(){
         // Training is expecting differently formatted information, in the form of
         // Android intent bundles. Should this be the case?
         for(name in processorFiles.keys){
-            Log.i("ProcessorTrainingService","Key: ${name}")
             if(name.endsWith(".intent")){
+                Log.i("ProcessorTrainingService","Key: ${name}, Value: ${processorFiles.get(name)}")
                 intentFiles.add(processorFiles.get(name)!!)
             }else{
                 // I don't like this way of handling it... Maybe fix it later? More generic?
@@ -42,7 +43,6 @@ class ProcessorTrainingService: SAFService(){
         // This is where the combination happens
         var trainingFile = combineFiles(intentFiles)
         trainIntentClassifier(trainingFile)
-
         return super.onStartCommand(intent, flags, startId)
     }
 
@@ -53,12 +53,13 @@ class ProcessorTrainingService: SAFService(){
 
         try{
             var fileNames = intent.getStringArrayListExtra(DATA_KEYS)!!
+            Log.i("ProcessorTrainingService","Filenames are as follows: ${fileNames}")
             for(fileName in fileNames){
                 var lineString = intent.getStringExtra(fileName)!!
                 lineString = lineString.removeSurrounding("[","]")
                 var lines = lineString.split(",")
                 // This seems poorly constructed
-                files.put(fileName,convertStringsToFile(fileName, lines.toList()))
+                files.put(fileName,convertStringsToFile(fileName, lines))
             }
         }catch(exception: Exception){
             Log.e("Temporary","Some kind of error")
@@ -70,25 +71,24 @@ class ProcessorTrainingService: SAFService(){
 
     // Currently, this isn't run because of the keys situation
     fun combineFiles(files: List<File>): File{
-        var combinedFile = File.createTempFile("trainingFile",".tmp")
+        var combinedFile = File.createTempFile("trainingFile",".tmp", cacheDir)
 
         for(file in files){
             for(line in file.readLines()){
-                Log.i("ProcessorTrainingService","Line being added: ${line}")
+                Log.i("ProcessorTrainingService","Line being added: ${line.trim()}")
                 // I need to be careful. I could be adding unneeded white space
-                combinedFile.writeText("${line}/n")
+                combinedFile.appendText("${line.trim()}\n")
             }
         }
-
+        //combinedFile.
         return combinedFile
     }
 
     fun convertStringsToFile(fileName: String, lines: List<String>): File{
-        var tempFile = File.createTempFile(fileName,".tmp")
+        var tempFile = File.createTempFile(fileName,".tmp", cacheDir)
         for(line in lines){
-            tempFile.writeText("${line}\n")
+            tempFile.appendText("${line.trim()}\n")
         }
-
         return tempFile
     }
 
@@ -107,7 +107,7 @@ class ProcessorTrainingService: SAFService(){
         properties.setProperty("goldAnswerColumn","0")
         properties.setProperty("useNB","true")
         //props.setProperty("useClass","true")
-        properties.setProperty("useClassFeatures","true")
+        properties.setProperty("useClassFeature","true")
         //props.setProperty("1.splitWordsRegexp","false")
         //props.setProperty("1.splitWordsTokenizerRegexp","false")
         properties.setProperty("1.splitWordsWithPTBTokenizer","true")
