@@ -30,7 +30,7 @@ class CoreCentralActivity: Activity(){
     inner class CoreCentralActivityReceiver: BroadcastReceiver(){
         override fun onReceive(context: Context?, intent: Intent?) {
             Log.i("CoreCentralActivityReceiver","Received a broadcast" )
-            if(intent?.action == "UPDATE"){
+            if((intent != null) and (intent?.action == "UPDATE")){
                 Log.i("CoreCentralActivityReceiver","Received an UPDATE broadcast" )
                 var utterance = intent?.getStringExtra("HYPOTHESIS")
                 if(utterance != null) {

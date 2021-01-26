@@ -35,7 +35,7 @@ class ProcessorTrainingService: SAFService(){
                 intentFiles.add(processorFiles.get(name)!!)
             }else{
                 // I don't like this way of handling it... Maybe fix it later? More generic?
-                Log.v("Temporary","This processor doesnt use this type of file ")
+                Log.v("Temporary","This processor doesnt use this type of file")
             }
         }
 
@@ -118,7 +118,7 @@ class ProcessorTrainingService: SAFService(){
     }
 
     fun saveClassifier(classifier: ColumnDataClassifier){
-        val fileName = File(this.filesDir,"Intent.classifer")
+        val fileName = File(this.filesDir,"Intent.classifier")
         classifier.serializeClassifier(fileName.canonicalPath)
     }
 }
