@@ -102,6 +102,15 @@ class ProcessorTrainingService: SAFService(){
         saveClassifier(classifier)
     }
 
+    fun createEntityProperties(): Properties{
+        var properties = Properties()
+
+        //properties.setProperty()
+
+        return properties
+    }
+
+    // This shouldn't be hardcoded, and should be moved to a file
     fun createProperties(): Properties{
         var properties = Properties()
         properties.setProperty("goldAnswerColumn","0")
