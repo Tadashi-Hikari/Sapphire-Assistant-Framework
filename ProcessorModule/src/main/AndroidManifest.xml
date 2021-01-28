@@ -18,12 +18,10 @@
             android:enabled="true">
         </service>
         <service android:name="com.example.processormodule.ProcessorCentralService"
-            android:enabled="true">
-        </service>
-        <service android:name="com.example.processormodule.EntityProcessing"
-            android:exported="true">
-        </service>
+            android:enabled="true"/>
         <service android:name=".ProcessorTrainingService"
+            android:exported="true"/>
+        <service android:name=".BracketExpander"
             android:exported="true"/>
     </application>
 </manifest>
