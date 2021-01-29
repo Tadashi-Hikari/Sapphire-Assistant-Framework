@@ -33,6 +33,13 @@
                 android:layout_height="wrap_content"
                 android:text="Play" />
 
+            <Button
+                android:id="@+id/button3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="reset"
+                android:text="Reset" />
+
             <TextView
                 android:id="@+id/utteranceText"
                 android:layout_width="312dp"

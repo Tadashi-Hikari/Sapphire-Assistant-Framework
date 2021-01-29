@@ -40,6 +40,14 @@ class CoreCentralActivity: Activity(){
         }
     }
 
+    fun reset(view: View){
+        var resetIntent = Intent().setClassName(this,"com.example.processormodule.ProcessorCentralService")
+        resetIntent.setAction("DELETE_CLASSIFIER")
+        startService(resetIntent)
+        var foregroundService = Intent().setClassName(this,"com.example.sapphireassistantframework.CoreService")
+        stopService(foregroundService)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_core_central)

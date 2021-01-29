@@ -47,7 +47,7 @@ class EntityTrainingService: SAFService(){
 		// It is adding a label to each thing, I think... This is based on how
 		// I'd load a pre-trained model
 		var classifier = CRFClassifier<CoreLabel>(properties)
-		classifier.train(trainingFile.canonicalPath)
+		classifier.train(trainingFile) //.canonicalPath)
 
 	}
 

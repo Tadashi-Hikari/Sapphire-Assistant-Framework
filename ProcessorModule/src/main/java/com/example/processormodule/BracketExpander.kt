@@ -30,30 +30,33 @@ class BracketExpander: Service(){
 
     // This is meant to be recursive
     fun parseExpression(sentence: String): List<String>{
+        Log.i("BracketExapnder","Sentence to expand: ${sentence}")
         var sentenceList = mutableListOf<String>()
-        var currentSentence = ""
+        var currentSentence = mutableListOf<String>()
         for(character in sentence.withIndex()){
+            // The error is that it isn't advancing forward at all
             if(character.value == '('){
                 // The length of the subexpression is defined in the recursion
-                var subexpression = parseExpression(sentence.substring(character.index))
+                var subexpression = parseExpression(sentence.substring(character.index+1))
                 // This is so that I don't break apart a bracket that isn't related to the skill.
                 var normalBrackets = false
                 if(subexpression.contains("|") == false){
                     normalBrackets = true
-                    currentSentence+="("
+                    currentSentence.add("(")
                 }
-                currentSentence+=subexpression
+                currentSentence.addAll(subexpression)
                 if(normalBrackets == true){
-                    currentSentence+=")"
-                }
+        }
             }else if(character.value == '|'){
+                // I don't really understand the order here, but that's how it is in padatious, so.....
                 // Begin parsing a new sentence
-                currentSentence = ""
-                sentenceList.add(currentSentence)
+                Log.i("Bracket","what is cleared ${currentSentence}")
+                currentSentence = mutableListOf()
+                sentenceList.addAll(currentSentence)
             }else if(character.value == ')') {
                 break
             }else{
-                currentSentence+=character
+                currentSentence.add(character.value.toString())
             }
         }
         Log.i("BracketExpander","Expanded sentences are: ${sentenceList}")

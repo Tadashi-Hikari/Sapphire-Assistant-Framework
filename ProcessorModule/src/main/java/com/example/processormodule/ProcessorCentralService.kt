@@ -13,13 +13,22 @@ class ProcessorCentralService: SAFService(){
         TODO("Not yet implemented")
     }
 
-    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+    fun deleteClassifier(){
+        var file = File(filesDir,"Intent.classifier")
+        file.delete()
+    }
+
+    override fun onStartCommand(startIntent: Intent?, flags: Int, startId: Int): Int {
         try {
+            var intent = startIntent!!
             Log.i("ProcessorCentralService", "Data processing intent received")
             if (intent.action == ACTION_SAPPHIRE_TRAIN) {
                 intent.setClassName(this, "com.example.processormodule.ProcessorTrainingService")
                 // Send it to the training service
                 startService(intent)
+            // This is a temporary hack
+            }else if(intent.action == "DELETE_CLASSIFIER"){
+                deleteClassifier()
             } else if (intent.hasExtra(MESSAGE)) {
                 // Default to the purpose of the processor
                 var text = intent.getStringExtra(MESSAGE)!!
@@ -29,7 +38,7 @@ class ProcessorCentralService: SAFService(){
             Log.e("ProcessorCentralService","Something went wrong receiving the intent")
         }
 
-        return super.onStartCommand(intent, flags, startId)
+        return super.onStartCommand(startIntent, flags, startId)
     }
 
     fun process(text: String){
