@@ -2,11 +2,8 @@ package com.example.multiprocessmodule
 
 import android.content.Intent
 import android.os.IBinder
-import android.os.Message
-import android.util.JsonReader
 import android.util.Log
 import com.example.componentframework.SAFService
-import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 import kotlin.math.absoluteValue
@@ -36,8 +33,9 @@ class MultiprocessService: SAFService(){
         JSONDatabase = loadDatabase()
     }
 
-    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+    override fun onStartCommand(startIntent: Intent?, flags: Int, startId: Int): Int {
         try{
+            var intent = startIntent!!
             Log.i("MultiprocessService","MultiprocessService intent received")
             if(intent.hasExtra(MULTIPROCESS_ID)){
                 if(JSONDatabase.isNull(intent.getStringExtra(MULTIPROCESS_ID))){
@@ -56,7 +54,7 @@ class MultiprocessService: SAFService(){
             Log.e("MultiprocessService","There was an error with the incoming intent")
             Log.e("MultiprocessService",exception.toString())
         }
-        return super.onStartCommand(intent, flags, startId)
+        return super.onStartCommand(startIntent, flags, startId)
     }
 
     fun sendFinalData(intent: Intent){

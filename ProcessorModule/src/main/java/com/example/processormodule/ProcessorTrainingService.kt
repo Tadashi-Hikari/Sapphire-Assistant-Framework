@@ -39,7 +39,7 @@ class ProcessorTrainingService: SAFService(){
             }
         }
 
-        Log.i("ProcessorTrainingService","All of the relavent files were loaded. Combining")
+        Log.i("ProcessorTrainingService","All of the relevant files were loaded. Combining")
         // This is where the combination happens
         var trainingFile = combineFiles(intentFiles)
         trainIntentClassifier(trainingFile)
@@ -58,6 +58,14 @@ class ProcessorTrainingService: SAFService(){
                 var lineString = intent.getStringExtra(fileName)!!
                 lineString = lineString.removeSurrounding("[","]")
                 var lines = lineString.split(",")
+                // This is for testing the BracketExpander. Probably not the best spot for long term
+                var bracketIntent = Intent().setClassName(this,"com.example.processormodule.BracketExpander")
+                var bracketSentences = arrayListOf<String>()
+                for(line in lines){
+                    bracketSentences.add(line)
+                }
+                bracketIntent.putStringArrayListExtra("BRACKET_TEST",bracketSentences)
+                startService(bracketIntent)
                 // This seems poorly constructed
                 files.put(fileName,convertStringsToFile(fileName, lines))
             }
