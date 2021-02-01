@@ -67,7 +67,7 @@ class ProcessorTrainingService: SAFService(){
                 bracketIntent.putStringArrayListExtra("BRACKET_TEST",bracketSentences)
                 startService(bracketIntent)
                 // This seems poorly constructed
-                files.put(fileName,convertStringsToFile(fileName, lines))
+                //files.put(fileName,convertStringsToFile(fileName, lines))
             }
         }catch(exception: Exception){
             Log.e("Temporary","Some kind of error")
