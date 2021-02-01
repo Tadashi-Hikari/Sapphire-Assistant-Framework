@@ -4,6 +4,7 @@ import android.app.Service
 import android.content.Intent
 import android.os.IBinder
 import android.util.Log
+import kotlin.math.exp
 
 /**
  * This is fairly directly copied from Mycrofts Padatatious parser. Why reinvent the wheel?
@@ -15,52 +16,73 @@ import android.util.Log
  */
 
 class BracketExpander: Service(){
+
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         Log.i("BracketExpander","BracketExpander intent received")
         try {
             var sentences = intent.getStringArrayListExtra("BRACKET_TEST")!!
-            for(sentence in sentences){
-                parseExpression(sentence)
-            }
+            parseSentenceList(sentences)
         }catch(exception: Exception){
             Log.e("BracketExpander","There was an error with the intent!")
         }
         return super.onStartCommand(intent, flags, startId)
     }
 
-    // This is meant to be recursive
-    fun parseExpression(sentence: String): List<String>{
-        Log.i("BracketExapnder","Sentence to expand: ${sentence}")
-        var sentenceList = mutableListOf<String>()
-        var currentSentence = mutableListOf<String>()
-        for(character in sentence.withIndex()){
-            // The error is that it isn't advancing forward at all
-            if(character.value == '('){
-                // The length of the subexpression is defined in the recursion
-                var subexpression = parseExpression(sentence.substring(character.index+1))
-                // This is so that I don't break apart a bracket that isn't related to the skill.
-                var normalBrackets = false
-                if(subexpression.contains("|") == false){
-                    normalBrackets = true
-                    currentSentence.add("(")
+    // Recursion is probably still important
+    fun parseSentenceList(listOfStrings: ArrayList<String>) {
+        for (sentence in listOfStrings) {
+            // Add them all to the list
+            if(sentence.contains("(")) {
+                var expandedSentences = mutableListOf<String>()
+                // This has to start at the '(' Otherwise it gets called wrong. Too many loop throughs
+                var start = sentence.indexOf('(')
+                expandedSentences.addAll(expandBrackets(sentence.substring(start)))
+                for (incompleteSentence in expandedSentences) {
+                    Log.i("BracketExpander", "Final sentence: ${sentence.substringBefore('(')}${incompleteSentence.trim()} ${sentence.substringAfterLast(')')}")
                 }
-                currentSentence.addAll(subexpression)
-                if(normalBrackets == true){
-        }
-            }else if(character.value == '|'){
-                // I don't really understand the order here, but that's how it is in padatious, so.....
-                // Begin parsing a new sentence
-                Log.i("Bracket","what is cleared ${currentSentence}")
-                currentSentence = mutableListOf()
-                sentenceList.addAll(currentSentence)
-            }else if(character.value == ')') {
-                break
-            }else{
-                currentSentence.add(character.value.toString())
             }
         }
-        Log.i("BracketExpander","Expanded sentences are: ${sentenceList}")
-        return sentenceList
+    }
+
+    fun expandSentence(sentence: String){
+
+    }
+
+    // I am assuming it starts in a bracket '('
+    fun expandBrackets(bracketedSentence: String): MutableList<String>{
+        var word = ""; var sentence = "";  var index = 0
+        var sentences = mutableListOf<String>();
+
+        // I need to
+        while(index < bracketedSentence.length){
+            // Avoid the first '(' and keep moving through each character
+            index++
+            // If another bracket is found, start again with a whole new substring. (recursively)
+            if(bracketedSentence.get(index)  == '('){
+                var fragments = expandBrackets(bracketedSentence.substring(index))
+                for(fragment in fragments){
+                    sentences.add(sentence+fragment)
+                }
+                // Keep processing after the index of the substring that was just processed
+                index = bracketedSentence.indexOf(")")
+            }else if(bracketedSentence.get(index) == '|'){
+                // Save whatever was behind it
+                sentences.add(sentence)
+                // Start a new sentence
+                sentence = ""
+            }else if(bracketedSentence.get(index) == ')'){
+                // This is where the 'a' glitch is coming from. It's adding the postfix.
+                // This also might be where the empty sentences are coming from
+                sentences.add(sentence)
+                //That is it for this subexpression
+                break
+            }else{
+                // Get the current character
+                sentence+=bracketedSentence.get(index)
+            }
+        }
+        // All expanded sentences (within | a bracket)
+        return sentences
     }
 
     override fun onBind(intent: Intent?): IBinder?{

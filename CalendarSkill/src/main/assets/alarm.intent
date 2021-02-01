@@ -1,3 +1,5 @@
 alarm	what alarms do i have set
-alarm	wake me (up|) at {time}
+alarm	wake me (up|down) at {time}
+alarm	living (on (a prayer|forever) a |large)
+alarm   woah (woah woah|hey (hey hey| (ho ho ho|he he he)))
 alarm	set an alarm for {time}
