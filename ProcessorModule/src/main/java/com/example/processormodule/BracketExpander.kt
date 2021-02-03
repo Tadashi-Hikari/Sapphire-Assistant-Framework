@@ -24,6 +24,7 @@ class BracketExpander: Service(){
             parseSentenceList(sentences)
         }catch(exception: Exception){
             Log.e("BracketExpander","There was an error with the intent!")
+            Log.e("BracketExpander",exception.toString())
         }
         return super.onStartCommand(intent, flags, startId)
     }
@@ -36,6 +37,7 @@ class BracketExpander: Service(){
                 var expandedSentences = mutableListOf<String>()
                 // This has to start at the '(' Otherwise it gets called wrong. Too many loop throughs
                 var start = sentence.indexOf('(')
+                // Might be able to repalace w/ substringAfter()
                 expandedSentences.addAll(expandBrackets(sentence.substring(start)))
                 for (incompleteSentence in expandedSentences) {
                     Log.i("BracketExpander", "Final sentence: ${sentence.substringBefore('(')}${incompleteSentence.trim()} ${sentence.substringAfterLast(')')}")
@@ -44,45 +46,90 @@ class BracketExpander: Service(){
         }
     }
 
-    fun expandSentence(sentence: String){
-
-    }
-
     // I am assuming it starts in a bracket '('
     fun expandBrackets(bracketedSentence: String): MutableList<String>{
-        var word = ""; var sentence = "";  var index = 0
-        var sentences = mutableListOf<String>();
+        // set index to 1, to avoid the starting bracket
+        var word = ""; var fragment = "";  var index = 1
+        // This is supposed to hold all total sentences
+        var allSentences = mutableListOf<String>()
+        // This is supposed to hold the sentences for this level
+        var sentenceFragments = mutableListOf<String>()
 
-        // I need to
+
         while(index < bracketedSentence.length){
+            //Log.i("BracketExpander","checking character ${bracketedSentence.get(index)}")
             // Avoid the first '(' and keep moving through each character
-            index++
             // If another bracket is found, start again with a whole new substring. (recursively)
             if(bracketedSentence.get(index)  == '('){
-                var fragments = expandBrackets(bracketedSentence.substring(index))
-                for(fragment in fragments){
-                    sentences.add(sentence+fragment)
+                // might be able to replace w/ substringAfter()
+                var returnedSentences = expandBrackets(bracketedSentence.substring(index))
+                //Log.i("BracketExpander","Returned sentences: ${returnedSentences}")
+                //sentenceFragments.addAll(returnedSentences)
+
+                // This is the segment I just added. may need to delete
+                for (sentence in returnedSentences){
+                    sentenceFragments.add(fragment+returnedSentences)
                 }
-                // Keep processing after the index of the substring that was just processed
-                index = bracketedSentence.indexOf(")")
+
+                // The bracket is the first one encountered AFTER the one that initiated the top expandBracket()
+                // changing this to 1 (adding 2 totall caught large, and addon. They're out of order though
+                var bracketCount = 1; var indexAdvance = 1
+                // adding one to index gets good woahs, but misses living....?
+                for(character in bracketedSentence.substring(index+1)) {
+                    if(character == '('){
+                        bracketCount++
+                    }else if(character == ')'){
+                        bracketCount--
+                    }
+
+                    if(bracketCount == 0){
+                        // I need ')' to trigger its closeout, so move it back just one
+                        // without the -1 one it skips 2+ brackets. Why...
+                        index+=indexAdvance
+                        //Log.i("BracketExpander","Moving to index ${index}, character ${bracketedSentence.get(index+1)}")
+                        break
+                    }
+                    indexAdvance++
+                }
             }else if(bracketedSentence.get(index) == '|'){
                 // Save whatever was behind it
-                sentences.add(sentence)
+                // This is the part I am currently adding in
+                if(sentenceFragments.size != 0){
+                    for (sentence in sentenceFragments){
+                        // This is adding the postfix fragment to formed sentences
+                        //Log.i("BracketExpander","For | adding: ${sentence+fragment} to allSentences")
+                        allSentences.add(sentence + fragment)
+                    }
+                }else{
+                    //Log.i("BracketExpander","For | adding: ${fragment} to allSentences")
+                    allSentences.add(fragment)
+                }
                 // Start a new sentence
-                sentence = ""
+                fragment = ""
+            // Can this be merged to the code above?
             }else if(bracketedSentence.get(index) == ')'){
-                // This is where the 'a' glitch is coming from. It's adding the postfix.
-                // This also might be where the empty sentences are coming from
-                sentences.add(sentence)
+                if(sentenceFragments.size != 0) {
+                    for (sentence in sentenceFragments) {
+                        // Log.i("BracketExpander","For ) adding: ${fragment+sentence} to allSentences")
+                        // This is adding the prefixed fragments to all recently returned sentences
+                        allSentences.add(fragment+sentence)
+                    }
+                }else{
+                    //Log.i("BracketExpander","For ) adding: ${fragment} to allSentences")
+                    allSentences.add(fragment)
+                }
                 //That is it for this subexpression
                 break
             }else{
                 // Get the current character
-                sentence+=bracketedSentence.get(index)
+                fragment+=bracketedSentence.get(index)
+                //Log.i("BracketExpander","adding letter ${bracketedSentence.get(index)}")
             }
+            index++
         }
         // All expanded sentences (within | a bracket)
-        return sentences
+        //Log.i("BracketExpander","returning ${allSentences}")
+        return allSentences
     }
 
     override fun onBind(intent: Intent?): IBinder?{
