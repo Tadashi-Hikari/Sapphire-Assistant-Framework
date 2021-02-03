@@ -68,7 +68,10 @@ class BracketExpander: Service(){
 
                 // This is the segment I just added. may need to delete
                 for (sentence in returnedSentences){
-                    sentenceFragments.add(fragment+returnedSentences)
+                    // This adds the prefix properly, but there's a duplication somewhere
+                    sentenceFragments.add(fragment+sentence)
+                    // because I just added prefix fragment, I am clearing it out
+                    fragment=""
                 }
 
                 // The bracket is the first one encountered AFTER the one that initiated the top expandBracket()
@@ -106,8 +109,11 @@ class BracketExpander: Service(){
                 }
                 // Start a new sentence
                 fragment = ""
+                // I think I was forgetting to clear the list sentenceFragments. This was causing a redundant addon
+                sentenceFragments = mutableListOf()
             // Can this be merged to the code above?
             }else if(bracketedSentence.get(index) == ')'){
+                // Sentence fragments are expected to have just been returned.
                 if(sentenceFragments.size != 0) {
                     for (sentence in sentenceFragments) {
                         // Log.i("BracketExpander","For ) adding: ${fragment+sentence} to allSentences")
