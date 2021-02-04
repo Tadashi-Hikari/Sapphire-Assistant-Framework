@@ -20,10 +20,10 @@ import kotlin.random.Random
 
 class MultiprocessService: SAFService(){
 
-    val MULTIPROCESS_ID = "assistant.framework.multiprocess.protocol.ID"
-    val SEQUENCE_NUMBER = "assistant.framework.multiprocess.protocol.SEQUENCE_NUMBER"
-    val SEQUENCE_TOTAL = "assistant.framework.multiprocess.column.SEQUENCE_TOTAL"
-    var PRIMARY_KEY = "assistant.framewokr.multiprocess.column.PRIMARY_KEY"
+    val MULTIPROCESS_ID = "core.conf.framework.multiprocess.protocol.ID"
+    val SEQUENCE_NUMBER = "core.conf.framework.multiprocess.protocol.SEQUENCE_NUMBER"
+    val SEQUENCE_TOTAL = "core.conf.framework.multiprocess.column.SEQUENCE_TOTAL"
+    var PRIMARY_KEY = "core.conf.framewokr.multiprocess.column.PRIMARY_KEY"
 
     lateinit var databaseFile: File
     lateinit var JSONDatabase: JSONObject

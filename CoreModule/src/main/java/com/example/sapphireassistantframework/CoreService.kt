@@ -1,7 +1,7 @@
 package com.example.sapphireassistantframework
 
 /**
- * This module exists to handle start up and shut down tasks for the assistant framework, as well
+ * This module exists to handle start up and shut down tasks for the core.conf framework, as well
  * as acts as a bind-able anchor for any other services. Does moving NotificationService to its own
  * file cause an issue with this service as long running? Does NotificationService need to bind this,
  * so that this doesn't shut down?
@@ -43,14 +43,11 @@ class CoreService: SAFService(){
     override fun onCreate() {
         super.onCreate()
 
-        /** I want all of these things to run when the service is created, not every time it
-         * it receives a message. Though, perhaps It should run when the foreground service
-         * is launched.
-         */
         buildForegroundNotification()
         scanInstalledModules()
         mockStartBackgroundServices()
-        Log.i("CoreService", "Everything should be starting up now")
+        // startBackgroundService()
+        Log.i("CoreService", "All background services started")
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
@@ -60,11 +57,8 @@ class CoreService: SAFService(){
                 // Do the binding
             }else{
                 // redirect the intent to the PostOffice
-                Log.i("CoreService","Intent received. Check PostOffice process for info")
-                intent.setClassName(
-                    "com.example.sapphireassistantframework",
-                    "com.example.sapphireassistantframework.PostOffice"
-                )
+                Log.v("CoreService","Intent received. Check PostOffice process for info")
+                intent.setClassName(this,"com.example.sapphireassistantframework.PostOffice")
                 startService(intent)
             }
         }catch(exception: Exception){
@@ -143,6 +137,9 @@ class CoreService: SAFService(){
         stopBackgroundServices(sapphire_apps, connections)
         notificationManager.cancel(1337)
         super.onDestroy()
+    }
+
+    fun startBackgroundServices(){
     }
 
     // I want to change this to the flat file database

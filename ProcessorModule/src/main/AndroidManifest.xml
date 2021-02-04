@@ -13,10 +13,6 @@
     </dist:module>
 
     <application>
-        <service
-            android:name="com.example.processormodule.InstallService"
-            android:enabled="true">
-        </service>
         <service android:name="com.example.processormodule.ProcessorCentralService"
             android:enabled="true"/>
         <service android:name=".ProcessorTrainingService"

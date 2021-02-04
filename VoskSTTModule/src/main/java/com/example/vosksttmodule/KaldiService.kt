@@ -33,6 +33,7 @@ class KaldiService: RecognitionListener, SAFService(){
 
         System.loadLibrary("kaldi_jni");
         // This is going to make it run through the process twice. I need to offload the creation
+        // I actually think I need to move setup to onBind()
         setup()
     }
 

@@ -76,14 +76,7 @@ class PostOffice: SAFService(){
         return super.onStartCommand(intent, flags, startId)
     }
 
-    fun isItRegistered(packageName: String){
-
-    }
-
-    // This needs to be totally reworked
-    /**
-     * It's gonna work like this. Whatever is the LAST thing in the pipeline, core will read and upload pipeline data for.
-     */
+    // It's gonna work like this. Whatever is the LAST thing in the pipeline, core will read and upload pipeline data for.
     fun sortMail(intent: Intent){
         var routes = loadRoutes()
         var routeRequest = ""
