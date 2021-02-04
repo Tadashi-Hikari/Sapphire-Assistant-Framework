@@ -27,10 +27,6 @@
         <service
             android:name=".CoreService"
             android:exported="true"/>
-        <service
-            android:name=".CoreInstallService"
-            android:exported="true"
-            android:permission="android.permission.QUERY_ALL_PACKAGES"/>
         <!-- This should probably run in a separate process, so the system doesn't get bottlenecked -->
         <service
             android:name=".PostOffice"

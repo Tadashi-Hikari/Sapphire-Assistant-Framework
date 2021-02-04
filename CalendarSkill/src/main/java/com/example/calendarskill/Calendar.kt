@@ -43,7 +43,7 @@ class Calendar: Service(){
     }
 
     fun getManditoryVariables(intent: Intent){
-        action = intent.getStringExtra("assistant.skill.calendar.ACTION")!!
+        action = intent.getStringExtra("core.conf.skill.calendar.ACTION")!!
         dateTimeStart = intent.getStringExtra("dateTime")!!
         eventName = intent.getStringExtra("event")!!
     }

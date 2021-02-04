@@ -73,10 +73,6 @@ class CoreCentralActivity: Activity(){
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-    }
-
     override fun onPause() {
         super.onPause()
         var intent: Intent = Intent().setClassName(this,"com.example.sapphireassistantframework.CoreService")

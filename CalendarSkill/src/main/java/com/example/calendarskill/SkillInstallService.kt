@@ -1,10 +1,8 @@
 package com.example.calendarskill
 
 import android.content.Intent
-import android.content.res.AssetManager
 import android.util.Log
 import com.example.calendarskill.HelperFiles.InstallHelper
-import java.io.File
 
 /**
  * This is Calendars install service. It needs to pass along essential information such as
@@ -17,7 +15,7 @@ import java.io.File
 
 class SkillInstallService: InstallHelper(){
     // I don't like that this is hard installed
-    var intentFiles = arrayListOf<String>("get.intent","alarm.intent")
+    var intentFiles = arrayListOf<String>("get.intent","set.intent")
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         // This should broadcast/ordered broadcast
@@ -27,14 +25,6 @@ class SkillInstallService: InstallHelper(){
             // This should be in the sent intent. I can simplify this
             installIntent.setClassName("com.example.sapphireassistantframework","com.example.sapphireassistantframework.CoreService")
             installIntent.setAction(ACTION_SAPPHIRE_MODULE_REGISTER)
-            //var keys = arrayListOf<String>()
-            // Processor data may be a bad name, since this doesn't HAVE to send to processor
-            //var processorData = retrieveData()
-            //for(datum in processorData){
-            //    keys.add(datum.key)
-            //    installIntent.putExtra(datum.key,datum.value)
-            //}
-            //installIntent.putExtra("assistant.framework.DATA_KEYS",keys)
             startService(installIntent)
         // This will use a pre-prepared intent, to send it through the pipeline for the reuqesting module
         }else if(intent.action == ACTION_SAPPHIRE_MODULE_REQUEST_DATA){
@@ -49,9 +39,10 @@ class SkillInstallService: InstallHelper(){
                 dataRequestIntent.putExtra(datum.key,datum.value)
             }
             Log.i("SkillInstallService","Sending back the data")
+            // I need to take this out of being hardcoded
             dataRequestIntent.setClassName(this,"com.example.multiprocessmodule.MultiprocessService")
             // Why did I hardcode this?
-            dataRequestIntent.putExtra("assistant.framework.multiprocess.protocol.SEQUENCE_NUMBER",2)
+            dataRequestIntent.putExtra("core.conf.framework.multiprocess.protocol.SEQUENCE_NUMBER",2)
             Log.i("SkillInstallService","Keys being sent back are as follows: ${dataRequestIntent.getStringArrayListExtra(DATA_KEYS)!!}")
             startService(dataRequestIntent)
         }

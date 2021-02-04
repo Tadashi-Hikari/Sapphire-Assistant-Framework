@@ -5,8 +5,8 @@ import android.os.IBinder
 import com.example.componentframework.SAFService
 
 class DataTrainPipelines: SAFService() {
-    val SEQUENCE_NUMBER = "assistant.framework.protocol.SEQUENCE_NUMBER"
-    val ID = "assistant.framework.protocol.ID"
+    val SEQUENCE_NUMBER = "core.conf.framework.protocol.SEQUENCE_NUMBER"
+    val ID = "core.conf.framework.protocol.ID"
 
     override fun onBind(intent: Intent?): IBinder? {
         TODO("Not yet implemented")
@@ -17,7 +17,7 @@ class DataTrainPipelines: SAFService() {
         // Look up the pipelines for the processors
         var module = "com.example.somedatamodule.InstallService"
         var dataModules = mutableListOf<String>()
-        if(module == "assistant.framework.processor.DATA"){
+        if(module == "core.conf.framework.processor.DATA"){
             dataModules.add(module)
         }
 
