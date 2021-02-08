@@ -33,7 +33,7 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
-    dynamicFeatures = [':VoskSTTModule', ':ProcessorModule', ':CalendarSkill', ':MultiprocessModule']
+    dynamicFeatures = [':VoskSTTModule', ':ProcessorModule', ':CalendarSkill', ':MultiprocessModule', ':TermuxModule']
 }
 
 ant.importBuild 'assets.xml'

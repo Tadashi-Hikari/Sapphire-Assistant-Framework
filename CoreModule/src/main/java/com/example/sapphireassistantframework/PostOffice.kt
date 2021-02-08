@@ -111,7 +111,9 @@ class PostOffice: SAFService(){
         routes.put("com.example.vosksttmodule.KaldiService",
             "com.example.processormodule.ProcessorCentralService")
         //calendar, in this example, is STDIN, not FROM
-        routes.put("calendar","com.example.calendarskill.Calendar")
+        //routes.put("calendar","com.example.calendarskill.Calendar")
+        // I just want everything to default to here for now
+        routes.put("calendar","com.example.termuxmodule.TermuxService")
 
         return routes
     }

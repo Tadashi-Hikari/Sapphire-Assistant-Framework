@@ -16,6 +16,7 @@
             <option value="$PROJECT_DIR$/CoreModule" />
             <option value="$PROJECT_DIR$/MultiprocessModule" />
             <option value="$PROJECT_DIR$/ProcessorModule" />
+            <option value="$PROJECT_DIR$/TermuxModule" />
             <option value="$PROJECT_DIR$/VoskSTTModule" />
           </set>
         </option>
