@@ -80,6 +80,7 @@ class CoreCentralActivity: Activity(){
         startService(intent)
     }
 
+    // I don't think I am using this anymore
     fun CoreServiceManager(view: View){
         if(running){
             stopCoreService()

@@ -17,7 +17,7 @@ class Calendar: Service(){
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         try {
-            Log.i("Caledar", "Calendar intent received")
+            Log.i("Calendar", "Calendar intent received")
             getManditoryVariables(intent)
             checkForOptional(intent)
 

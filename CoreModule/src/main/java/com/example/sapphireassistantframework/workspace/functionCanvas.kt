@@ -2,13 +2,66 @@ package com.example.sapphireassistantframework.workspace
 
 import android.app.Service
 import android.content.Intent
+import android.os.IBinder
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
+import java.util.jar.JarOutputStream
 
 class functionCanvas: Service() {
     var DATABASE = "databae.db"
     var HOOKLOG = "hooklog"
+    var CORE = "CORE.MODULE"
+
+    var POSTAGE = "ENVIRONMENT_VARIABLES"
+    var ROUTE = "JSONROUTE"
+
+    fun getCoreModule(intent: Intent):String{
+        var postage = intent.getStringExtra(POSTAGE)
+        var envVarJSON = JSONObject(postage)
+        return envVarJSON.getString(CORE)!!
+    }
+
+    // This is pretty straightforward.
+    // I think that this needs to be done other than onCreate.
+    fun installRegisterModule(packageClass: String){
+        var databaseFile = File(filesDir,DATABASE)
+        var database = JSONObject()
+
+        if(database.has(packageClass)){
+            return
+        }else{
+            var module = JSONObject()
+            module.put("packageClass",packageClass)
+            databaseFile.writeText(module.toString())
+        }
+    }
+
+    fun routeTest(){
+        var database = JSONObject()
+
+        var route = database.getJSONArray("modulename.filename")
+        for(index in 0 until route.length()){
+            var moduleData = route.getJSONObject(index)
+            parseModuleData(moduleData)
+        }
+    }
+
+    // This should all go in postage. 
+    fun parseModuleData(json: JSONObject){
+        // I don't see any reason why it shouldn't just be these, predefined
+        json.get("PACKAGE")
+        json.get("CLASSNAME")
+        // Should this be sub-parsed?
+        var flags = json.getJSONObject("FLAGS")
+        for(index in 0 until flags.length()){
+            // add flags, as extras?
+        }
+    }
+
+    fun loadRoutes(){
+
+    }
 
     /**
      * What I want to happen here, is basically update a TextView in the CoreActivity.
@@ -77,5 +130,9 @@ class functionCanvas: Service() {
     // I think I am moving this to its own module
     fun checkConditionals(){
 
+    }
+
+    override fun onBind(intent: Intent?): IBinder? {
+        TODO("Not yet implemented")
     }
 }
