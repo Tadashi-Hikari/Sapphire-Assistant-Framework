@@ -29,27 +29,6 @@ abstract class InstallHelper: SAFService(){
         return processorIntent
     }
 
-    fun convertStreamToFile(filename: String): File {
-        var suffix = ".temp"
-        // This file needs to be tab separated columns
-        var asset = assets.open(filename)
-        var fileReader = InputStreamReader(asset)
-
-        var tempFile = File.createTempFile(filename, suffix)
-        var tempFileWriter = FileOutputStream(tempFile)
-        // This is ugly AF
-        var data = fileReader.read()
-        while (data != -1) {
-            tempFileWriter.write(data)
-            data = fileReader.read()
-        }
-        // Do a little clean up
-        asset.close()
-        tempFileWriter.close()
-
-        return tempFile
-    }
-
     override fun onBind(intent: Intent?): IBinder? {
         TODO("Not yet implemented")
     }

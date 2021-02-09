@@ -2,8 +2,10 @@ All modules MUST implement the TO if it is a starting module
 
 Sapphire Assistant Framework can expect these default modules installed:
 -Processor
--MultiProcessor
+-Multiprocess
 -Core
+
+"assistant.framework.module.protocol.PROCESSOR_MODULE"
 
 These DEFAULTS can be replaced w/ custom modules, but you can target the generic DEFAULT data, and
 it'll reorganize. These are akin to Enviornmental Variables

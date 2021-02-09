@@ -5,10 +5,13 @@ import android.content.pm.ResolveInfo
 import android.os.IBinder
 import android.util.Log
 import com.example.componentframework.SAFService
+import org.json.JSONObject
+import java.io.File
 import java.lang.Exception
 
 class PostOffice: SAFService(){
     var DEFAULT = ""
+    var CONFIG = "postoffice.conf"
 
     override fun onBind(intent: Intent?): IBinder? {
         TODO("Not yet implemented")
@@ -82,7 +85,7 @@ class PostOffice: SAFService(){
         var routeRequest = ""
 
         //notifyHooks()
-        loadConfig()
+        var configJSON = loadConfig(CONFIG)
         //checkConditionals()
 
         // Postage is the minimum thing needed to send a message and/or runtime config. Here, it is the route name
@@ -105,6 +108,12 @@ class PostOffice: SAFService(){
         startService(intent)
     }
 
+    fun loadRoutesFile(routesFilename: String): JSONObject{
+        var routesFile = File(filesDir,routesFilename)
+        var routesJSON = JSONObject(routesFile.readText())
+        return routesJSON
+    }
+
     fun loadRoutes(): Map<String,String>{
         var routes = mutableMapOf<String,String>()
         // kaldiservice, in this example, is FROM not STDIN
@@ -116,9 +125,5 @@ class PostOffice: SAFService(){
         routes.put("calendar","com.example.termuxmodule.TermuxService")
 
         return routes
-    }
-
-    fun loadConfig(){
-        // This will be added in later
     }
 }

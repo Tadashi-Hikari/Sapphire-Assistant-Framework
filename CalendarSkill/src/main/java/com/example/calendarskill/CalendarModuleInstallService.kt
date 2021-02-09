@@ -13,7 +13,7 @@ import com.example.calendarskill.HelperFiles.InstallHelper
  * to a different parser module?
  */
 
-class SkillInstallService: InstallHelper(){
+class CalendarModuleInstallService: InstallHelper(){
     // I don't like that this is hard installed
     var intentFiles = arrayListOf<String>("get.intent","set.intent")
 
