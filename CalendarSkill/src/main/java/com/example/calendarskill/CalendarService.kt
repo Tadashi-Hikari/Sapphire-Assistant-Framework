@@ -5,7 +5,7 @@ import android.content.Intent
 import android.os.IBinder
 import android.util.Log
 
-class Calendar: Service(){
+class CalendarService: Service(){
     // command keywords
     // This covers 1st date and time
     var action = ""

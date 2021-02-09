@@ -1,16 +1,33 @@
 package com.example.componentframework
 
 import android.app.Service
-import android.content.Intent
-import android.os.IBinder
+import org.json.JSONObject
+import java.io.File
+import java.io.FileOutputStream
+import java.io.InputStreamReader
 
 abstract class SAFService: Service(){
     // Standard extras
     val MESSAGE="assistant.framework.protocol.MESSAGE"
     val STDERR="assistant.framework.protocol.STDERR"
+    // This is going to be for ENV_VARIABLES
     val POSTAGE="assistant.framework.protocol.POSTAGE"
     val ROUTE="assistant.framework.protocol.ROUTE"
-    val CORE="assistant.framework.protocol.CORE"
+
+    var MODULE_TYPE = "assistant.framework.module.TYPE"
+    val MODULE_VERSION = "assistant.framework.module.VERSION"
+
+    /**
+     * I don't know that I need to list all of these explicitly, and I think I'll
+     * let the user override them anyway. This is just for initial install purposes
+     */
+    val CORE="assistant.framework.module.type.CORE"
+    val PROCESSOR="assistant.framework.module.type.PROCESSOR"
+    val MULTIPROCESS="assistant.framework.module.type.MULTIPROCESS"
+    // These are the ones I don't think are essential
+    val INPUT="assistant.framework.module.type.INPUT"
+    val TERMINAL="assistant.framework.module.type.TERMINAL"
+    val GENERIC="assistant.framework.module.type.GENERIC"
 
     // Module specific extras
     val PROCESSOR_ENGINE="assistant.framework.processor.protocol.ENGINE"
@@ -40,7 +57,58 @@ abstract class SAFService: Service(){
         return route[0]
     }
 
-    fun addToRoute(newRoute: String){
-        // This takes the existing route and adds some modules in to it
+    fun loadConfig(config: String): JSONObject{
+        var configJSON = JSONObject()
+        if(configFileExists(config)){
+            configJSON = loadFileConfig(config)
+        }else{
+            configJSON = loadDefaultConfig(config)
+        }
+        return configJSON
+    }
+
+    fun loadDefaultConfig(config: String): JSONObject{
+        var configFile: File = convertStreamToFile(config)
+        var configJSON = JSONObject(configFile.readText())
+        return configJSON
+    }
+
+    fun loadFileConfig(config: String): JSONObject{
+        var configFile = File(filesDir,config)
+        var configJSON = JSONObject(configFile.readText())
+        return configJSON
+    }
+
+    fun configFileExists(config: String): Boolean{
+        if(File(filesDir,config).exists()){
+            return true
+        }
+        return false
+    }
+
+    fun defaultToFile(configJSON: JSONObject, config:String){
+        var configFile = File(filesDir,config)
+        configFile.writeText(configJSON.toString())
+    }
+
+    fun convertStreamToFile(filename: String): File {
+        var suffix = ".temp"
+        // This file needs to be tab separated columns
+        var asset = assets.open(filename)
+        var fileReader = InputStreamReader(asset)
+
+        var tempFile = File.createTempFile(filename, suffix)
+        var tempFileWriter = FileOutputStream(tempFile)
+        // This is ugly AF
+        var data = fileReader.read()
+        while (data != -1) {
+            tempFileWriter.write(data)
+            data = fileReader.read()
+        }
+        // Do a little clean up
+        asset.close()
+        tempFileWriter.close()
+
+        return tempFile
     }
 }

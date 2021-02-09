@@ -14,7 +14,7 @@
 
     <application>
         <service
-            android:name=".SkillInstallService"
+            android:name=".CalendarModuleInstallService"
             android:exported="true"
             android:enabled="true">
             <intent-filter>
@@ -22,7 +22,7 @@
                 <action android:name="assistant.framework.module.action.REQUEST_DATA"/>
             </intent-filter>
         </service>
-        <service android:name=".Calendar"
+        <service android:name=".CalendarService"
             android:exported="true"
             android:enabled="true">
         </service>
