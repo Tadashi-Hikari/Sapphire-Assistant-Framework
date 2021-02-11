@@ -39,4 +39,10 @@ abstract class SAFInstallService: SAFService(){
 		intent.setClassName(this,"com.example.sapphireassistantframework.CoreService")
 		startService(intent)
 	}
+
+	fun version(){
+		var intent = Intent().setClassName(this,"com.example.sapphireassistantframework.CoreService")
+		intent.setAction(ACTION_SAPPHIRE_MODULE_REGISTER)
+		startService(intent)
+	}
 }

@@ -26,7 +26,11 @@
             android:exported="true"
             android:process="vosk.service"
             android:foregroundServiceType="microphone"
-            android:permission="android.permission.RECORD_AUDIO"/>
+            android:permission="android.permission.RECORD_AUDIO">
+            <intent-filter>
+                <category android:name="assistant.framework.category.INPUT"/>"
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

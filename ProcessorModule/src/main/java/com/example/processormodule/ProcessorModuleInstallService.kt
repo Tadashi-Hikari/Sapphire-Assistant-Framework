@@ -11,9 +11,10 @@ class ProcessorModuleInstallService: SAFInstallService(){
 	// Hmm, I don't know if I like how super.registerModule works
 	fun registerModule(){
 		var intent = Intent()
-		intent = registerVersion(intent,VERSION)
+		intent = registerVersion(intent, VERSION)
 		intent = registerType(intent, PROCESSOR)
 		//intent = registerData(intent, filenames: List<String>)
+		intent.putExtra(MODULE_PACKAGE,this.packageName)
 		super.registerModule(intent)
 	}
 

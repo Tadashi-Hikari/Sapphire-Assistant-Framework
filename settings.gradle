@@ -1,3 +1,5 @@
+include ':TaskerModule'
+include ':MycroftModule'
 include ':TermuxModule'
 include ':MultiprocessModule'
 include ':ComponentFramework'

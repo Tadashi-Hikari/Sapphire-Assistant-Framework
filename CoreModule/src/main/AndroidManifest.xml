@@ -20,17 +20,11 @@
             android:label="@string/title_activity_core_central_">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <service
             android:name=".CoreService"
-            android:exported="true"/>
-        <!-- This should probably run in a separate process, so the system doesn't get bottlenecked -->
-        <service
-            android:name=".PostOffice"
-            android:process=":PostOffice"
             android:exported="true"/>
     </application>
 </manifest>
