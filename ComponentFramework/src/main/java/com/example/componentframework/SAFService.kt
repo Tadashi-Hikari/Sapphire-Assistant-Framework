@@ -1,6 +1,7 @@
 package com.example.componentframework
 
 import android.app.Service
+import android.content.Intent
 import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
@@ -14,8 +15,9 @@ abstract class SAFService: Service(){
     val POSTAGE="assistant.framework.protocol.POSTAGE"
     val ROUTE="assistant.framework.protocol.ROUTE"
 
-    var MODULE_TYPE = "assistant.framework.module.TYPE"
-    val MODULE_VERSION = "assistant.framework.module.VERSION"
+    val MODULE_PACKAGE = "assistant.framework.module.protocol.PACKAGE"
+    var MODULE_TYPE = "assistant.framework.module.protocol.TYPE"
+    val MODULE_VERSION = "assistant.framework.module.protocol.VERSION"
 
     /**
      * I don't know that I need to list all of these explicitly, and I think I'll
@@ -39,8 +41,10 @@ abstract class SAFService: Service(){
     // This is sent to the CORE from the module, so the core can handle the registration process
     // This is for a module to request *all* data from the core (implicit intent style)
     val ACTION_SAPPHIRE_CORE_REQUEST_DATA="assistant.framework.core.action.REQUEST_DATA"
-
+    val ACTION_SAPPHIRE_UPDATE_ENV = "action.framework.module.action.UPDATE_ENV"
     val ACTION_SAPPHIRE_MODULE_REGISTER = "assistant.framework.module.action.REGISTER"
+    // this is -V on the command line
+    val ACTION_SAPPHIRE_MODULE_VERSION = "assistant.framework.module.action.VERSION"
     // This is for core to request data from a specific module
     val ACTION_SAPPHIRE_MODULE_REQUEST_DATA="assistant.framework.module.action.REQUEST_DATA"
     val ACTION_SAPPHIRE_TRAIN="assistant.framework.processor.action.TRAIN"
@@ -110,5 +114,39 @@ abstract class SAFService: Service(){
         tempFileWriter.close()
 
         return tempFile
+    }
+
+    fun saveJSONTable(filename: String, jsonDatabase: JSONObject){
+        var databaseFile = File(filesDir, filename)
+        databaseFile.writeText(jsonDatabase.toString())
+    }
+
+    fun loadJSONTable(filename: String): JSONObject{
+        /**
+         * if(File(filesDir,filename).exists == false){
+         *     //It's just directly the info, not a link to another file
+         * }
+         */
+        var databaseFile = File(filesDir,filename)
+        var jsonDatabase = JSONObject(databaseFile.readText())
+        return jsonDatabase
+    }
+
+    // Used to get the env variable about whichever is currently core
+    fun getCoreModule(intent: Intent):String{
+        var postageData = intent.getStringExtra(POSTAGE)
+        var postageJSON = JSONObject(postageData)
+        return postageJSON.getString(CORE)!!
+    }
+
+    // This *def* needs to be error checked. Basically a copycat function
+    fun getEnvVariable(intent: Intent,envVariable: String): String{
+        var postageData = intent.getStringExtra(POSTAGE)
+        var postageJSON = JSONObject(postageData)
+        return postageJSON.getString(envVariable)
+    }
+
+    fun parseConfigFile(filename: String): JSONObject{
+        return JSONObject()
     }
 }

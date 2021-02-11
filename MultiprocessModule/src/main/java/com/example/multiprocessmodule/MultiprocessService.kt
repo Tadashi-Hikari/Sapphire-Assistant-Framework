@@ -20,10 +20,10 @@ import kotlin.random.Random
 
 class MultiprocessService: SAFService(){
 
-    val MULTIPROCESS_ID = "core.conf.framework.multiprocess.protocol.ID"
-    val SEQUENCE_NUMBER = "core.conf.framework.multiprocess.protocol.SEQUENCE_NUMBER"
-    val SEQUENCE_TOTAL = "core.conf.framework.multiprocess.column.SEQUENCE_TOTAL"
-    var PRIMARY_KEY = "core.conf.framewokr.multiprocess.column.PRIMARY_KEY"
+    val MULTIPROCESS_ID = "assistant.framework.multiprocess.protocol.ID"
+    val SEQUENCE_NUMBER = "assistant.framework.multiprocess.protocol.SEQUENCE_NUMBER"
+    val SEQUENCE_TOTAL = "assistant.framework.multiprocess.column.SEQUENCE_TOTAL"
+    var PRIMARY_KEY = "assistant.framewoke.multiprocess.column.PRIMARY_KEY"
 
     lateinit var databaseFile: File
     lateinit var JSONDatabase: JSONObject
@@ -86,7 +86,7 @@ class MultiprocessService: SAFService(){
         }
         //outgoingIntent.putExtra(ROUTE,JSONMultiprocessRecord.getString(ROUTE))
         //outgoingIntent.putExtra(MESSAGE,message)
-        // This needs to be accountet for, not hardcoded. It would just be the next in the pipeline
+        // This needs to be accounted for, not hardcoded. It would just be the next in the pipeline
         // proper
         outgoingIntent.setClassName(this,"com.example.processormodule.ProcessorTrainingService")
         startService(outgoingIntent)

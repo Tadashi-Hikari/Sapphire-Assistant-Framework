@@ -1,4 +1,4 @@
-package com.example.processormodule
+package com.example.mycroftmodule
 
 import android.app.Service
 import android.content.Intent

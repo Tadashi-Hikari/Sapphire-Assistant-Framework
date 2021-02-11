@@ -17,4 +17,5 @@
     <string name="title_termuxsocketmodule">Termux Socket Module</string>
     <string name="title_taskermodule">Tasker Module</string>
     <string name="title_termuxmodule">Termux Module</string>
+    <string name="title_mycroftmodule">Mycroft Module</string>
 </resources>

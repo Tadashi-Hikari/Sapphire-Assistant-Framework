@@ -138,4 +138,23 @@ class ProcessorTrainingService: SAFService(){
         val fileName = File(this.filesDir,"Intent.classifier")
         classifier.serializeClassifier(fileName.canonicalPath)
     }
+
+    /**
+     * This is for taking a Mycroft style .intent and preparing it for Stanford CoreNLP
+     */
+    fun prepareTrainingData(){
+        var moduleName = "com.example.calendarmodule"
+        var filename = "get.intent"
+        var trainingData = listOf<String>()
+        var formattedTrainingData = mutableListOf<String>()
+
+        for(line in trainingData){
+            /**
+             * This does the tab-separation as required by Stanford CoreNLP.
+             * Should I change how it's named? I am not expecting SAF to do the direct entry,
+             * the filename might be an -action as well, or it could be a separate path... decisions
+             */
+            formattedTrainingData.add("${moduleName}.${filename}\t${line}")
+        }
+    }
 }

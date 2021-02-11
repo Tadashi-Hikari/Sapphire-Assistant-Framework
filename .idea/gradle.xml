@@ -15,7 +15,9 @@
             <option value="$PROJECT_DIR$/ComponentFramework" />
             <option value="$PROJECT_DIR$/CoreModule" />
             <option value="$PROJECT_DIR$/MultiprocessModule" />
+            <option value="$PROJECT_DIR$/MycroftModule" />
             <option value="$PROJECT_DIR$/ProcessorModule" />
+            <option value="$PROJECT_DIR$/TaskerModule" />
             <option value="$PROJECT_DIR$/TermuxModule" />
             <option value="$PROJECT_DIR$/VoskSTTModule" />
           </set>

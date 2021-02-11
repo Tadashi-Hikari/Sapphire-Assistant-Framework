@@ -27,14 +27,24 @@ class KaldiService: RecognitionListener, SAFService(){
     //private val model = ???
     // This is better as a lateinit
     private lateinit var recognizer: CustomSpeechRecognizer
+    private lateinit var startupIntent: Intent
 
     override fun onCreate() {
         super.onCreate()
 
         System.loadLibrary("kaldi_jni");
+
         // This is going to make it run through the process twice. I need to offload the creation
         // I actually think I need to move setup to onBind()
         setup()
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // Make sure it has Env set. This might be movable to SAFService, and should DEF be error checked
+        if((startupIntent == null) or (startupIntent.action == ACTION_SAPPHIRE_UPDATE_ENV)){
+            startupIntent = intent!!
+        }
+        return super.onStartCommand(intent, flags, startId)
     }
 
     override fun onBind(intent: Intent): IBinder {
@@ -51,12 +61,16 @@ class KaldiService: RecognitionListener, SAFService(){
             // This needs to not be hardcoded... How can a skill know? I need to pass it the core details
             // I think I either need to set meta-data or resources
             var coreServiceIntent: Intent = Intent()
-            coreServiceIntent.setClassName(
-                "com.example.sapphireassistantframework",
-                "com.example.sapphireassistantframework.CoreService"
-            )
+
+            var coreModule = getCoreModule(startupIntent)
+            var packageClass = coreModule.split(";")
+
+            var packageName = packageClass[0]; var className = packageClass[1]
+
+            coreServiceIntent.setClassName(packageName,className)
             coreServiceIntent.putExtra(MESSAGE, utterance)
-            coreServiceIntent.putExtra(POSTAGE,"com.example.vosksttmodule.KaldiService")
+            // This was just change from postage (which now holds env var) to route
+            coreServiceIntent.putExtra(ROUTE,"com.example.vosksttmodule.KaldiService")
             Log.i("KaldiService", "Utterance hypothesis dispatched")
             startService(coreServiceIntent)
         }
