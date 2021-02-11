@@ -10,7 +10,9 @@ import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.core.util.rangeTo
 import com.example.componentframework.SAFService
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 import java.util.*
@@ -46,6 +48,8 @@ class CoreService: SAFService(){
     var jsonForegroundStartup = JSONObject()
     var jsonHookList = JSONObject()
 
+    var readyToGoSemaphore = false
+
     override fun onCreate() {
         // Do all startup tasks
         var configJSON = parseConfigFile(CONFIG)
@@ -53,7 +57,6 @@ class CoreService: SAFService(){
         buildForegroundNotification()
         scanInstalledModules()
         startBackgroundServices()
-        // startBackgroundService()
         Log.i("CoreService", "All startup tasks finished")
         super.onCreate()
     }
@@ -77,20 +80,11 @@ class CoreService: SAFService(){
                     )
                     startService(processorIntent)
                 }
-                /**
-                 * If it is a data request, it sends the message to all modules w/ data, and if the module
-                 * has the data, then it responds. Otherwise it ignores the request. I'd make it a
-                 * broadcast, but delivery needs to be ensured. I will need multiprocessor to wait until
-                 * all modules have responded before continuing along the pipeline
-                 */
             }else if(intent.action == ACTION_SAPPHIRE_CORE_REQUEST_DATA){
                 // I need to use the CoreService install process somehow, without duplicating code
                 var queryIntent = Intent(ACTION_SAPPHIRE_MODULE_REQUEST_DATA)
                 var modulesWithData = packageManager.queryIntentServices(queryIntent, 0)
                 Log.i("PostOffice","Query results ${modulesWithData}")
-
-                // This sends intents to all modules w/ data. The modules themselves
-                // decide if they need to respond
                 var multiprocessRoute = "("
                 for(dataModule in modulesWithData.take(1)) {
                     try{
@@ -172,7 +166,6 @@ class CoreService: SAFService(){
                 Log.i("CoreService", "Found a module. Checking if it's registered: ${packageName};${className}")
                 // If its registered, check version. Else, register it
                 if (checkModuleRegistration(packageName, className)) {
-
                 } else {
                     installRegisterModule(packageName, className)
                 }
@@ -274,6 +267,23 @@ class CoreService: SAFService(){
         saveJSONTable(defaultsTableFilename, jsonDefaultModules)
     }
 
+    // It really just pulls the alias from Route.
+    // I need to have a way to ensure it triggers from a module
+    fun startBackgroundServicesConfigurable(jsonBackground: JSONArray){
+        for(index in 0 until jsonBackground.length()){
+            // This is ripped right out of sortMail, so I could probably make it a function
+            var routes = loadRoutes()
+            var routeData = routes.get(jsonBackground.getString(index))!!
+            var route = parseRoute(routeData)
+            var backgroundService = Intent()
+            backgroundService.setClassName(this,route.first())
+            backgroundService.putExtra(MESSAGE,backgroundService.getStringExtra(MESSAGE))
+            backgroundService.putExtra(ROUTE,routeData)
+
+            startService(backgroundService)
+        }
+    }
+
     fun startBackgroundServices(){
         var speechToText = Pair(
         "com.example.sapphireassistantframework",
@@ -320,15 +330,16 @@ class CoreService: SAFService(){
 
         //notifyHooks()
         var configJSON = loadConfig(CONFIG)
+        // Isn't this the same as NotifyHooks basically?
         //checkConditionals()
 
-        // Postage is the minimum thing needed to send a message and/or runtime config. Here, it is the route name
-        if(intent.hasExtra(POSTAGE)){
-            routeRequest = intent.getStringExtra(POSTAGE)!!
+        // It reads from the ROUTE, assuming it is the requested info! This is the only module that works different
+        if(intent.hasExtra(ROUTE)){
+            routeRequest = intent.getStringExtra(ROUTE)!!
             Log.i("PostOffice","pipelineRequest: ${routeRequest}")
         }else{
             Log.i("PostOffice","Nothing was found, sending it the default way")
-            // currently, the default is to return
+            // currently, the default is to do nothing
             return
         }
 
@@ -412,6 +423,7 @@ class CoreService: SAFService(){
         return routesJSON
     }
 
+    // This needs to be changed to a Route thing, for sure
     fun loadRoutes(): Map<String,String>{
         var routes = mutableMapOf<String,String>()
         // kaldiservice, in this example, is FROM not STDIN
@@ -447,7 +459,6 @@ class CoreService: SAFService(){
             // add flags, as extras?
         }
     }
-
 
     override fun onDestroy() {
         stopBackgroundServices(sapphire_apps, connections)
