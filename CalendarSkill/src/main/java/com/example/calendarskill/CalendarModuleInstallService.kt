@@ -23,7 +23,7 @@ class CalendarModuleInstallService: SAFInstallService(){
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         if(intent.action == ACTION_SAPPHIRE_MODULE_REGISTER) {
             Log.i("SkillInstallService","Register intent received. Installing CalendarSkill")
-            registerModule()
+            registerModule(intent)
         // This will use a pre-prepared intent, to send it through the pipeline for the reuqesting module
         }else if(intent.action == ACTION_SAPPHIRE_MODULE_REQUEST_DATA){
             // This is filler for now, but should replace the hardcoding
@@ -46,12 +46,12 @@ class CalendarModuleInstallService: SAFInstallService(){
         return super.onStartCommand(intent, flags, startId)
     }
 
-    fun registerModule(){
-        var intent = Intent()
-        intent = registerVersion(intent, VERSION)
-        intent = registerPackageName(intent,this.packageName)
-        intent = registerData(intent, intentFiles)
+    // I think I can touch this up a lot
+    override fun registerModule(intent: Intent){
+        var returnIntent = Intent(intent)
+        registerVersion(returnIntent, VERSION)
+        registerData(returnIntent, intentFiles)
 
-        super.registerModule(intent)
+        super.registerModule(returnIntent)
     }
 }

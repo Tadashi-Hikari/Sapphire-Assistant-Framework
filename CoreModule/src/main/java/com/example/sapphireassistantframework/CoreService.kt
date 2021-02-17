@@ -10,7 +10,6 @@ import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import androidx.core.util.rangeTo
 import com.example.componentframework.SAFService
 import org.json.JSONArray
 import org.json.JSONObject
@@ -18,13 +17,17 @@ import java.io.File
 import java.util.*
 
 class CoreService: SAFService(){
+
     private var connections: LinkedList<Pair<String, Connection>> = LinkedList()
     private lateinit var notificationManager: NotificationManager
     private val CHANNEL_ID = "SAF"
     private val NAME = "Sapphire Assistant Framework"
     private val SERVICE_TEXT = "Sapphire Assistant Framework"
     private lateinit var sapphire_apps: LinkedList<Pair<String, String>>
-    // This isn't good, because I've now defined it in CoreService and PostOffice
+
+    /*
+    These could be static, to be shared between this and CoreRegistrationService
+     */
     private val CONFIG = "core.conf"
     private val DATABASE = "core.db"
 
@@ -49,16 +52,56 @@ class CoreService: SAFService(){
     var jsonHookList = JSONObject()
 
     var readyToGoSemaphore = false
+    var SapphireModuleStack = LinkedList<Intent>()
 
     override fun onCreate() {
         // Do all startup tasks
         var configJSON = parseConfigFile(CONFIG)
         coreReadConfigJSON(configJSON)
         buildForegroundNotification()
-        scanInstalledModules()
-        startBackgroundServices()
-        Log.i("CoreService", "All startup tasks finished")
+        // This is where it is checking modules
+        startRegistrationService()
         super.onCreate()
+    }
+
+    // Run through the registration process
+    fun startRegistrationService(){
+        var registrationIntent = Intent().setClassName(this,"${this}.CoreRegistrationService")
+        startService(registrationIntent)
+    }
+
+
+    fun coreReadConfigJSON(jsonConfig: JSONObject){
+        // These should be global vars, so I really just need to load them.
+        // I need to account for just directly loading these, not having them in a separate config
+        jsonDefaultModules = loadJSONTable(jsonConfig.getString(DEFAULT_MODULES_TABLE))
+        jsonBoundStartup = loadJSONTable(jsonConfig.getString(BOUND_STARTUP_TABLE))
+        jsonBackgroundStartup = loadJSONTable(jsonConfig.getString(BACKGROUND_STARTUP_TABLE))
+        jsonForegroundStartup = loadJSONTable(jsonConfig.getString(FOREGROUND_STARTUP_TABLE))
+        jsonHookList = loadJSONTable(jsonConfig.getString(HOOK_TABLE))
+    }
+
+    fun buildForegroundNotification() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val importance = NotificationManager.IMPORTANCE_HIGH
+            val channel = NotificationChannel(CHANNEL_ID, NAME, importance).apply {
+                description = SERVICE_TEXT
+            }
+
+            notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
+
+        // This is the notification for the foreground service. Maybe have it lead into other bound services
+        var notification = NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.assistant)
+                .setContentTitle("Sapphire Assistant Framework")
+                .setContentText("SAF is running")
+                .setOngoing(true)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .build()
+
+        startForeground(1337, notification)
     }
 
     // This is where the actual mail sorting happens
@@ -68,18 +111,28 @@ class CoreService: SAFService(){
             if (intent.action == ACTION_SAPPHIRE_CORE_BIND) {
                 // Do the binding
             }else if(intent.action == ACTION_SAPPHIRE_MODULE_REGISTER) {
-                Log.i("PostOffice", "Module registration action received")
-                // This needs to be made generic
-                if (intent.hasExtra(DATA_KEYS)) {
-                    Log.i("PostOffice", "Registration intent contains data keys")
-                    var processorIntent = Intent(intent)
-                    // This should load from something configurable, and a pipeline <- this
-                    processorIntent.setClassName(
-                        this,
-                        "package com.example.processormodule.ProcessorTrainService"
-                    )
-                    startService(processorIntent)
-                }
+                /*
+                When a registration intent is received, move it to a background process, so that it
+                doesn't block up other intents that may be received, just in case this is done during
+                normal useage, and not init
+                 */
+                intent.setClassName(this,"${this.packageName}.CoreRegistrationService")
+                // just forward the prior intent right along
+                startService(intent)
+            // This will be triggered until the stack is empty, at which point it will allow the rest of the init
+            }else if(intent.action == ACTION_SAPPHIRE_CORE_REGISTRATION_COMPLETE && readyToGoSemaphore == false) {
+                    startBackgroundServices()
+                    Log.i("CoreService", "All startup tasks finished")
+                    // This could be the static initializing var
+                    readyToGoSemaphore = true
+                /*
+                I need to wait for the initial install, because a env_variable is likely to be used
+                in a route
+                 */
+            // This is not going to trigger when complete
+            }else if(readyToGoSemaphore == false){
+                // Don't do other stuff until it's initialized
+                return super.onStartCommand(intent, flags, startId)
             }else if(intent.action == ACTION_SAPPHIRE_CORE_REQUEST_DATA){
                 // I need to use the CoreService install process somehow, without duplicating code
                 var queryIntent = Intent(ACTION_SAPPHIRE_MODULE_REQUEST_DATA)
@@ -106,6 +159,7 @@ class CoreService: SAFService(){
                 Log.i("PostOffice","Tacking ${intent.getStringExtra(ROUTE)!!} on to ROUTE")
                 multiprocessIntent.putExtra(ROUTE,"${multiprocessRoute},${intent.getStringExtra(ROUTE)}")
                 // -a means aggregate. I'm using a unix like flag for an example
+                // This DEF needs to be changed
                 multiprocessIntent.putExtra(POSTAGE,"-a")
                 Log.i("PostOffice","Requesting data keys ${multiprocessIntent.getStringArrayListExtra(DATA_KEYS)}" )
                 startService(multiprocessIntent)
@@ -116,155 +170,6 @@ class CoreService: SAFService(){
             Log.e("PostOffice","Some intent error")
         }
         return super.onStartCommand(intent, flags, startId)
-    }
-
-    fun coreReadConfigJSON(jsonConfig: JSONObject){
-        // These should be global vars, so I really just need to load them.
-        // I need to account for just directly loading these, not having them in a separate config
-        jsonDefaultModules = loadJSONTable(jsonConfig.getString(DEFAULT_MODULES_TABLE))
-        jsonBoundStartup = loadJSONTable(jsonConfig.getString(BOUND_STARTUP_TABLE))
-        jsonBackgroundStartup = loadJSONTable(jsonConfig.getString(BACKGROUND_STARTUP_TABLE))
-        jsonForegroundStartup = loadJSONTable(jsonConfig.getString(FOREGROUND_STARTUP_TABLE))
-        jsonHookList = loadJSONTable(jsonConfig.getString(HOOK_TABLE))
-    }
-
-    fun buildForegroundNotification() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val importance = NotificationManager.IMPORTANCE_HIGH
-            val channel = NotificationChannel(CHANNEL_ID, NAME, importance).apply {
-                description = SERVICE_TEXT
-            }
-
-            notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
-        }
-
-        // This is the notification for the foreground service. Maybe have it lead into other bound services
-        var notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.drawable.assistant)
-            .setContentTitle("Sapphire Assistant Framework")
-            .setContentText("SAF is running")
-            .setOngoing(true)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .build()
-
-        startForeground(1337, notification)
-    }
-
-    // There could be an issue here, since it isn't waiting for a callback. I may need to run this through the multiprocess module
-    fun scanInstalledModules() {
-        var intent = Intent().setAction(ACTION_SAPPHIRE_MODULE_REGISTER)
-        var installedSapphireModules = packageManager.queryIntentServices(intent, 0)
-
-        // I believe installedSapphireModules is a collection of collections (List & MutableList). I just
-        // need one, otherwise it gives me a duplicate thing
-        for (module in installedSapphireModules.take(1)) {
-            try {
-                var packageName = module.serviceInfo.packageName
-                var className = module.serviceInfo.name
-                // This is called twice. Why?
-                Log.i("CoreService", "Found a module. Checking if it's registered: ${packageName};${className}")
-                // If its registered, check version. Else, register it
-                if (checkModuleRegistration(packageName, className)) {
-                } else {
-                    installRegisterModule(packageName, className)
-                }
-            } catch (exception: Exception) {
-                continue
-            }
-        }
-    }
-
-    // This will likely be called in a different section of the CoreService, upon receipt of an intent
-    // How do I transfer packageName and className since they're not part of the intent...?
-    fun updateModuleRegistration(intent: Intent) {
-        // This should be global to CoreService
-        var registrationTableFilename = "registration.tbl"
-        // This should be global to CoreService
-        // Is it a table or database?
-        var jsonRegistration = loadJSONTable(registrationTableFilename)
-        // This package name isn't right. It needs to come from PackageManager
-        var jsonModuleRegistration = JSONObject()
-        if (checkModuleRegistration(intent.getStringExtra(MODULE_PACKAGE)!!,"fake_class_placeholder")) {
-            jsonModuleRegistration = jsonRegistration.getJSONObject(intent.getStringExtra(MODULE_PACKAGE)!!)
-            if (intent.hasExtra(MODULE_VERSION)) {
-                if (jsonModuleRegistration.getString(MODULE_VERSION) != intent.getStringExtra(MODULE_VERSION)) {
-                    // Do some kind of update
-                    // This mostly applys to data, as far as I can tell
-                }
-            }
-        } else {
-            // I am using DATA_KEYS here, can I make it more generic?
-            // for(key in intent.getStringArrayListExtra(DATA_KEYS)!!)
-            if (intent.hasExtra(MODULE_TYPE)) {
-                // What happens if it has multiple module_types?
-                // Maybe I should register these in a moduleTypeTable instead of in their own table
-                jsonModuleRegistration.put(MODULE_TYPE, intent.getStringExtra(MODULE_TYPE))
-                checkDefaultModules(intent.getStringExtra(MODULE_TYPE)!!, intent.getStringExtra(MODULE_PACKAGE)!!)
-            } else if (intent.hasExtra(MODULE_VERSION)) {
-                jsonModuleRegistration.put(MODULE_VERSION, intent.getStringExtra(MODULE_VERSION))
-            }
-        }
-        jsonRegistration.put(packageName, jsonModuleRegistration.toString())
-    }
-
-    // This takes an incoming INSTALL intent, and registers it in the JSONtable
-    fun registerModuleType(intent: Intent) {
-        var packageName = intent.getStringExtra(MODULE_PACKAGE)
-        if (intent.hasExtra(MODULE_TYPE)) {
-            var moduleTypeData = intent.getStringExtra(MODULE_TYPE)!!
-            var moduleTypes = moduleTypeData.split(',')
-            for (moduleType in moduleTypes) {
-                //register moduleType
-                if(jsonDefaultModules.has(moduleType) == false) {
-                    // I need a way to get the sending package info from the intent
-                    // Wow, I already don't linke this storage method
-                    jsonDefaultModules.put(moduleType,"${intent.getStringExtra(MODULE_PACKAGE)};${intent.getStringExtra("fake_class_placeholder")}")
-                }
-            }
-        } else {
-            //register GENERIC
-        }
-        //writeFile
-    }
-
-    // Should this be packageName,className?
-    fun checkModuleRegistration(packageName: String, className: String): Boolean {
-        // This should be global to CoreService
-        var registrationTable = "registration.tbl"
-        // This should be global to CoreService
-        // Is it a table or database?
-        var jsonRegistration = loadJSONTable(registrationTable)
-        if (jsonRegistration.has(packageName)) {
-            //checkVersionInfo
-            return true
-        } else {
-            return false
-        }
-    }
-
-    // This is pretty straightforward.
-    // I think that this needs to be done other than onCreate.
-    fun installRegisterModule(packageClass: String, className: String) {
-        var databaseFile = File(filesDir, DATABASE)
-        var database = JSONObject()
-
-        if (database.has(packageClass)) {
-            return
-        } else {
-            var module = JSONObject()
-            module.put("packageClass", packageClass)
-            databaseFile.writeText(module.toString())
-        }
-    }
-
-    fun checkDefaultModules(moduleType: String, packageName: String) {
-        var defaultsTableFilename = "defaultModules.tbl"
-        var jsonDefaultModules = loadJSONTable(defaultsTableFilename)
-        if (jsonDefaultModules.has(packageName) == false) {
-            jsonDefaultModules.put(moduleType, packageName)
-        }
-        saveJSONTable(defaultsTableFilename, jsonDefaultModules)
     }
 
     // It really just pulls the alias from Route.

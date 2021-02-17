@@ -6,6 +6,7 @@ import android.util.Log
 import com.example.componentframework.SAFService
 import org.json.JSONObject
 import java.io.File
+import java.util.*
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 
@@ -140,6 +141,13 @@ class MultiprocessService: SAFService(){
         }else{
             // Its a duplicate. Ignore it
             return
+        }
+    }
+
+    // Basically an orderedBroadcast for startService. No return expected
+    fun dispatchOrdered(intentStack: LinkedList<Intent>){
+        for(intent in intentStack){
+            startService(intent)
         }
     }
 

@@ -13,7 +13,7 @@ class ProcessorModuleInstallService: SAFInstallService(){
 	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 		try {
 			if (intent!!.action == ACTION_SAPPHIRE_MODULE_REGISTER) {
-				registerModule()
+				registerModule(intent)
 			}
 		}catch(exception: Exception){
 			Log.i("VoskModuleInstallService","There was some kind of error with the install intent")
@@ -21,11 +21,10 @@ class ProcessorModuleInstallService: SAFInstallService(){
 		return super.onStartCommand(intent, flags, startId)
 	}
 
-	// Hmm, I don't know if I like how super.registerModule works
-	fun registerModule(){
-		var intent = Intent()
-		intent = registerVersion(intent, VERSION)
-		intent = registerPackageName(intent, this.packageName)
-		super.registerModule(intent)
+	override fun registerModule(intent: Intent){
+		var returnIntent = Intent(intent)
+		registerVersion(returnIntent, VERSION)
+		registerModuleType(returnIntent,PROCESSOR)
+		super.registerModule(returnIntent)
 	}
 }

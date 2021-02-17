@@ -14,37 +14,34 @@ abstract class SAFInstallService: SAFService(){
 	 * extra strings to populate it
 	 */
 
-	fun registerRouteInformation(intent: Intent, route: String): Intent{
-		return intent
+	fun registerRouteInformation(intent: Intent, route: String){
+		intent.putExtra(ROUTE,route)
 	}
 
 	// I'm either sending JSON or DSV
-	fun registerBackgroundServices(intent: Intent, route: String): Intent{
-		return intent
+	fun registerBackgroundServices(intent: Intent, route: String){
+		intent.putExtra("BACKGROUND",route)
 	}
 
-	fun registerVersion(intent: Intent, version: String): Intent{
+	fun registerVersion(intent: Intent, version: String){
 		intent.putExtra(MODULE_VERSION,version)
-		return intent
 	}
 
-	fun registerPackageName(intent: Intent, packageName: String): Intent{
+	// I don't think this is needed, since it's dispatched this way
+	fun registerPackageName(intent: Intent, packageName: String){
 		intent.putExtra(MODULE_PACKAGE,packageName)
-		return intent
 	}
 
-	fun registerSettings(intent: Intent, component: String): Intent{
+	fun registerModuleType(intent: Intent, component: String){
 		intent.putExtra(MODULE_TYPE, component)
-		return intent
 	}
 
 	// This is called for retrieveData as well
 	// This one WILL save time
-	fun registerData(intent: Intent, filenames: List<String>): Intent {
-		return intent
+	fun registerData(intent: Intent, filenames: List<String>){
 	}
 
-	fun registerModule(intent: Intent){
+	open fun registerModule(intent: Intent){
 		// This needs to not be hardcoded. I can get the info from POSTAGE
 		intent.setClassName(this,"com.example.sapphireassistantframework.CoreService")
 		intent.setAction(ACTION_SAPPHIRE_MODULE_REGISTER)
