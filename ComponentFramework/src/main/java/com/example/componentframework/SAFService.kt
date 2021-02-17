@@ -14,8 +14,10 @@ abstract class SAFService: Service(){
     // This is going to be for ENV_VARIABLES
     val POSTAGE="assistant.framework.protocol.POSTAGE"
     val ROUTE="assistant.framework.protocol.ROUTE"
+    val ID = "assistant.framework.module.protocol.ID"
 
     val MODULE_PACKAGE = "assistant.framework.module.protocol.PACKAGE"
+    val MODULE_CLASS = "assitant.framework.module.protocol.CLASS"
     var MODULE_TYPE = "assistant.framework.module.protocol.TYPE"
     val MODULE_VERSION = "assistant.framework.module.protocol.VERSION"
 
@@ -40,6 +42,7 @@ abstract class SAFService: Service(){
     val ACTION_SAPPHIRE_CORE_BIND="assistant.framework.core.action.BIND"
     // This is sent to the CORE from the module, so the core can handle the registration process
     // This is for a module to request *all* data from the core (implicit intent style)
+    val ACTION_SAPPHIRE_CORE_REGISTRATION_COMPLETE = "assistant.framework.core.action.REGISTRATION_COMPLETE"
     val ACTION_SAPPHIRE_CORE_REQUEST_DATA="assistant.framework.core.action.REQUEST_DATA"
     val ACTION_SAPPHIRE_UPDATE_ENV = "action.framework.module.action.UPDATE_ENV"
     val ACTION_SAPPHIRE_MODULE_REGISTER = "assistant.framework.module.action.REGISTER"

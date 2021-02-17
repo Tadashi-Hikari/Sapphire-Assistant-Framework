@@ -15,7 +15,7 @@ class VoskModuleInstallService: SAFInstallService(){
 	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 		try {
 			if (intent!!.action == ACTION_SAPPHIRE_MODULE_REGISTER) {
-				registerModule()
+				registerModule(intent!!)
 			}
 		}catch(exception: Exception){
 			Log.i("VoskModuleInstallService","There was some kind of error with the install intent")
@@ -23,14 +23,14 @@ class VoskModuleInstallService: SAFInstallService(){
 		return super.onStartCommand(intent, flags, startId)
 	}
 
-	fun registerModule(){
+	override fun registerModule(intent: Intent){
 		// I don't like this, It seems clunky.
 		var routeData = "${this.packageName};com.example.vosksttmodule.KaldiService"
 
-		var intent = Intent()
-		intent = registerBackgroundServices(intent,routeData)
-		intent = registerVersion(intent, VERSION)
-		intent = registerPackageName(intent, this.packageName)
-		super.registerModule(intent)
+		var returnIntent = Intent(intent)
+		registerBackgroundServices(intent,routeData)
+		registerModuleType(intent,INPUT)
+		registerVersion(intent, VERSION)
+		super.registerModule(returnIntent)
 	}
 }
