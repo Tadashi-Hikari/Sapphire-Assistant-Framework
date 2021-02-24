@@ -24,11 +24,21 @@ class VoskModuleInstallService: SAFInstallService(){
 	}
 
 	override fun registerModule(intent: Intent){
+		var startupRoute = "${this.packageName};com.example.vosksttmodule.KaldiService"
 		// I don't like this, It seems clunky.
-		var routeData = "${this.packageName};com.example.vosksttmodule.KaldiService"
+		var backgroundData = JSONObject()
+		backgroundData.put(ROUTE,startupRoute)
+		backgroundData.put("bound",true)
+		backgroundData.put("registration_id","VoskModule")
+
+		// This is supposed to be a variable
+		var routeData = PROCESSOR
 
 		var returnIntent = Intent(intent)
-		registerBackgroundServices(intent,routeData)
+		registerBackgroundServices(intent,backgroundData.toString())
+		// Do I need to do this?
+		intent.putExtra("ROUTE_NAME","${this.packageName};${this.packageName}.KaldiService")
+		registerRouteInformation(intent, routeData)
 		registerModuleType(intent,INPUT)
 		registerVersion(intent, VERSION)
 		super.registerModule(returnIntent)
