@@ -19,17 +19,12 @@ abstract class SAFInstallService: SAFService(){
 	}
 
 	// I'm either sending JSON or DSV
-	fun registerBackgroundServices(intent: Intent, route: String){
-		intent.putExtra("BACKGROUND",route)
+	fun registerBackgroundServices(intent: Intent, backgroundData: String){
+		intent.putExtra("BACKGROUND",backgroundData)
 	}
 
 	fun registerVersion(intent: Intent, version: String){
 		intent.putExtra(MODULE_VERSION,version)
-	}
-
-	// I don't think this is needed, since it's dispatched this way
-	fun registerPackageName(intent: Intent, packageName: String){
-		intent.putExtra(MODULE_PACKAGE,packageName)
 	}
 
 	fun registerModuleType(intent: Intent, component: String){

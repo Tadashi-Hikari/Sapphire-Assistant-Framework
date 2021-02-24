@@ -24,18 +24,16 @@ class CoreRegistrationService: SAFService(){
 	// These are table names
 	private var REGISTRATION_TABLE = "registration.tbl"
 	private val DEFAULT_MODULES_TABLE = "defaultmodules.tbl"
-	private val BOUND_STARTUP_TABLE = "boundstart.tbl"
 	private val BACKGROUND_STARTUP_TABLE = "background.tbl"
-	private val FOREGROUND_STARTUP_TABLE = "foreground.tbl"
-	private val HOOK_TABLE = "hooks.tbl"
+	private val ROUTE_TABLE = "routetable.tbl"
+	private val ALIAS_TABLE = "alias.tbl"
 
 	// These are the config modules
 	var jsonRegistrationTable = JSONObject()
 	var jsonDefaultModules = JSONObject()
-	var jsonBoundStartup = JSONObject()
 	var jsonBackgroundStartup = JSONObject()
-	var jsonForegroundStartup = JSONObject()
-	var jsonHookList = JSONObject()
+	var jsonAliasTable = JSONObject()
+	var jsonRouteTable = JSONObject()
 
 	// I don't think I need to define these, cause they'll be defined on install. I just need to check if they're populated
 	// These are the DEFAULT module package;class
@@ -105,10 +103,9 @@ class CoreRegistrationService: SAFService(){
 		// I need to account for just directly loading these, not having them in a separate config
 		jsonRegistrationTable = loadJSONTable(jsonConfig.getString(REGISTRATION_TABLE))
 		jsonDefaultModules = loadJSONTable(jsonConfig.getString(DEFAULT_MODULES_TABLE))
-		jsonBoundStartup = loadJSONTable(jsonConfig.getString(BOUND_STARTUP_TABLE))
 		jsonBackgroundStartup = loadJSONTable(jsonConfig.getString(BACKGROUND_STARTUP_TABLE))
-		jsonForegroundStartup = loadJSONTable(jsonConfig.getString(FOREGROUND_STARTUP_TABLE))
-		jsonHookList = loadJSONTable(jsonConfig.getString(HOOK_TABLE))
+		jsonRouteTable = loadJSONTable(jsonConfig.getString(ROUTE_TABLE))
+		jsonAliasTable = loadJSONTable(ALIAS_TABLE)
 	}
 
 	fun scanInstalledModules() {
@@ -144,7 +141,21 @@ class CoreRegistrationService: SAFService(){
 			checkDefaults(intent)
 			var registration = registerModule(intent)
 			jsonRegistrationTable.put("${installPackageName}:${installClassName}",registration)
+			// I don't like that this isn't the same level as the rest
+			if(intent.hasExtra("BACKGROUND")){
+				var backgroundInfo = JSONObject(intent.getStringExtra("BACKGROUND"))
+				registerBackgroundService(backgroundInfo)
+				var backgroundFile = File(filesDir,BACKGROUND_STARTUP_TABLE)
+				backgroundFile.writeText(jsonBackgroundStartup.toString())
+			}
+			registerRoute(intent)
 		}
+	}
+
+	fun registerRoute(intent: Intent){
+		var routeData = intent.getStringExtra(ROUTE)
+		var routeName = intent.getStringExtra("ROUTE_NAME")
+		jsonRouteTable.put(routeName,routeData)
 	}
 
 	fun registerModule(intent: Intent): JSONObject{
@@ -155,6 +166,11 @@ class CoreRegistrationService: SAFService(){
 			registration.put(key,intent.getStringExtra(key))
 		}
 		return registration
+	}
+
+	fun registerBackgroundService(backgroundInfo: JSONObject){
+		// I suppose I am just outright copying the data here
+		jsonBackgroundStartup.put(backgroundInfo.getString("registration_id"),backgroundInfo)
 	}
 
 	fun checkForUpdates(intent: Intent){

@@ -11,9 +11,7 @@ import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.componentframework.SAFService
-import org.json.JSONArray
 import org.json.JSONObject
-import java.io.File
 import java.util.*
 
 class CoreService: SAFService(){
@@ -33,10 +31,9 @@ class CoreService: SAFService(){
 
     // These are table names
     private val DEFAULT_MODULES_TABLE = "defaultmodules.tbl"
-    private val BOUND_STARTUP_TABLE = "boundstart.tbl"
-    private val BACKGROUND_STARTUP_TABLE = "background.tbl"
-    private val FOREGROUND_STARTUP_TABLE = "foreground.tbl"
-    private val HOOK_TABLE = "hooks.tbl"
+    private val BACKGROUND_TABLE = "background.tbl"
+    private val ROUTE_TABLE = "routetable.tbl"
+    private val ALIAS_TABLE = "alias.tbl"
 
     // I don't think I need to define these, cause they'll be defined on install. I just need to check if they're populated
     // These are the DEFAULT module package;class
@@ -46,10 +43,9 @@ class CoreService: SAFService(){
 
     // These are the config modules
     var jsonDefaultModules = JSONObject()
-    var jsonBoundStartup = JSONObject()
-    var jsonBackgroundStartup = JSONObject()
-    var jsonForegroundStartup = JSONObject()
-    var jsonHookList = JSONObject()
+    var jsonBackgroundTable = JSONObject()
+    var jsonRouteTable = JSONObject()
+    var jsonAliasTable = JSONObject()
 
     var readyToGoSemaphore = false
     var SapphireModuleStack = LinkedList<Intent>()
@@ -75,10 +71,9 @@ class CoreService: SAFService(){
         // These should be global vars, so I really just need to load them.
         // I need to account for just directly loading these, not having them in a separate config
         jsonDefaultModules = loadJSONTable(jsonConfig.getString(DEFAULT_MODULES_TABLE))
-        jsonBoundStartup = loadJSONTable(jsonConfig.getString(BOUND_STARTUP_TABLE))
-        jsonBackgroundStartup = loadJSONTable(jsonConfig.getString(BACKGROUND_STARTUP_TABLE))
-        jsonForegroundStartup = loadJSONTable(jsonConfig.getString(FOREGROUND_STARTUP_TABLE))
-        jsonHookList = loadJSONTable(jsonConfig.getString(HOOK_TABLE))
+        jsonBackgroundTable = loadJSONTable(jsonConfig.getString(BACKGROUND_TABLE))
+        jsonRouteTable = loadJSONTable(ROUTE_TABLE)
+        jsonAliasTable = loadJSONTable(ALIAS_TABLE)
     }
 
     fun buildForegroundNotification() {
@@ -121,7 +116,7 @@ class CoreService: SAFService(){
                 startService(intent)
             // This will be triggered until the stack is empty, at which point it will allow the rest of the init
             }else if(intent.action == ACTION_SAPPHIRE_CORE_REGISTRATION_COMPLETE && readyToGoSemaphore == false) {
-                    startBackgroundServices()
+                    startBackgroundServicesConfigurable()
                     Log.i("CoreService", "All startup tasks finished")
                     // This could be the static initializing var
                     readyToGoSemaphore = true
@@ -174,44 +169,26 @@ class CoreService: SAFService(){
 
     // It really just pulls the alias from Route.
     // I need to have a way to ensure it triggers from a module
-    fun startBackgroundServicesConfigurable(jsonBackground: JSONArray){
-        for(index in 0 until jsonBackground.length()){
+    fun startBackgroundServicesConfigurable(){
+        for(recordName in jsonBackgroundTable.keys()){
+            var startupRecord = jsonBackgroundTable.getJSONObject(recordName)
+            var startupIntent = Intent()
+            // 2nd route is actually alias. Do I to change something?
+            startupIntent.putExtra(ROUTE, getRoute(startupRecord.getString(ROUTE)))
+
             // This is ripped right out of sortMail, so I could probably make it a function
-            var routes = loadRoutes()
-            var routeData = routes.get(jsonBackground.getString(index))!!
-            var route = parseRoute(routeData)
-            var backgroundService = Intent()
-            backgroundService.setClassName(this,route.first())
-            backgroundService.putExtra(MESSAGE,backgroundService.getStringExtra(MESSAGE))
-            backgroundService.putExtra(ROUTE,routeData)
+            var routeData = getRoute(startupRecord.getString("route"))
+            var moduleList: List<String> = parseRoute(routeData)
+            var startingModule = moduleList.first().split(";")
+            // This is ugly, but it'll do what I want
+            startupIntent.setClassName(startingModule.get(0),startingModule.get(1))
 
-            startService(backgroundService)
-        }
-    }
-
-    fun startBackgroundServices(){
-        var speechToText = Pair(
-        "com.example.sapphireassistantframework",
-        //"com.example.sapphireassistantframework.CoreKaldiService")
-        "com.example.vosksttmodule.KaldiService")
-        var startupApps = listOf(speechToText)
-
-        /** Convoluted, but meant to give a human readable name to running processes.
-         * I started VoskSTT as a bound service, so that it will not die as long as a service
-         * (CoreService) is bound to it. This gives SAF the control over background processes to
-         * help control battery life. Since CoreService is a foreground service it also prevents
-         * me from spamming the user with notifications, or having the system kill the background
-         * service
-         */
-        for (classNamePair: Pair<String, String> in startupApps) {
-            connections.plus(
-                Pair(
-                    classNamePair.first,
-                    startBoundService(
-                        classNamePair.first,
-                        classNamePair.second)
-                )
-            )
+            // I can add in
+            if(startupRecord.has("bound") and startupRecord.getBoolean("bound")) {
+                startBoundService(startupIntent)
+            }else{
+                startService(startupIntent)
+            }
         }
     }
 
@@ -230,17 +207,12 @@ class CoreService: SAFService(){
 
     // It's gonna work like this. Whatever is the LAST thing in the pipeline, core will read and upload pipeline data for.
     fun sortMail(intent: Intent){
-        var routes = loadRoutes()
         var routeRequest = ""
-
-        //notifyHooks()
-        var configJSON = loadConfig(CONFIG)
-        // Isn't this the same as NotifyHooks basically?
-        //checkConditionals()
 
         // It reads from the ROUTE, assuming it is the requested info! This is the only module that works different
         if(intent.hasExtra(ROUTE)){
             routeRequest = intent.getStringExtra(ROUTE)!!
+            // This is just to let me know what is going on
             Log.i("PostOffice","pipelineRequest: ${routeRequest}")
         }else{
             Log.i("PostOffice","Nothing was found, sending it the default way")
@@ -248,36 +220,74 @@ class CoreService: SAFService(){
             return
         }
 
-        var routeData = routes.get(routeRequest)!!
+        var routeData = getRoute(routeRequest)
         var route = parseRoute(routeData)
         // It's going to be the first in the pipeline, right?
-        intent.setClassName(this,route.first())
+        var packageClass = route.first().split(";")
+
+        // the packageName, and the className
+        intent.setClassName(packageClass.component1(),packageClass.component2())
         intent.putExtra(MESSAGE,intent.getStringExtra(MESSAGE))
         intent.putExtra(ROUTE,routeData)
 
         startService(intent)
     }
 
-    // These are services that CoreService is creating, and binding to. They're other modules
-    fun startBoundService(pkg: String, classname: String): Connection {
-        Log.i("CoreService", "binding ${pkg}, ${classname}")
-        // This needs to be changed to not pseudocode
+    fun getRoute(key: String): String{
+        // Load the route data
+        var uncheckedRoute = jsonRouteTable.getString(key)
+        var finalizedRoute = checkRouteForVariables(uncheckedRoute)
+        return finalizedRoute
+    }
+
+    // I don't like how convoluted this is, but it works for now (brute force)
+    fun checkRouteForVariables(uncheckedRoute: String):String{
+        var linkedList = parseRoute(uncheckedRoute) as LinkedList<String>
+        var tempLinkedList = LinkedList<String>()
+        var finalizedModules= LinkedList<String>()
+        var finalizedRoute = ""
+        var newRoute = ""
+        do{
+            var currentModule = linkedList.pop()
+            if(jsonDefaultModules.has(currentModule)){
+                newRoute = jsonDefaultModules.getString(currentModule)
+                tempLinkedList = parseRoute(newRoute) as LinkedList<String>
+                tempLinkedList.addAll(linkedList)
+                linkedList = tempLinkedList
+            }else if(jsonAliasTable.has(currentModule)){
+                newRoute = jsonAliasTable.getString(currentModule)
+                tempLinkedList = parseRoute(newRoute) as LinkedList<String>
+                tempLinkedList.addAll(linkedList)
+                linkedList = tempLinkedList
+            }else{
+                finalizedModules.add(currentModule)
+            }
+        }while(linkedList.isNotEmpty())
+
+        for(module in finalizedModules){
+            if(finalizedRoute == ""){
+                finalizedRoute = module
+            }else{
+                finalizedRoute+=",${module}"
+            }
+        }
+        return finalizedRoute
+    }
+
+    fun startBoundService(boundIntent: Intent){
+        Log.i("CoreService", "binding ${boundIntent.component}")
+        // This should probably append flags and the like
         var connection = Connection()
-        // This will likely need to change over time
-        // Package name is right. Is the class name?
+        // This isn't even used, I just need it to remind me to change it later
         var coreService: Intent = Intent().setAction("mycroft.BIND")
-        // There is an issue with the module name and class name. I will need to fix this
-        coreService.setClassName(pkg, classname)
-        // Preeeety sure this is archaic
-        coreService.putExtra("CORE_PACKAGE", "www.mabase.tech.mycroft")
-        coreService.putExtra("CORE_CLASSNAME", "www.mabase.tech.mycroft.CoreDaemon")
         if (coreService.resolveActivity(packageManager) != null) {
             bindService(coreService, connection, Context.BIND_AUTO_CREATE)
         } else {
             Log.e("CoreDaemon", "PackageManager says the service doesn't exist")
         }
-
-        return connection
+        // This appends it to the class variable, so I can shut it down later
+        // I don't like how it's a pair
+        connections.plus(Pair("${boundIntent.`package`};${boundIntent.component}",connection))
     }
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -295,75 +305,6 @@ class CoreService: SAFService(){
         }
     }
 
-    fun checkHookLog(intent: Intent): Boolean {
-        var databaseFile = File(filesDir, DATABASE)
-        var databaseString = databaseFile.readText()
-        var database = JSONObject(databaseString)
-        var hooklog = database.getJSONObject(HOOK_TABLE)
-        // What is the point of this?
-        if (intent.getStringExtra(HOOK_TABLE) != null) {
-            print("YAAAAAY")
-            return true
-        }
-        return false
-    }
-
-    /**
-     * What I want to happen here, is basically update a TextView in the CoreActivity.
-     * Do I need to make it *not* hardcoded?
-     *
-     * It is looking a lot like an outgoing Multiprocess
-     */
-    fun notifyHooks(intent: Intent) {
-        // I am thinking that checkHookLog is basically a shadowRoute
-        if (checkHookLog(intent)) {
-            var hookIntent = Intent().setClassName(this, "hook.intent.service")
-            hookIntent.setAction("SECOND ROUTE")
-        }
-    }
-
-    fun loadRoutesFile(routesFilename: String): JSONObject{
-        var routesFile = File(filesDir,routesFilename)
-        var routesJSON = JSONObject(routesFile.readText())
-        return routesJSON
-    }
-
-    // This needs to be changed to a Route thing, for sure
-    fun loadRoutes(): Map<String,String>{
-        var routes = mutableMapOf<String,String>()
-        // kaldiservice, in this example, is FROM not STDIN
-        routes.put("com.example.vosksttmodule.KaldiService",
-            "com.example.processormodule.ProcessorCentralService")
-        //calendar, in this example, is STDIN, not FROM
-        //routes.put("calendar","com.example.calendarskill.Calendar")
-        // I just want everything to default to here for now
-        routes.put("calendar","com.example.termuxmodule.TermuxService")
-
-        return routes
-    }
-
-    // I think this is supposed to be a loadRoutes
-    fun routeTest(){
-        var database = JSONObject()
-
-        var route = database.getJSONArray("modulename.filename")
-        for(index in 0 until route.length()){
-            var moduleData = route.getJSONObject(index)
-            parseModuleData(moduleData)
-        }
-    }
-
-    // What was I making this for? Oh! It's for replacing parseRoute so I can include flags
-    fun parseModuleData(json: JSONObject){
-        // I don't see any reason why it shouldn't just be these, predefined
-        json.get("PACKAGE")
-        json.get("CLASSNAME")
-        // Should this be sub-parsed?
-        var flags = json.getJSONObject("FLAGS")
-        for(index in 0 until flags.length()){
-            // add flags, as extras?
-        }
-    }
 
     override fun onDestroy() {
         stopBackgroundServices(sapphire_apps, connections)

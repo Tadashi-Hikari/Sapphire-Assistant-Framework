@@ -1,12 +1,17 @@
 package com.example.sapphireassistantframework.workspace
 
+import android.content.Context
 import android.content.Intent
 import android.os.IBinder
 import android.os.SystemClock
+import android.util.JsonReader
 import android.util.Log
+import android.widget.Switch
 import androidx.core.app.JobIntentService
 import com.example.componentframework.SAFService
 import com.example.sapphireassistantframework.CoreModuleInstallService
+import com.example.sapphireassistantframework.CoreService
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 import java.util.*
@@ -14,27 +19,6 @@ import java.util.*
 class trialFunctionsCanvas: SAFService(){
     var DATABASE = "databae.db"
     var HOOKLOG = "hooklog"
-
-    var stack = LinkedList<Intent>()
-    var goodToGo = false
-    fun stackAndSleepInit(intent: Intent){
-        stack.push(intent)
-            // Sleep for five seconds, and check again
-        while(!goodToGo) {
-            SystemClock.sleep(500)
-        }
-        while(stack.isNotEmpty()) {
-            if (intent.action == ACTION_SAPPHIRE_MODULE_REGISTER) {
-
-            } else if (intent.action == ACTION_SAPPHIRE_CORE_BIND) {
-
-            } else if (intent.action == ACTION_SAPPHIRE_CORE_REQUEST_DATA) {
-
-            } else {
-                //sortMail()
-            }
-        }
-    }
 
     // I need this in case any routes call env_variables (very likely)
     // This is for installing defaults if they don't exits
@@ -46,9 +30,6 @@ class trialFunctionsCanvas: SAFService(){
         }
         saveJSONTable(defaultsTableFilename, jsonDefaultModules)
     }
-
-
-    //var ROUTE = "JSONROUTE"
 
     fun defaultModuleType(){
 
