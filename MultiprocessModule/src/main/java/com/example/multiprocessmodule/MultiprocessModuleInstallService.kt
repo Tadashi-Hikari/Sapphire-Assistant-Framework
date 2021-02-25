@@ -22,6 +22,8 @@ class MultiprocessModuleInstallService: SAFInstallService(){
 
 	override fun registerModule(intent: Intent){
 		var registerIntent = Intent(intent)
+		registerIntent.putExtra(MODULE_PACKAGE,this.packageName)
+		registerIntent.putExtra(MODULE_CLASS,"${this.packageName}.MultiprocessService")
 		registerModuleType(registerIntent,MULTIPROCESS)
 		registerVersion(registerIntent, VERSION)
 		super.registerModule(registerIntent)

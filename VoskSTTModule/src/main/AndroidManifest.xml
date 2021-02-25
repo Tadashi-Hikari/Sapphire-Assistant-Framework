@@ -31,6 +31,13 @@
                 <category android:name="assistant.framework.category.INPUT"/>"
             </intent-filter>
         </service>
+        <service
+            android:name=".VoskModuleInstallService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="assistant.framework.module.action.REGISTER"/>
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

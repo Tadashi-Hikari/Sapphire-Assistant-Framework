@@ -1,7 +1,10 @@
 package com.example.sapphireassistantframework
 
 import android.content.Intent
+import android.content.pm.PackageManager.GET_RESOLVED_FILTER
+import android.content.pm.ResolveInfo
 import android.os.IBinder
+import android.util.Log
 import com.example.componentframework.SAFService
 import org.json.JSONObject
 import java.io.File
@@ -54,7 +57,6 @@ class CoreRegistrationService: SAFService(){
 	var initializing = false
 
 	override fun onCreate() {
-
 		var configJSON = parseConfigFile(CONFIG)
 		readConfigJSON(configJSON)
 		super.onCreate()
@@ -62,14 +64,15 @@ class CoreRegistrationService: SAFService(){
 
 	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 		try {
-			installPackageName = intent!!.getStringExtra(MODULE_PACKAGE)!!
-			installClassName = intent!!.getStringExtra(MODULE_CLASS)!!
-
-			if(intent!!.action == null){
+			Log.v(this.javaClass.name,"CoreRegistrationIntent received")
+			if(intent?.action == null){
+				Log.v(this.javaClass.name,"No action specified, initializing...")
 				// This is the Init action
 				initializing = true
 				scanInstalledModules()
-			}else if(intent.action == ACTION_SAPPHIRE_MODULE_REGISTER){
+			}else if(intent?.action == ACTION_SAPPHIRE_MODULE_REGISTER){
+				installPackageName = intent!!.getStringExtra(MODULE_PACKAGE)!!
+				installClassName = intent!!.getStringExtra(MODULE_CLASS)!!
 				// Change this to registerModule()? It does registration and re-registration
 				startValidationProcess(intent!!)
 			}
@@ -90,6 +93,8 @@ class CoreRegistrationService: SAFService(){
 				}
 			}
 		}catch (exception:Exception){
+			Log.v(this.javaClass.name,exception.toString())
+			Log.e("CoreRegistrationService","Error installing module")
 		}
 		return super.onStartCommand(intent, flags, startId)
 	}
@@ -101,24 +106,28 @@ class CoreRegistrationService: SAFService(){
 	fun readConfigJSON(jsonConfig: JSONObject){
 		// These should be global vars, so I really just need to load them.
 		// I need to account for just directly loading these, not having them in a separate config
-		jsonRegistrationTable = loadJSONTable(jsonConfig.getString(REGISTRATION_TABLE))
-		jsonDefaultModules = loadJSONTable(jsonConfig.getString(DEFAULT_MODULES_TABLE))
-		jsonBackgroundStartup = loadJSONTable(jsonConfig.getString(BACKGROUND_STARTUP_TABLE))
-		jsonRouteTable = loadJSONTable(jsonConfig.getString(ROUTE_TABLE))
+		jsonRegistrationTable = loadJSONTable(REGISTRATION_TABLE)
+		jsonDefaultModules = loadJSONTable(DEFAULT_MODULES_TABLE)
+		jsonBackgroundStartup = loadJSONTable(BACKGROUND_STARTUP_TABLE)
+		jsonRouteTable = loadJSONTable(ROUTE_TABLE)
 		jsonAliasTable = loadJSONTable(ALIAS_TABLE)
 	}
 
 	fun scanInstalledModules() {
+		Log.v(this.javaClass.name,"Scanning for modules installed on device")
 		var intent = Intent().setAction(ACTION_SAPPHIRE_MODULE_REGISTER)
-		intent.setClassName(this,"${this.packageName}.CoreModuleInstallService")
-		var availableSapphireModules = packageManager.queryIntentServices(intent, 0)
+		// This is installing itself
+		//intent.setClassName(this.packageName,"${this.packageName}.CoreModuleInstallService")
+		var availableSapphireModules = this.packageManager.queryIntentServices(intent,GET_RESOLVED_FILTER)
+		Log.v(this.javaClass.name,"${availableSapphireModules.size} modules found")
+		Log.d(this.javaClass.name,availableSapphireModules.toString())
 
-		// I believe installedSapphireModules is a collection of collections (List & MutableList). I just
-		// need one, otherwise it gives me a duplicate thing
-		for (module in availableSapphireModules.take(1)) {
+		// to check for modules with installers. What am I searching for here?
+		for (module in availableSapphireModules) {
 			try {
 				var packageName = module.serviceInfo.packageName
 				var className = module.serviceInfo.name
+				module.filter.actionsIterator().forEach { action -> Log.d(this.javaClass.name,"${className}: ${action.toString()}")}
 
 				// Let CoreRegistrationService handle all the checking.
 				var registrationIntent = Intent(intent)
@@ -131,6 +140,7 @@ class CoreRegistrationService: SAFService(){
 				continue
 			}
 		}
+
 	}
 
 	fun startValidationProcess(intent: Intent){
@@ -174,7 +184,8 @@ class CoreRegistrationService: SAFService(){
 	}
 
 	fun checkForUpdates(intent: Intent){
-		var registration = jsonRegistrationTable.getJSONObject("${installPackageName}:${installClassName}")
+		Log.v(this.javaClass.name,"checking on updates for ${installClassName}")
+		var registration = jsonRegistrationTable.optJSONObject("${installPackageName}:${installClassName}")
 		if(registration.getString(MODULE_VERSION) != intent.getStringExtra(MODULE_VERSION)){
 			registerModule(intent)
 		}

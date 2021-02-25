@@ -23,6 +23,8 @@ class ProcessorModuleInstallService: SAFInstallService(){
 
 	override fun registerModule(intent: Intent){
 		var returnIntent = Intent(intent)
+		returnIntent.putExtra(MODULE_PACKAGE,this.packageName)
+		returnIntent.putExtra(MODULE_CLASS,"${this.packageName}.ProcessorCentralService")
 		registerVersion(returnIntent, VERSION)
 		registerModuleType(returnIntent,PROCESSOR)
 		super.registerModule(returnIntent)

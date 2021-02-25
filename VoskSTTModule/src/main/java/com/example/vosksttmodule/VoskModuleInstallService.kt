@@ -37,10 +37,12 @@ class VoskModuleInstallService: SAFInstallService(){
 		var returnIntent = Intent(intent)
 		registerBackgroundServices(intent,backgroundData.toString())
 		// Do I need to do this?
-		intent.putExtra("ROUTE_NAME","${this.packageName};${this.packageName}.KaldiService")
-		registerRouteInformation(intent, routeData)
-		registerModuleType(intent,INPUT)
-		registerVersion(intent, VERSION)
+		returnIntent.putExtra("ROUTE_NAME","${this.packageName};${this.packageName}.KaldiService")
+		returnIntent.putExtra(MODULE_PACKAGE,this.packageName)
+		returnIntent.putExtra(MODULE_CLASS,"${this.packageManager}.KaldiService")
+		registerRouteInformation(returnIntent, routeData)
+		registerModuleType(returnIntent,INPUT)
+		registerVersion(returnIntent, VERSION)
 		super.registerModule(returnIntent)
 	}
 }

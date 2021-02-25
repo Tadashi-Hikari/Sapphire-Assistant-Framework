@@ -13,11 +13,24 @@
     </dist:module>
 
     <application>
-        <service android:name="com.example.processormodule.ProcessorCentralService"
-            android:enabled="true"/>
-        <service android:name=".ProcessorTrainingService"
-            android:exported="true"/>
-        <service android:name=".BracketExpander"
-            android:exported="true"/>
+        <service
+            android:name="com.example.processormodule.ProcessorCentralService"
+            android:enabled="true">
+        </service>
+        <service
+            android:name=".ProcessorTrainingService"
+            android:exported="true">
+        </service>
+        <service
+            android:name=".BracketExpander"
+            android:exported="true">
+        </service>
+        <service
+            android:name=".ProcessorModuleInstallService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="assistant.framework.module.action.REGISTER"/>
+            </intent-filter>
+        </service>
     </application>
 </manifest>
