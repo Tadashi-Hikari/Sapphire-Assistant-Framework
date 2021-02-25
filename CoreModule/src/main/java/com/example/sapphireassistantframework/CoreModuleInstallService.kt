@@ -20,6 +20,8 @@ class CoreModuleInstallService: SAFInstallService(){
 
     override fun registerModule(intent: Intent){
         var returnIntent = Intent(intent)
+        returnIntent.putExtra(MODULE_PACKAGE,this.packageName)
+        returnIntent.putExtra(MODULE_CLASS,"${this.packageManager}.CoreService")
         registerModuleType(returnIntent,CORE)
         registerVersion(returnIntent,VERSION)
 

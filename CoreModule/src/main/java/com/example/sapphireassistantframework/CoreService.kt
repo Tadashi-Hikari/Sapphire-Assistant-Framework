@@ -15,7 +15,6 @@ import org.json.JSONObject
 import java.util.*
 
 class CoreService: SAFService(){
-
     private var connections: LinkedList<Pair<String, Connection>> = LinkedList()
     private lateinit var notificationManager: NotificationManager
     private val CHANNEL_ID = "SAF"
@@ -62,7 +61,8 @@ class CoreService: SAFService(){
 
     // Run through the registration process
     fun startRegistrationService(){
-        var registrationIntent = Intent().setClassName(this,"${this}.CoreRegistrationService")
+        var registrationIntent = Intent().setClassName(this.packageName,"${this.packageName}.CoreRegistrationService")
+        Log.v(this.javaClass.name,"starting service ${"${this.packageName}.CoreRegistrationService"}")
         startService(registrationIntent)
     }
 
@@ -70,8 +70,8 @@ class CoreService: SAFService(){
     fun coreReadConfigJSON(jsonConfig: JSONObject){
         // These should be global vars, so I really just need to load them.
         // I need to account for just directly loading these, not having them in a separate config
-        jsonDefaultModules = loadJSONTable(jsonConfig.getString(DEFAULT_MODULES_TABLE))
-        jsonBackgroundTable = loadJSONTable(jsonConfig.getString(BACKGROUND_TABLE))
+        jsonDefaultModules = loadJSONTable(DEFAULT_MODULES_TABLE)
+        jsonBackgroundTable = loadJSONTable(BACKGROUND_TABLE)
         jsonRouteTable = loadJSONTable(ROUTE_TABLE)
         jsonAliasTable = loadJSONTable(ALIAS_TABLE)
     }
@@ -101,23 +101,18 @@ class CoreService: SAFService(){
 
     // This is where the actual mail sorting happens
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        Log.i("CoreService","An intent was received")
+        Log.i(this.javaClass.name,"An CoreService intent was received")
         try {
-            if (intent.action == ACTION_SAPPHIRE_CORE_BIND) {
+            if((intent.action == ACTION_SAPPHIRE_CORE_BIND) or (intent.action == "INIT")) {
                 // Do the binding
             }else if(intent.action == ACTION_SAPPHIRE_MODULE_REGISTER) {
-                /*
-                When a registration intent is received, move it to a background process, so that it
-                doesn't block up other intents that may be received, just in case this is done during
-                normal useage, and not init
-                 */
                 intent.setClassName(this,"${this.packageName}.CoreRegistrationService")
                 // just forward the prior intent right along
                 startService(intent)
             // This will be triggered until the stack is empty, at which point it will allow the rest of the init
             }else if(intent.action == ACTION_SAPPHIRE_CORE_REGISTRATION_COMPLETE && readyToGoSemaphore == false) {
                     startBackgroundServicesConfigurable()
-                    Log.i("CoreService", "All startup tasks finished")
+                    Log.i(this.javaClass.name, "All startup tasks finished")
                     // This could be the static initializing var
                     readyToGoSemaphore = true
                 /*
@@ -132,7 +127,7 @@ class CoreService: SAFService(){
                 // I need to use the CoreService install process somehow, without duplicating code
                 var queryIntent = Intent(ACTION_SAPPHIRE_MODULE_REQUEST_DATA)
                 var modulesWithData = packageManager.queryIntentServices(queryIntent, 0)
-                Log.i("PostOffice","Query results ${modulesWithData}")
+                Log.i(this.javaClass.name,"Query results ${modulesWithData}")
                 var multiprocessRoute = "("
                 for(dataModule in modulesWithData.take(1)) {
                     try{
@@ -148,21 +143,21 @@ class CoreService: SAFService(){
                 // Janky, but should do. I just made a (multiprocess route)
                 multiprocessRoute = multiprocessRoute.subSequence(0,multiprocessRoute.length-1) as String
                 multiprocessRoute+=")"
-                Log.i("PostOffice","Multiprocess route: ${multiprocessRoute}")
+                Log.i(this.javaClass.name,"Multiprocess route: ${multiprocessRoute}")
                 // Is there a reason to switch intents and not just use the original?
                 var multiprocessIntent = Intent(intent).setClassName(this,"com.example.multiprocessmodule.MultiprocessService")
-                Log.i("PostOffice","Tacking ${intent.getStringExtra(ROUTE)!!} on to ROUTE")
+                Log.i(this.javaClass.name,"Tacking ${intent.getStringExtra(ROUTE)!!} on to ROUTE")
                 multiprocessIntent.putExtra(ROUTE,"${multiprocessRoute},${intent.getStringExtra(ROUTE)}")
                 // -a means aggregate. I'm using a unix like flag for an example
                 // This DEF needs to be changed
                 multiprocessIntent.putExtra(POSTAGE,"-a")
-                Log.i("PostOffice","Requesting data keys ${multiprocessIntent.getStringArrayListExtra(DATA_KEYS)}" )
+                Log.i(this.javaClass.name,"Requesting data keys ${multiprocessIntent.getStringArrayListExtra(DATA_KEYS)}" )
                 startService(multiprocessIntent)
             }else {
                 sortMail(intent)
             }
         }catch(exception: Exception){
-            Log.e("PostOffice","Some intent error")
+            Log.e(this.javaClass.name,"Some intent error")
         }
         return super.onStartCommand(intent, flags, startId)
     }
@@ -283,7 +278,7 @@ class CoreService: SAFService(){
         if (coreService.resolveActivity(packageManager) != null) {
             bindService(coreService, connection, Context.BIND_AUTO_CREATE)
         } else {
-            Log.e("CoreDaemon", "PackageManager says the service doesn't exist")
+            Log.e(this.javaClass.name, "PackageManager says the service doesn't exist")
         }
         // This appends it to the class variable, so I can shut it down later
         // I don't like how it's a pair
@@ -297,11 +292,11 @@ class CoreService: SAFService(){
     // The bound connection. The core attaches to each service as a client, tying them to cores lifecycle
     inner class Connection() : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-            Log.i("CoreService", "Service connected")
+            Log.i(this.javaClass.name, "Service connected")
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
-            Log.i("CoreService", "Service disconnected")
+            Log.i(this.javaClass.name, "Service disconnected")
         }
     }
 

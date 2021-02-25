@@ -26,29 +26,35 @@ class CalendarModuleInstallService: SAFInstallService(){
             registerModule(intent)
         // This will use a pre-prepared intent, to send it through the pipeline for the reuqesting module
         }else if(intent.action == ACTION_SAPPHIRE_MODULE_REQUEST_DATA){
-            // This is filler for now, but should replace the hardcoding
-            loadAssetNames()
-            Log.i("SkillInstallService","Data request received. gathering data")
-            // This is the same as outgoingIntent
-            var dataRequestIntent = Intent(intent)
-            dataRequestIntent.putStringArrayListExtra(DATA_KEYS,intentFiles)
-            // This is poorly coded. It should retrieve the data per file, not in bulk
-            var data = retrieveData(intentFiles)
-            for(datum in data){
-                dataRequestIntent.putExtra(datum.key,datum.value)
-            }
-            // I need to take this out of being hardcoded
-            dataRequestIntent.setClassName(this,"com.example.multiprocessmodule.MultiprocessService")
-            // Why did I hardcode this?
-            dataRequestIntent.putExtra("core.conf.framework.multiprocess.protocol.SEQUENCE_NUMBER",2)
-            startService(dataRequestIntent)
+            requestData(intent)
         }
         return super.onStartCommand(intent, flags, startId)
+    }
+
+    fun requestData(intent: Intent){
+        // This is filler for now, but should replace the hardcoding
+        loadAssetNames()
+        Log.i("SkillInstallService","Data request received. gathering data")
+        // This is the same as outgoingIntent
+        var dataRequestIntent = Intent(intent)
+        dataRequestIntent.putStringArrayListExtra(DATA_KEYS,intentFiles)
+        // This is poorly coded. It should retrieve the data per file, not in bulk
+        var data = retrieveData(intentFiles)
+        for(datum in data){
+            dataRequestIntent.putExtra(datum.key,datum.value)
+        }
+        // I need to take this out of being hardcoded
+        dataRequestIntent.setClassName(this,"${this.packageName}.MultiprocessService")
+        // Why did I hardcode this? What does it mean. I think I was testing out MultiprocessIntent, which means there could be a bug here....
+        dataRequestIntent.putExtra("core.conf.framework.multiprocess.protocol.SEQUENCE_NUMBER",2)
+        startService(dataRequestIntent)
     }
 
     // I think I can touch this up a lot
     override fun registerModule(intent: Intent){
         var returnIntent = Intent(intent)
+        returnIntent.putExtra(MODULE_PACKAGE,this.packageName)
+        returnIntent.putExtra(MODULE_CLASS,"${this.packageName}.CalendarService")
         registerVersion(returnIntent, VERSION)
         registerData(returnIntent, intentFiles)
 

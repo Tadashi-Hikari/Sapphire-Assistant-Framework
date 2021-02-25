@@ -1,19 +1,10 @@
 package com.example.vosksttmodule
 
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.content.Context
+
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Binder
-import android.os.Build
 import android.os.IBinder
 import android.util.Log
-import androidx.core.app.ActivityCompat.requestPermissions
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat
 import com.example.componentframework.SAFService
 import org.json.JSONObject
 import org.kaldi.*
@@ -70,7 +61,7 @@ class KaldiService: RecognitionListener, SAFService(){
             coreServiceIntent.setClassName(packageName,className)
             coreServiceIntent.putExtra(MESSAGE, utterance)
             // This was just change from postage (which now holds env var) to route
-            coreServiceIntent.putExtra(ROUTE,"com.example.vosksttmodule.KaldiService")
+            coreServiceIntent.putExtra(ROUTE,"${this.packageName}.KaldiService")
             Log.i("KaldiService", "Utterance hypothesis dispatched")
             startService(coreServiceIntent)
         }

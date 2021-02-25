@@ -2,6 +2,7 @@ package com.example.componentframework
 
 import android.app.Service
 import android.content.Intent
+import android.util.Log
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
@@ -126,11 +127,9 @@ abstract class SAFService: Service(){
     }
 
     fun loadJSONTable(filename: String): JSONObject{
-        /**
-         * if(File(filesDir,filename).exists == false){
-         *     //It's just directly the info, not a link to another file
-         * }
-         */
+        if(File(filesDir,filename).exists() == false){
+            return JSONObject()
+        }
         var databaseFile = File(filesDir,filename)
         var jsonDatabase = JSONObject(databaseFile.readText())
         return jsonDatabase
@@ -151,6 +150,7 @@ abstract class SAFService: Service(){
     }
 
     fun parseConfigFile(filename: String): JSONObject{
+        Log.v(this.applicationInfo.className,"Parsing config file")
         return JSONObject()
     }
 }

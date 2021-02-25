@@ -4,7 +4,6 @@
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <application
@@ -25,6 +24,19 @@
         </activity>
         <service
             android:name=".CoreService"
-            android:exported="true"/>
+            android:exported="true">
+        </service>
+        <service
+            android:name=".CoreRegistrationService"
+            android:process=".com.example.sapphireassistantframework.CoreRegistrationService"
+            android:exported="true">
+        </service>
+        <service
+            android:name=".CoreModuleInstallService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="assistant.framework.module.action.REGISTER"/>
+            </intent-filter>
+        </service>
     </application>
 </manifest>

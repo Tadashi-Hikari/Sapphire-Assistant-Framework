@@ -15,6 +15,14 @@
     <application>
         <service
             android:name=".MultiprocessService"
-            android:exported="true"/>
+            android:exported="true">
+        </service>
+        <service
+            android:name=".MultiprocessModuleInstallService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="assistant.framework.module.action.REGISTER"/>
+            </intent-filter>
+        </service>
     </application>
 </manifest>

@@ -24,14 +24,8 @@
                 android:id="@+id/record"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:onClick="CoreServiceManager"
+                android:onClick="startCoreService"
                 android:text="Record" />
-
-            <Button
-                android:id="@+id/play"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Play" />
 
             <Button
                 android:id="@+id/button3"
@@ -39,17 +33,6 @@
                 android:layout_height="wrap_content"
                 android:onClick="reset"
                 android:text="Reset" />
-
-            <TextView
-                android:id="@+id/utteranceText"
-                android:layout_width="312dp"
-                android:layout_height="222dp"
-                android:isScrollContainer="true"
-                android:scrollbarAlwaysDrawVerticalTrack="true"
-                android:scrollbars="vertical"
-                android:singleLine="false"
-                android:textIsSelectable="true" />
-
         </LinearLayout>
     </FrameLayout>
 </androidx.wear.widget.BoxInsetLayout>
