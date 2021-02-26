@@ -34,12 +34,6 @@ class CoreService: SAFService(){
     private val ROUTE_TABLE = "routetable.tbl"
     private val ALIAS_TABLE = "alias.tbl"
 
-    // I don't think I need to define these, cause they'll be defined on install. I just need to check if they're populated
-    // These are the DEFAULT module package;class
-    private val DEFAULT_CORE = "com.example.sapphireassistantframework;com.example.sapphireassistantframework.PostOffice"
-    private val DEFAULT_PROCESSOR = "com.example.processormodule;com.example.processormodule.ProcessorService"
-    private val DEFAULT_MULTIPROCESS = "com.example.multiprocessmodule;com.example.multiprocessmodule.MultiprocessService"
-
     // These are the config modules
     var jsonDefaultModules = JSONObject()
     var jsonBackgroundTable = JSONObject()
@@ -165,6 +159,7 @@ class CoreService: SAFService(){
     // It really just pulls the alias from Route.
     // I need to have a way to ensure it triggers from a module
     fun startBackgroundServicesConfigurable(){
+        Log.v(this.javaClass.name,"Starting services in background service table...")
         for(recordName in jsonBackgroundTable.keys()){
             var startupRecord = jsonBackgroundTable.getJSONObject(recordName)
             var startupIntent = Intent()
@@ -176,6 +171,7 @@ class CoreService: SAFService(){
             var moduleList: List<String> = parseRoute(routeData)
             var startingModule = moduleList.first().split(";")
             // This is ugly, but it'll do what I want
+            Log.v(this.javaClass.name,"startup intent is for ${startingModule.get(0)};${startingModule.get(1)}")
             startupIntent.setClassName(startingModule.get(0),startingModule.get(1))
 
             // I can add in
@@ -194,7 +190,7 @@ class CoreService: SAFService(){
         }
         for (info_pair: Pair<String, String> in sapphire_apps) {
             // Do I need to return a pair? Seems annoying.
-            Log.i("CoreService", "launching ${info_pair.first}, ${info_pair.second}")
+            Log.i("CoreService", "launching ${info_pair.first};${info_pair.second}")
             var intent = Intent().setClassName(info_pair.first, info_pair.second)
             stopService(intent)
         }

@@ -27,7 +27,7 @@ class CoreRegistrationService: SAFService(){
 	// These are table names
 	private var REGISTRATION_TABLE = "registration.tbl"
 	private val DEFAULT_MODULES_TABLE = "defaultmodules.tbl"
-	private val BACKGROUND_STARTUP_TABLE = "background.tbl"
+	private val STARTUP_TABLE = "background.tbl"
 	private val ROUTE_TABLE = "routetable.tbl"
 	private val ALIAS_TABLE = "alias.tbl"
 
@@ -38,14 +38,8 @@ class CoreRegistrationService: SAFService(){
 	var jsonAliasTable = JSONObject()
 	var jsonRouteTable = JSONObject()
 
-	// I don't think I need to define these, cause they'll be defined on install. I just need to check if they're populated
-	// These are the DEFAULT module package;class
-	private val DEFAULT_CORE = "com.example.sapphireassistantframework;com.example.sapphireassistantframework.PostOffice"
-	private val DEFAULT_PROCESSOR = "com.example.processormodule;com.example.processormodule.ProcessorService"
-	private val DEFAULT_MULTIPROCESS = "com.example.multiprocessmodule;com.example.multiprocessmodule.MultiprocessService"
-	// I don't like that this is hardcoded
-	val DEFAULT_MODULES = listOf(DEFAULT_CORE,DEFAULT_PROCESSOR,DEFAULT_MULTIPROCESS)
-
+	// I don't like that this is hardcoded. Make this populate in a default config, and read from the config
+	val DEFAULT_MODULES = listOf(CORE,PROCESSOR,MULTIPROCESS)
 
 	// This is loaded from a file
 	var defaultsTable = JSONObject()
@@ -71,8 +65,15 @@ class CoreRegistrationService: SAFService(){
 				initializing = true
 				scanInstalledModules()
 			}else if(intent?.action == ACTION_SAPPHIRE_MODULE_REGISTER){
-				installPackageName = intent!!.getStringExtra(MODULE_PACKAGE)!!
-				installClassName = intent!!.getStringExtra(MODULE_CLASS)!!
+				Log.v(this.javaClass.name,"Registration action received. Registering...")
+				if(intent.hasExtra(MODULE_PACKAGE) and intent.hasExtra(MODULE_CLASS)) {
+					Log.v(this.javaClass.name,"Intent has MODULE_PACKAGE and MODULE_CLASS...")
+					installPackageName = intent!!.getStringExtra(MODULE_PACKAGE)!!
+					installClassName = intent!!.getStringExtra(MODULE_CLASS)!!
+				}else{
+					Log.v(this.javaClass.name,"Intent doesn't have a labeled package/module!!!")
+					Log.v(this.javaClass.name,intent?.extras.toString())
+				}
 				// Change this to registerModule()? It does registration and re-registration
 				startValidationProcess(intent!!)
 			}
@@ -82,10 +83,12 @@ class CoreRegistrationService: SAFService(){
 
 			//Check if there's an installation stack when finished
 			if(sapphireModuleStack.isNotEmpty()){
+				Log.v(this.javaClass.name,"Dispatching a new registration service from the registration stack")
 				// This will basically trigger itself as a loop, until finished
 				startService(sapphireModuleStack.pop())
 			}else{
 				if(initializing) {
+					Log.v(this.javaClass.name,"All services have been registered. Continuing...")
 					var finished = Intent().setAction(ACTION_SAPPHIRE_CORE_REGISTRATION_COMPLETE)
 					finished.setClassName(this, "${this.packageName}.CoreService")
 					startService(finished)
@@ -108,7 +111,7 @@ class CoreRegistrationService: SAFService(){
 		// I need to account for just directly loading these, not having them in a separate config
 		jsonRegistrationTable = loadJSONTable(REGISTRATION_TABLE)
 		jsonDefaultModules = loadJSONTable(DEFAULT_MODULES_TABLE)
-		jsonBackgroundStartup = loadJSONTable(BACKGROUND_STARTUP_TABLE)
+		jsonBackgroundStartup = loadJSONTable(STARTUP_TABLE)
 		jsonRouteTable = loadJSONTable(ROUTE_TABLE)
 		jsonAliasTable = loadJSONTable(ALIAS_TABLE)
 	}
@@ -120,14 +123,13 @@ class CoreRegistrationService: SAFService(){
 		//intent.setClassName(this.packageName,"${this.packageName}.CoreModuleInstallService")
 		var availableSapphireModules = this.packageManager.queryIntentServices(intent,GET_RESOLVED_FILTER)
 		Log.v(this.javaClass.name,"${availableSapphireModules.size} modules found")
-		Log.d(this.javaClass.name,availableSapphireModules.toString())
 
 		// to check for modules with installers. What am I searching for here?
 		for (module in availableSapphireModules) {
 			try {
 				var packageName = module.serviceInfo.packageName
 				var className = module.serviceInfo.name
-				module.filter.actionsIterator().forEach { action -> Log.d(this.javaClass.name,"${className}: ${action.toString()}")}
+				//module.filter.actionsIterator().forEach { action -> Log.d(this.javaClass.name,"${className}: ${action.toString()}")}
 
 				// Let CoreRegistrationService handle all the checking.
 				var registrationIntent = Intent(intent)
@@ -135,6 +137,7 @@ class CoreRegistrationService: SAFService(){
 				registrationIntent.putExtra(MODULE_PACKAGE, packageName)
 				registrationIntent.putExtra(MODULE_CLASS, className)
 				// Push it to the stack, so it can be popped up
+				Log.v(this.javaClass.name,"registrationIntent for ${packageName};${className} created. Pushing to stack...")
 				sapphireModuleStack.push(registrationIntent)
 			} catch (exception: Exception) {
 				continue
@@ -144,18 +147,22 @@ class CoreRegistrationService: SAFService(){
 	}
 
 	fun startValidationProcess(intent: Intent){
-		if(jsonRegistrationTable.has("${installPackageName}:${installClassName}")){
+		Log.v(this.javaClass.name,"Starting validation process...")
+		if(jsonRegistrationTable.has("${installPackageName};${installClassName}")){
+			Log.v(this.javaClass.name,"Module already registered...")
 			checkForUpdates(intent)
 		}else{
+			Log.v(this.javaClass.name,"Module not yet registered...")
 			// In theory, this could check if a module is *no longer* a certain type, but for now it only checks new modules
 			checkDefaults(intent)
 			var registration = registerModule(intent)
-			jsonRegistrationTable.put("${installPackageName}:${installClassName}",registration)
-			// I don't like that this isn't the same level as the rest
+			jsonRegistrationTable.put("${installPackageName};${installClassName}",registration)
+			// Why is this not triggering?
 			if(intent.hasExtra("BACKGROUND")){
+				Log.i(this.javaClass.name,"This intent has a startup service")
 				var backgroundInfo = JSONObject(intent.getStringExtra("BACKGROUND"))
 				registerBackgroundService(backgroundInfo)
-				var backgroundFile = File(filesDir,BACKGROUND_STARTUP_TABLE)
+				var backgroundFile = File(filesDir,STARTUP_TABLE)
 				backgroundFile.writeText(jsonBackgroundStartup.toString())
 			}
 			registerRoute(intent)
@@ -163,12 +170,14 @@ class CoreRegistrationService: SAFService(){
 	}
 
 	fun registerRoute(intent: Intent){
+		Log.v(this.javaClass.name,"Registering route...")
 		var routeData = intent.getStringExtra(ROUTE)
 		var routeName = intent.getStringExtra("ROUTE_NAME")
 		jsonRouteTable.put(routeName,routeData)
 	}
 
 	fun registerModule(intent: Intent): JSONObject{
+		Log.v(this.javaClass.name,"Registering module...")
 		var registration = JSONObject()
 
 		// Just register the keys value. shouldn't be complex data.
@@ -179,25 +188,30 @@ class CoreRegistrationService: SAFService(){
 	}
 
 	fun registerBackgroundService(backgroundInfo: JSONObject){
+		Log.v(this.javaClass.name,"Registering background service...")
 		// I suppose I am just outright copying the data here
 		jsonBackgroundStartup.put(backgroundInfo.getString("registration_id"),backgroundInfo)
 	}
 
 	fun checkForUpdates(intent: Intent){
 		Log.v(this.javaClass.name,"checking on updates for ${installClassName}")
-		var registration = jsonRegistrationTable.optJSONObject("${installPackageName}:${installClassName}")
+		var registration = jsonRegistrationTable.optJSONObject("${installPackageName};${installClassName}")
 		if(registration.getString(MODULE_VERSION) != intent.getStringExtra(MODULE_VERSION)){
 			registerModule(intent)
 		}
 	}
 
-	// I KNOW this can be more efficient.
 	fun checkDefaults(intent: Intent){
+		Log.v(this.javaClass.name,"Checking defaults...")
 		var changed = false
-		for(key in DEFAULT_MODULES){
-			if(jsonDefaultModules.getString(key).isNullOrBlank()){
-				if(key == intent.getStringExtra(MODULE_TYPE)){
-					jsonDefaultModules.put(key, "${installPackageName}:${installClassName}")
+		for(key in DEFAULT_MODULES) {
+			if(intent.hasExtra(MODULE_TYPE)) {
+				var type = intent.getStringExtra(MODULE_TYPE)
+				Log.v(this.javaClass.name,"testing default data for ${key}: ${installPackageName};${installClassName}...")
+				if ((type == key) and (jsonDefaultModules.optString(key).isNullOrBlank())
+				) {
+					Log.i(this.javaClass.name,"Match found for ${key}. Saving default data...")
+					jsonDefaultModules.put(key, "${installPackageName};${installClassName}")
 					changed = true
 				}
 			}

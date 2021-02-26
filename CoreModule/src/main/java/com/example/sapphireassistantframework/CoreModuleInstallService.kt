@@ -21,7 +21,8 @@ class CoreModuleInstallService: SAFInstallService(){
     override fun registerModule(intent: Intent){
         var returnIntent = Intent(intent)
         returnIntent.putExtra(MODULE_PACKAGE,this.packageName)
-        returnIntent.putExtra(MODULE_CLASS,"${this.packageManager}.CoreService")
+        // Not needed, cause it's set in the CoreRegistrationService. This will be an issue w/ multiple entries though
+        //returnIntent.putExtra(MODULE_CLASS,"${this.packageName}.CoreService")
         registerModuleType(returnIntent,CORE)
         registerVersion(returnIntent,VERSION)
 
