@@ -19,8 +19,9 @@ abstract class SAFInstallService: SAFService(){
 	}
 
 	// I'm either sending JSON or DSV
-	fun registerBackgroundServices(intent: Intent, backgroundData: String){
+	fun registerBackgroundServices(intent: Intent, backgroundData: String): Intent{
 		intent.putExtra("BACKGROUND",backgroundData)
+		return intent
 	}
 
 	fun registerVersion(intent: Intent, version: String){
