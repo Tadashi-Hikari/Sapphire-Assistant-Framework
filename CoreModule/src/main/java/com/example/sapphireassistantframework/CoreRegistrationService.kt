@@ -171,7 +171,9 @@ class CoreRegistrationService: SAFService(){
 
 	fun registerRoute(intent: Intent){
 		Log.v(this.javaClass.name,"Registering route...")
+		// This is telling it to call itself, due to ROUTE being used for background service
 		var routeData = intent.getStringExtra(ROUTE)
+		// This is being used for the ROUTE id, so it can be looked up.
 		var routeName = intent.getStringExtra("ROUTE_NAME")
 		jsonRouteTable.put(routeName,routeData)
 	}

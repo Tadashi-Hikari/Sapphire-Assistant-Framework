@@ -3,11 +3,11 @@ package com.example.componentframework
 import android.app.Service
 import android.content.Intent
 import android.util.Log
-import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStreamReader
+import java.lang.Exception
 
 abstract class SAFService: Service(){
     // Standard extras
@@ -17,6 +17,9 @@ abstract class SAFService: Service(){
     val POSTAGE="assistant.framework.protocol.POSTAGE"
     val ROUTE="assistant.framework.protocol.ROUTE"
     val ID = "assistant.framework.module.protocol.ID"
+
+    // Maybe this should be used elsewhere...
+    var STARTUP_ROUTE = "assistant.framework.protocol.STARTUP_ROUTE"
 
     val MODULE_PACKAGE = "assistant.framework.module.protocol.PACKAGE"
     val MODULE_CLASS = "assitant.framework.module.protocol.CLASS"
@@ -152,5 +155,44 @@ abstract class SAFService: Service(){
     fun parseConfigFile(filename: String): JSONObject{
         Log.v(this.applicationInfo.className,"Parsing config file")
         return JSONObject()
+    }
+
+    fun startSAFService(intent: Intent){
+        var SAFIntent = intent
+        SAFIntent = checkRouteForVariables(intent)
+        startService(SAFIntent)
+    }
+
+    fun checkRouteForVariables(intent: Intent): Intent{
+        try {
+            var routeData = intent.getStringExtra(ROUTE)!!
+            var routeModuleMutableList = parseRoute(routeData) as MutableList<String>
+            var environmentalVaribles = intent.getStringExtra(POSTAGE)
+            var jsonDefaultModules = JSONObject(environmentalVaribles)
+
+            for (module in routeModuleMutableList.withIndex()) {
+                if (jsonDefaultModules.has(module.value)) {
+                    routeModuleMutableList.set(
+                        module.index,
+                        jsonDefaultModules.getString(module.value)
+                    )
+                }
+            }
+
+            var finalizedRoute = ""
+            for (module in routeModuleMutableList.withIndex()) {
+                if (module.index == 0) {
+                    finalizedRoute = module.value
+                } else {
+                    finalizedRoute += ",${module.value}"
+                }
+            }
+            intent.putExtra(ROUTE, finalizedRoute)
+            return intent
+        }catch(exception: Exception){
+            Log.e("Error checking route for variables")
+            var defaultIntent = Intent()
+            return defaultIntent
+        }
     }
 }

@@ -39,6 +39,7 @@ class CoreService: SAFService(){
     var jsonBackgroundTable = JSONObject()
     var jsonRouteTable = JSONObject()
     var jsonAliasTable = JSONObject()
+    var jsonPostageTable = JSONObject()
 
     var readyToGoSemaphore = false
     var SapphireModuleStack = LinkedList<Intent>()
@@ -168,12 +169,13 @@ class CoreService: SAFService(){
             var startupRecord = JSONObject(startupRecordString)
             Log.v(this.javaClass.name,"JSONObject: ${startupRecord.toString()}")
             var startupIntent = Intent()
-            startupIntent.putExtra(ROUTE, startupRecord.getString(ROUTE))
-            Log.v(this.javaClass.name,"The route for this service is ${startupRecord.getString(ROUTE)}")
+            startupIntent.putExtra(ROUTE, startupRecord.getString(STARTUP_ROUTE))
+            Log.v(this.javaClass.name,"The route for this service is ${startupRecord.getString(STARTUP_ROUTE)}")
+            startupIntent.putExtra(POSTAGE,jsonDefaultModules.toString())
 
             // This is ripped right out of sortMail, so I could probably make it a function
             //var routeData = getRoute(startupRecord.getString(ROUTE))
-            var moduleList: List<String> = parseRoute(startupRecord.getString(ROUTE))
+            var moduleList: List<String> = parseRoute(startupRecord.getString(STARTUP_ROUTE))
             var startingModule = moduleList.first().split(";")
             // This is ugly, but it'll do what I want
             Log.v(this.javaClass.name,"startup intent is for ${startingModule.get(0)};${startingModule.get(1)}")
