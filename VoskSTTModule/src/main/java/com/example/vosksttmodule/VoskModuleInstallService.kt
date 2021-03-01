@@ -27,23 +27,25 @@ class VoskModuleInstallService: SAFInstallService(){
 		var startupRoute = "${this.packageName};com.example.vosksttmodule.KaldiService"
 		// I don't like this, It seems clunky.
 		var backgroundData = JSONObject()
-		backgroundData.put(ROUTE,startupRoute)
-		backgroundData.put("bound",true)
-		backgroundData.put("registration_id","VoskModule")
-
 		// This is supposed to be a variable
 		var routeData = PROCESSOR
 
+		backgroundData.put(STARTUP_ROUTE,startupRoute)
+		backgroundData.put("bound",true)
+		backgroundData.put("registration_id","VoskModule")
+
 		var returnIntent = Intent(intent)
 		returnIntent = registerBackgroundServices(returnIntent,backgroundData.toString())
-		// What is this even doing?
-		returnIntent.putExtra("ROUTE_NAME","${this.packageName};${this.packageName}.KaldiService")
+
 		returnIntent.putExtra(MODULE_PACKAGE,this.packageName)
 		// Not needed, cause it's set in the CoreRegistrationService. This will be an issue w/ multiple entries though
-		returnIntent.putExtra(MODULE_CLASS,"${this.packageName}.KaldiService")
-		registerRouteInformation(returnIntent, routeData)
-		registerModuleType(returnIntent,INPUT)
-		registerVersion(returnIntent, VERSION)
+		returnIntent.putExtra(MODULE_CLASS,"com.example.vosksttmodule.KaldiService")
+
+		// This is the unique ROUTE_NAME, so that it can be looked up
+		returnIntent.putExtra("ROUTE_NAME","com.example.vosksttmodule.KaldiService")
+		returnIntent = registerRouteInformation(returnIntent, routeData)
+		returnIntent = registerModuleType(returnIntent,INPUT)
+		returnIntent = registerVersion(returnIntent, VERSION)
 		super.registerModule(returnIntent)
 	}
 }

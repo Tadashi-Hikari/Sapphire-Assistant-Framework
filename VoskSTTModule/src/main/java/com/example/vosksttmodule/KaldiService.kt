@@ -62,12 +62,13 @@ class KaldiService: RecognitionListener, SAFService(){
             var packageName = "com.example.sapphireassistantframework"
             var className = "${packageName}.CoreService"
 
+            // This is setting it to go explicitly to CORE... which means I need to change SAFService
             coreServiceIntent.setClassName(packageName,className)
             coreServiceIntent.putExtra(MESSAGE, utterance)
-            // This was just change from postage (which now holds env var) to route
-            coreServiceIntent.putExtra(ROUTE,"${this.packageName}.KaldiService")
+            // This was just change from postage (which now holds env var) to route... It's saying to take KaldiServices default route. Do I need to change the behavior?
+            coreServiceIntent.putExtra(ROUTE,"com.example.vosksttmodule.KaldiService")
             Log.i("KaldiService", "Utterance hypothesis dispatched")
-            startService(coreServiceIntent)
+            startSAFService(coreServiceIntent)
         }
     }
 

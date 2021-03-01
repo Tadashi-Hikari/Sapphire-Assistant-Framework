@@ -7,15 +7,16 @@ import org.json.JSONArray
 import java.io.File
 
 abstract class SAFInstallService: SAFService(){
-
-	/**
+		/**
 	 * Do these need to be their own modules? I don't think it's saving any time,
 	 * that said, it could be saving complexity since the dev doesn't need to know
 	 * extra strings to populate it
 	 */
 
-	fun registerRouteInformation(intent: Intent, route: String){
+	// I am thinknig this should actually be a JSONObject
+	fun registerRouteInformation(intent: Intent, route: String): Intent{
 		intent.putExtra(ROUTE,route)
+			return intent
 	}
 
 	// I'm either sending JSON or DSV
@@ -24,17 +25,20 @@ abstract class SAFInstallService: SAFService(){
 		return intent
 	}
 
-	fun registerVersion(intent: Intent, version: String){
+	fun registerVersion(intent: Intent, version: String): Intent{
 		intent.putExtra(MODULE_VERSION,version)
+		return intent
 	}
 
-	fun registerModuleType(intent: Intent, component: String){
+	fun registerModuleType(intent: Intent, component: String): Intent{
 		intent.putExtra(MODULE_TYPE, component)
+		return intent
 	}
 
 	// This is called for retrieveData as well
 	// This one WILL save time
-	fun registerData(intent: Intent, filenames: List<String>){
+	fun registerData(intent: Intent, filenames: List<String>): Intent{
+		return intent
 	}
 
 	open fun registerModule(intent: Intent){
