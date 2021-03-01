@@ -24,7 +24,7 @@
         <service
             android:name=".KaldiService"
             android:exported="true"
-            android:process="vosk.service"
+            android:process=".com.example.vosksttmodule.KaldiService"
             android:foregroundServiceType="microphone"
             android:permission="android.permission.RECORD_AUDIO">
             <intent-filter>
