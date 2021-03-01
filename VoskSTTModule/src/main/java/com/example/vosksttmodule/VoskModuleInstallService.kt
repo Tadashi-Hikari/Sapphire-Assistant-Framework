@@ -36,7 +36,7 @@ class VoskModuleInstallService: SAFInstallService(){
 
 		var returnIntent = Intent(intent)
 		returnIntent = registerBackgroundServices(returnIntent,backgroundData.toString())
-		// Do I need to do this?
+		// What is this even doing?
 		returnIntent.putExtra("ROUTE_NAME","${this.packageName};${this.packageName}.KaldiService")
 		returnIntent.putExtra(MODULE_PACKAGE,this.packageName)
 		// Not needed, cause it's set in the CoreRegistrationService. This will be an issue w/ multiple entries though

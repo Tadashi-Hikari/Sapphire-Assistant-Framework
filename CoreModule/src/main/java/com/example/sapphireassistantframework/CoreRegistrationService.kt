@@ -190,7 +190,7 @@ class CoreRegistrationService: SAFService(){
 	fun registerBackgroundService(backgroundInfo: JSONObject){
 		Log.v(this.javaClass.name,"Registering background service...")
 		// I suppose I am just outright copying the data here
-		jsonBackgroundStartup.put(backgroundInfo.getString("registration_id"),backgroundInfo)
+		jsonBackgroundStartup.put(backgroundInfo.getString("registration_id"),backgroundInfo.toString())
 	}
 
 	fun checkForUpdates(intent: Intent){

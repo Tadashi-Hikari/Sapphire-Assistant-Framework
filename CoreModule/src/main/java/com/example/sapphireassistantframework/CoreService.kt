@@ -159,16 +159,21 @@ class CoreService: SAFService(){
     // It really just pulls the alias from Route.
     // I need to have a way to ensure it triggers from a module
     fun startBackgroundServicesConfigurable(){
+        // This is to make sure the data is as upt to date as possible
+        jsonBackgroundTable = loadJSONTable(BACKGROUND_TABLE)
         Log.v(this.javaClass.name,"Starting services in background service table...")
         for(recordName in jsonBackgroundTable.keys()){
-            var startupRecord = jsonBackgroundTable.getJSONObject(recordName)
+            Log.v(this.javaClass.name,"Starting service ${recordName}")
+            var startupRecordString = jsonBackgroundTable.getString(recordName)
+            var startupRecord = JSONObject(startupRecordString)
+            Log.v(this.javaClass.name,"JSONObject: ${startupRecord.toString()}")
             var startupIntent = Intent()
-            // 2nd route is actually alias. Do I to change something?
-            startupIntent.putExtra(ROUTE, getRoute(startupRecord.getString(ROUTE)))
+            startupIntent.putExtra(ROUTE, startupRecord.getString(ROUTE))
+            Log.v(this.javaClass.name,"The route for this service is ${startupRecord.getString(ROUTE)}")
 
             // This is ripped right out of sortMail, so I could probably make it a function
-            var routeData = getRoute(startupRecord.getString("route"))
-            var moduleList: List<String> = parseRoute(routeData)
+            //var routeData = getRoute(startupRecord.getString(ROUTE))
+            var moduleList: List<String> = parseRoute(startupRecord.getString(ROUTE))
             var startingModule = moduleList.first().split(";")
             // This is ugly, but it'll do what I want
             Log.v(this.javaClass.name,"startup intent is for ${startingModule.get(0)};${startingModule.get(1)}")
@@ -176,8 +181,10 @@ class CoreService: SAFService(){
 
             // I can add in
             if(startupRecord.has("bound") and startupRecord.getBoolean("bound")) {
+                Log.v(this.javaClass.name,"This service is a bound service")
                 startBoundService(startupIntent)
             }else{
+                Log.v(this.javaClass.name,"This service is not a bound service")
                 startService(startupIntent)
             }
         }
@@ -224,11 +231,13 @@ class CoreService: SAFService(){
         startService(intent)
     }
 
+    // THis needs to be fixed. StartBackgroundServices was sending a full route, not the name of a route
     fun getRoute(key: String): String{
         // Load the route data
         var uncheckedRoute = jsonRouteTable.getString(key)
-        var finalizedRoute = checkRouteForVariables(uncheckedRoute)
-        return finalizedRoute
+        //var finalizedRoute = checkRouteForVariables(uncheckedRoute)
+        //return finalizedRoute
+        return key
     }
 
     // I don't like how convoluted this is, but it works for now (brute force)
@@ -269,10 +278,9 @@ class CoreService: SAFService(){
         Log.i("CoreService", "binding ${boundIntent.component}")
         // This should probably append flags and the like
         var connection = Connection()
-        // This isn't even used, I just need it to remind me to change it later
-        var coreService: Intent = Intent().setAction("mycroft.BIND")
-        if (coreService.resolveActivity(packageManager) != null) {
-            bindService(coreService, connection, Context.BIND_AUTO_CREATE)
+
+        if (packageManager.resolveService(boundIntent,0) != null) {
+            bindService(boundIntent, connection, Context.BIND_AUTO_CREATE)
         } else {
             Log.e(this.javaClass.name, "PackageManager says the service doesn't exist")
         }

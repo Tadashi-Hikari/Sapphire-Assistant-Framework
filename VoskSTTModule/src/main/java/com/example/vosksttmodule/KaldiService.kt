@@ -31,6 +31,7 @@ class KaldiService: RecognitionListener, SAFService(){
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        Log.v(this.javaClass.name,"KaldiService intent received")
         // Make sure it has Env set. This might be movable to SAFService, and should DEF be error checked
         if((startupIntent == null) or (startupIntent.action == ACTION_SAPPHIRE_UPDATE_ENV)){
             startupIntent = intent!!
@@ -53,10 +54,13 @@ class KaldiService: RecognitionListener, SAFService(){
             // I think I either need to set meta-data or resources
             var coreServiceIntent: Intent = Intent()
 
-            var coreModule = getCoreModule(startupIntent)
-            var packageClass = coreModule.split(";")
+            //var coreModule = getCoreModule(startupIntent)
+            //var packageClass = coreModule.split(";")
 
-            var packageName = packageClass[0]; var className = packageClass[1]
+
+            //var packageName = packageClass[0]; var className = packageClass[1]
+            var packageName = "com.example.sapphireassistantframework"
+            var className = "${packageName}.CoreService"
 
             coreServiceIntent.setClassName(packageName,className)
             coreServiceIntent.putExtra(MESSAGE, utterance)
