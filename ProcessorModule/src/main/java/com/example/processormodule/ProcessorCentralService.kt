@@ -57,11 +57,12 @@ class ProcessorCentralService: SAFService(){
                 // This is an arbitrary number, and should probably be a configurable variable
                 if(classifiedScores.getCount(classifiedDatum) >= .04){
                     Log.i("ProcessorCentralService","Text matches class ${classifiedDatum}")
-                    outgoingIntent.putExtra(POSTAGE,classifiedDatum)
+                    // This could be an issue with the new design
+                    outgoingIntent.putExtra(ROUTE,classifiedDatum)
                 }else {
                     Log.i("ProcessorCentralService","Text does not match a class. Using default")
-                    // This could generate an error
-                    outgoingIntent.putExtra(POSTAGE,"DEFAULT")
+                    // This could be an issue with the new design
+                    outgoingIntent.putExtra(ROUTE,"DEFAULT")
                 }
 
                 /**

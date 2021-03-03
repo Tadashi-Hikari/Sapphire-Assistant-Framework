@@ -19,7 +19,7 @@
             android:enabled="true">
             <intent-filter>
                 <action android:name="assistant.framework.module.action.REGISTER"/>
-                <action android:name="assistant.framework.module.action.REQUEST_DATA"/>
+                <action android:name="assistant.framework.core.action.REQUEST_DATA"/>
             </intent-filter>
         </service>
         <service android:name=".CalendarService"

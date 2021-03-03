@@ -32,10 +32,6 @@ class KaldiService: RecognitionListener, SAFService(){
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.v(this.javaClass.name,"KaldiService intent received")
-        // Make sure it has Env set. This might be movable to SAFService, and should DEF be error checked
-        if((startupIntent == null) or (startupIntent.action == ACTION_SAPPHIRE_UPDATE_ENV)){
-            startupIntent = intent!!
-        }
         return super.onStartCommand(intent, flags, startId)
     }
 
@@ -50,23 +46,19 @@ class KaldiService: RecognitionListener, SAFService(){
     fun sendUtterance(utterance: String){
         var json = JSONObject(utterance)
         if(json.getString("text") != "") {
-            // This needs to not be hardcoded... How can a skill know? I need to pass it the core details
-            // I think I either need to set meta-data or resources
+
+            // This is a input module, it should always be sending to core. How would I wrap it?
             var coreServiceIntent: Intent = Intent()
 
             //var coreModule = getCoreModule(startupIntent)
             //var packageClass = coreModule.split(";")
-
-
-            //var packageName = packageClass[0]; var className = packageClass[1]
             var packageName = "com.example.sapphireassistantframework"
             var className = "${packageName}.CoreService"
 
             // This is setting it to go explicitly to CORE... which means I need to change SAFService
             coreServiceIntent.setClassName(packageName,className)
             coreServiceIntent.putExtra(MESSAGE, utterance)
-            // This was just change from postage (which now holds env var) to route... It's saying to take KaldiServices default route. Do I need to change the behavior?
-            coreServiceIntent.putExtra(ROUTE,"com.example.vosksttmodule.KaldiService")
+            coreServiceIntent.putExtra(ROUTE,"${this.packageName};com.example.vosksttmodule.KaldiService")
             Log.i("KaldiService", "Utterance hypothesis dispatched")
             startSAFService(coreServiceIntent)
         }

@@ -39,6 +39,7 @@ class CoreService: SAFService(){
     var jsonBackgroundTable = JSONObject()
     var jsonRouteTable = JSONObject()
     var jsonAliasTable = JSONObject()
+    // This is the outgoing postage
     var jsonPostageTable = JSONObject()
 
     var readyToGoSemaphore = false
@@ -106,10 +107,14 @@ class CoreService: SAFService(){
                 startService(intent)
             // This will be triggered until the stack is empty, at which point it will allow the rest of the init
             }else if(intent.action == ACTION_SAPPHIRE_CORE_REGISTRATION_COMPLETE && readyToGoSemaphore == false) {
-                    startBackgroundServicesConfigurable()
-                    Log.i(this.javaClass.name, "All startup tasks finished")
-                    // This could be the static initializing var
-                    readyToGoSemaphore = true
+                startBackgroundServicesConfigurable()
+                // This could be the best place to do this, since it's not needed before, it's called only once
+                // and it updates the configs after all modules are installed
+                var configJSON = parseConfigFile(CONFIG)
+                coreReadConfigJSON(configJSON)
+                Log.i(this.javaClass.name, "All startup tasks finished")
+                // This could be the static initializing var
+                readyToGoSemaphore = true
                 /*
                 I need to wait for the initial install, because a env_variable is likely to be used
                 in a route
@@ -120,10 +125,11 @@ class CoreService: SAFService(){
                 return super.onStartCommand(intent, flags, startId)
             }else if(intent.action == ACTION_SAPPHIRE_CORE_REQUEST_DATA){
                 // I need to use the CoreService install process somehow, without duplicating code
-                var queryIntent = Intent(ACTION_SAPPHIRE_MODULE_REQUEST_DATA)
+                var queryIntent = Intent(ACTION_SAPPHIRE_CORE_REQUEST_DATA)
                 var modulesWithData = packageManager.queryIntentServices(queryIntent, 0)
                 Log.i(this.javaClass.name,"Query results ${modulesWithData}")
                 var multiprocessRoute = "("
+                // I"ll fix this later, but this will likely produce doubles, and I only have one w/ data right now
                 for(dataModule in modulesWithData.take(1)) {
                     try{
                         var packageName = dataModule.serviceInfo.packageName
@@ -143,9 +149,6 @@ class CoreService: SAFService(){
                 var multiprocessIntent = Intent(intent).setClassName(this,"com.example.multiprocessmodule.MultiprocessService")
                 Log.i(this.javaClass.name,"Tacking ${intent.getStringExtra(ROUTE)!!} on to ROUTE")
                 multiprocessIntent.putExtra(ROUTE,"${multiprocessRoute},${intent.getStringExtra(ROUTE)}")
-                // -a means aggregate. I'm using a unix like flag for an example
-                // This DEF needs to be changed
-                multiprocessIntent.putExtra(POSTAGE,"-a")
                 Log.i(this.javaClass.name,"Requesting data keys ${multiprocessIntent.getStringArrayListExtra(DATA_KEYS)}" )
                 startService(multiprocessIntent)
             }else {
@@ -153,6 +156,7 @@ class CoreService: SAFService(){
             }
         }catch(exception: Exception){
             Log.e(this.javaClass.name,"Some intent error")
+            Log.e(this.javaClass.name,exception.toString())
         }
         return super.onStartCommand(intent, flags, startId)
     }
@@ -207,6 +211,7 @@ class CoreService: SAFService(){
 
     // It's gonna work like this. Whatever is the LAST thing in the pipeline, core will read and upload pipeline data for.
     fun sortMail(intent: Intent){
+        Log.v(this.javaClass.name,"sorting the incoming mail")
         var routeRequest = ""
 
         // It reads from the ROUTE, assuming it is the requested info! This is the only module that works different
@@ -220,7 +225,11 @@ class CoreService: SAFService(){
             return
         }
 
-        var routeData = getRoute(routeRequest)
+        // This is *NOT* an ideal spot for this
+        intent.putExtra(POSTAGE,addPostage())
+
+        var routeData = getRoute(intent)
+        Log.d(this.javaClass.name,"Route data loaded is ${routeData}")
         var route = parseRoute(routeData)
         // It's going to be the first in the pipeline, right?
         var packageClass = route.first().split(";")
@@ -233,47 +242,25 @@ class CoreService: SAFService(){
         startService(intent)
     }
 
-    // THis needs to be fixed. StartBackgroundServices was sending a full route, not the name of a route
-    fun getRoute(key: String): String{
-        // Load the route data
-        var uncheckedRoute = jsonRouteTable.getString(key)
-        //var finalizedRoute = checkRouteForVariables(uncheckedRoute)
-        //return finalizedRoute
-        return key
+    fun addPostage():String{
+        for(key in jsonDefaultModules.keys()){
+            jsonPostageTable.put(key,jsonDefaultModules.getString(key))
+        }
+        Log.v(this.javaClass.name,"Postage is ${jsonPostageTable.toString()}")
+        return jsonPostageTable.toString()
     }
 
-    // I don't like how convoluted this is, but it works for now (brute force)
-    fun checkRouteForVariables(uncheckedRoute: String):String{
-        var linkedList = parseRoute(uncheckedRoute) as LinkedList<String>
-        var tempLinkedList = LinkedList<String>()
-        var finalizedModules= LinkedList<String>()
-        var finalizedRoute = ""
-        var newRoute = ""
-        do{
-            var currentModule = linkedList.pop()
-            if(jsonDefaultModules.has(currentModule)){
-                newRoute = jsonDefaultModules.getString(currentModule)
-                tempLinkedList = parseRoute(newRoute) as LinkedList<String>
-                tempLinkedList.addAll(linkedList)
-                linkedList = tempLinkedList
-            }else if(jsonAliasTable.has(currentModule)){
-                newRoute = jsonAliasTable.getString(currentModule)
-                tempLinkedList = parseRoute(newRoute) as LinkedList<String>
-                tempLinkedList.addAll(linkedList)
-                linkedList = tempLinkedList
-            }else{
-                finalizedModules.add(currentModule)
-            }
-        }while(linkedList.isNotEmpty())
+    // THis needs to be fixed. StartBackgroundServices was sending a full route, not the name of a route
+    fun getRoute(intent: Intent): String{
+        var outgoingIntent = Intent(intent)
 
-        for(module in finalizedModules){
-            if(finalizedRoute == ""){
-                finalizedRoute = module
-            }else{
-                finalizedRoute+=",${module}"
-            }
-        }
-        return finalizedRoute
+        // I need to update the incoming ROUTE with the route its supposed to take
+        // This is confusing, and I don't like it
+        outgoingIntent.putExtra(ROUTE,jsonRouteTable.getString(intent.getStringExtra(ROUTE)!!))
+        // This could have taken the string, I think
+        var checkedIntent = checkRouteForVariables(outgoingIntent)
+        var routeData = checkedIntent.getStringExtra(ROUTE)!!
+        return routeData
     }
 
     fun startBoundService(boundIntent: Intent){
@@ -305,7 +292,6 @@ class CoreService: SAFService(){
             Log.i(this.javaClass.name, "Service disconnected")
         }
     }
-
 
     override fun onDestroy() {
         stopBackgroundServices(sapphire_apps, connections)
