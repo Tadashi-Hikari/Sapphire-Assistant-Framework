@@ -16,9 +16,15 @@
     <application>
         <service
             android:name=".TermuxService"
-            android:enabled="false"
             android:exported="true"
             android:permission="com.termux.permission.RUN_COMMAND">
+        </service>
+        <service
+            android:name=".TermuxModuleInstallService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="assistant.framework.module.action.REGISTER"/>
+            </intent-filter>
         </service>
     </application>
 

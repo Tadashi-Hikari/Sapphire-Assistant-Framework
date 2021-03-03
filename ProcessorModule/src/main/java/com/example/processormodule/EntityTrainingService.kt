@@ -27,6 +27,7 @@ class EntityTrainingService: SAFService(){
 	override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
 		if(intent.action == "ENTITY"){
 			Log.i("EntityProcessing","NER intent received")
+			// This should just be message
 			var utterance = intent.getStringExtra("HYPOTHESIS")
 			if(utterance != null) {
 				processEntities(utterance)
