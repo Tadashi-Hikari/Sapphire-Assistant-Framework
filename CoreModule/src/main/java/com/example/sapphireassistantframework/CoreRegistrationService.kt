@@ -77,7 +77,7 @@ class CoreRegistrationService: SAFService(){
 				// Change this to registerModule()? It does registration and re-registration
 				startValidationProcess(intent!!)
 			}
-			// Is this too much writing?
+			// Is this too much writing? I think I'm just reading from routeTable in core
 			var registrationFile = File(filesDir,REGISTRATION_TABLE)
 			registrationFile.writeText(jsonRegistrationTable.toString())
 
@@ -176,6 +176,8 @@ class CoreRegistrationService: SAFService(){
 		// This is being used for the ROUTE id, so it can be looked up.
 		var routeName = intent.getStringExtra("ROUTE_NAME")
 		jsonRouteTable.put(routeName,routeData)
+		var file = File(filesDir,ROUTE_TABLE)
+		file.writeText(jsonRouteTable.toString())
 	}
 
 	fun registerModule(intent: Intent): JSONObject{

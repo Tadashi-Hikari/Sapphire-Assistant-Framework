@@ -7,21 +7,16 @@ import org.json.JSONArray
 import java.io.File
 
 abstract class SAFInstallService: SAFService(){
-		/**
-	 * Do these need to be their own modules? I don't think it's saving any time,
-	 * that said, it could be saving complexity since the dev doesn't need to know
-	 * extra strings to populate it
-	 */
-
-	// I am thinknig this should actually be a JSONObject
-	fun registerRouteInformation(intent: Intent, route: String): Intent{
-		intent.putExtra(ROUTE,route)
-			return intent
-	}
 
 	// I'm either sending JSON or DSV
 	fun registerBackgroundServices(intent: Intent, backgroundData: String): Intent{
 		intent.putExtra("BACKGROUND",backgroundData)
+		return intent
+	}
+
+	// I am thinknig this should actually be a JSONObject
+	fun registerRouteInformation(intent: Intent, route: String): Intent{
+		intent.putExtra(ROUTE,route)
 		return intent
 	}
 
@@ -77,6 +72,7 @@ abstract class SAFInstallService: SAFService(){
 	}
 
 	// This is for getting asset filenames
+	// It is throwing a major error
 	fun loadAssetNames(): List<File>{
 		// This gives a list of the root directory in assets
 		var assetsList = assets.list("")

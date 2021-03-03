@@ -1,10 +1,8 @@
 package com.example.vosksttmodule
 
 import android.content.Intent
-import android.os.IBinder
 import android.util.Log
 import com.example.componentframework.SAFInstallService
-import com.example.componentframework.SAFService
 import org.json.JSONObject
 import java.lang.Exception
 
@@ -27,11 +25,11 @@ class VoskModuleInstallService: SAFInstallService(){
 		var startupRoute = "${this.packageName};com.example.vosksttmodule.KaldiService"
 		// I don't like this, It seems clunky.
 		var backgroundData = JSONObject()
-		// This is supposed to be a variable
-		var routeData = PROCESSOR
 
 		backgroundData.put(STARTUP_ROUTE,startupRoute)
 		backgroundData.put("bound",true)
+		// This is a default ID for when it is acting as an input module
+		// Shit. will this conflict w/ default names?
 		backgroundData.put("registration_id","VoskModule")
 
 		var returnIntent = Intent(intent)
@@ -42,7 +40,10 @@ class VoskModuleInstallService: SAFInstallService(){
 		returnIntent.putExtra(MODULE_CLASS,"com.example.vosksttmodule.KaldiService")
 
 		// This is the unique ROUTE_NAME, so that it can be looked up
-		returnIntent.putExtra("ROUTE_NAME","com.example.vosksttmodule.KaldiService")
+		// Currently, this is the default. This is not currently used..., and it needs to be paired w/ route data
+		returnIntent.putExtra("ROUTE_NAME","${this.packageName};com.example.vosksttmodule.KaldiService")
+		// This is supposed to be a variable
+		var routeData = PROCESSOR
 		returnIntent = registerRouteInformation(returnIntent, routeData)
 		returnIntent = registerModuleType(returnIntent,INPUT)
 		returnIntent = registerVersion(returnIntent, VERSION)

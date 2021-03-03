@@ -39,6 +39,7 @@ class MultiprocessService: SAFService(){
             var intent = startIntent!!
             Log.i("MultiprocessService","MultiprocessService intent received")
             if(intent.hasExtra(MULTIPROCESS_ID)){
+                // If this ID value is null
                 if(JSONDatabase.isNull(intent.getStringExtra(MULTIPROCESS_ID))){
                     Log.e("MultiprocessService","This intent has an ID that isn't in our database. discarding")
                 }else{
@@ -60,6 +61,7 @@ class MultiprocessService: SAFService(){
 
     fun sendFinalData(intent: Intent){
         var id = intent.getStringExtra(MULTIPROCESS_ID)
+        Log.v(this.javaClass.name,"All data for MULTIPROCESS_ID ${id} received")
         // The multiprocess record name is the multiprocess ID
         // may need to read the file instead
         var JSONMultiprocessRecord = JSONDatabase.getJSONObject(id)
@@ -95,6 +97,7 @@ class MultiprocessService: SAFService(){
 
     // Shiiiiit. This is about to get a lot more complex
     fun evaluateMultiprocessIntent(intent: Intent){
+        Log.v(this.javaClass.name,"Evaluating multiprocess intent....")
         var JSONMultiprocessRecord = JSONObject()
         try {
             // Get the multiprocess record for the multiprocess id
@@ -144,24 +147,19 @@ class MultiprocessService: SAFService(){
         }
     }
 
-    // Basically an orderedBroadcast for startService. No return expected
-    fun dispatchOrdered(intentStack: LinkedList<Intent>){
-        for(intent in intentStack){
-            startService(intent)
-        }
-    }
-
     // This creates and starts the multiprocess intent
     fun startMultiprocessIntent(initialIntent: Intent){
+        Log.v(this.javaClass.name,"starting a new multiprocess intent...")
         // Get the ID for this multiprocess
         var id = getNewID()
         // Create an empty record for this multiprocess
         var JSONMultiprocessRecord = JSONObject()
         // Put the ID in the outgoing intent
         var outgoingIntent = Intent(initialIntent).putExtra(MULTIPROCESS_ID,id)
-        outgoingIntent.setAction(ACTION_SAPPHIRE_MODULE_REQUEST_DATA)
+        outgoingIntent.setAction(ACTION_SAPPHIRE_CORE_REQUEST_DATA)
 
         var routes = routeParser(initialIntent)
+        Log.v(this.javaClass.name,"the routes for this multiprocess intent are ${routes}")
         var multiprocessRoute = routes.first.split(",")
         // This is how many individual Intents will be coming back for this multiprocess
         JSONMultiprocessRecord.put(SEQUENCE_TOTAL,multiprocessRoute.size)
@@ -187,6 +185,7 @@ class MultiprocessService: SAFService(){
 
     fun routeParser(intent: Intent): Pair<String,String>{
         var route = intent.getStringExtra(ROUTE)!!
+        Log.v(this.javaClass.name,"routeParser received this for its route: ${route}")
         var start = route.indexOf("(")+1
         var end = route.indexOf(")",start)
         var multiprocessRoute = route.substring(start,end)
@@ -195,10 +194,13 @@ class MultiprocessService: SAFService(){
     }
 
     fun getNewID(): String{
+        Log.v(this.javaClass.name,"Generating a new ID")
         var id = -1
-        while((JSONDatabase.has(id.toString())) == true or (id == -1)){
+        // If the ID exists in the database, or it's -1 (never created)
+        while((id == -1) or (JSONDatabase.has(id.toString()))){
             id = Random.nextInt().absoluteValue
         }
+        Log.v(this.javaClass.name,"Newly created ID is ${id}")
         return id.toString()
     }
 

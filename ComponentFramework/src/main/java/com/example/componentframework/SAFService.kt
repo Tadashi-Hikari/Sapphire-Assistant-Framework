@@ -47,6 +47,7 @@ abstract class SAFService: Service(){
     val ACTION_SAPPHIRE_CORE_BIND="assistant.framework.core.action.BIND"
     // This is sent to the CORE from the module, so the core can handle the registration process
     // This is for a module to request *all* data from the core (implicit intent style)
+    val ACTION_SAPPHIRE_ROUTE_LOOKUP = "assistant.framework.core.action.ROUTE_LOOKUP"
     val ACTION_SAPPHIRE_CORE_REGISTRATION_COMPLETE = "assistant.framework.core.action.REGISTRATION_COMPLETE"
     val ACTION_SAPPHIRE_CORE_REQUEST_DATA="assistant.framework.core.action.REQUEST_DATA"
     val ACTION_SAPPHIRE_UPDATE_ENV = "action.framework.module.action.UPDATE_ENV"
@@ -54,7 +55,6 @@ abstract class SAFService: Service(){
     // this is -V on the command line
     val ACTION_SAPPHIRE_MODULE_VERSION = "assistant.framework.module.action.VERSION"
     // This is for core to request data from a specific module
-    val ACTION_SAPPHIRE_MODULE_REQUEST_DATA="assistant.framework.module.action.REQUEST_DATA"
     val ACTION_SAPPHIRE_TRAIN="assistant.framework.processor.action.TRAIN"
 
     // This is for having a SAF compontent pass along the route w/o a callback to core
@@ -158,28 +158,33 @@ abstract class SAFService: Service(){
     }
 
     fun startSAFService(intent: Intent){
-        var SAFIntent = intent
+        var SAFIntent = Intent(intent)
         SAFIntent = checkRouteForVariables(intent)
         startService(SAFIntent)
     }
 
     fun checkRouteForVariables(intent: Intent): Intent{
+        var defaultIntent = Intent(intent)
         try {
             var routeData = intent.getStringExtra(ROUTE)!!
-            var routeModuleMutableList = parseRoute(routeData) as MutableList<String>
-            var environmentalVaribles = intent.getStringExtra(POSTAGE)
-            var jsonDefaultModules = JSONObject(environmentalVaribles)
+            var routeModuleMutableList = parseRoute(routeData).toMutableList()
+            //var environmentalVaribles = intent.getStringExtra(POSTAGE)
+            //var jsonDefaultModules = JSONObject(environmentalVaribles)
+            var postage = JSONObject(intent.getStringExtra(POSTAGE)!!)
 
-            for (module in routeModuleMutableList.withIndex()) {
-                if (jsonDefaultModules.has(module.value)) {
-                    routeModuleMutableList.set(
-                        module.index,
-                        jsonDefaultModules.getString(module.value)
-                    )
+            Log.v(this.javaClass.name,"routeData before checking ${routeData}")
+            for(module in routeModuleMutableList.withIndex()) {
+                var temp = module.copy()
+                Log.v(this.javaClass.name,"Checking ${module.value} in route...")
+                if (postage.has(module.value)) {
+                    Log.v(this.javaClass.name,"Matched key ${module.value} at index ${module.index} with an ENV_VAR")
+                    Log.v(this.javaClass.name,"Postages value is ${postage.optString(module.value,null)}")
+                    routeModuleMutableList.set(module.index,postage.optString(module.value))
                 }
             }
 
             var finalizedRoute = ""
+            Log.i(this.javaClass.name,"Finalizing route...")
             for (module in routeModuleMutableList.withIndex()) {
                 if (module.index == 0) {
                     finalizedRoute = module.value
@@ -190,8 +195,8 @@ abstract class SAFService: Service(){
             intent.putExtra(ROUTE, finalizedRoute)
             return intent
         }catch(exception: Exception){
-            Log.e("Error checking route for variables")
-            var defaultIntent = Intent()
+            Log.e(this.javaClass.name,"Error checking route for variables, returning defaultIntent")
+            Log.e(this.javaClass.name,exception.toString())
             return defaultIntent
         }
     }

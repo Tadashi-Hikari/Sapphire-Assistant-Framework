@@ -24,7 +24,11 @@ class ProcessorModuleInstallService: SAFInstallService(){
 	override fun registerModule(intent: Intent){
 		var returnIntent = Intent(intent)
 		returnIntent.putExtra(MODULE_PACKAGE,this.packageName)
-		returnIntent.putExtra(MODULE_CLASS,"${this.packageName}.ProcessorCentralService")
+		returnIntent.putExtra(MODULE_CLASS,"com.example.processormodule.ProcessorCentralService")
+
+		var route = "${this.packageName};com.example.processormodule.ProcessorCentralService"
+		returnIntent.putExtra("ROUTE_NAME",route)
+		returnIntent = registerRouteInformation(returnIntent, route)
 		registerVersion(returnIntent, VERSION)
 		registerModuleType(returnIntent,PROCESSOR)
 		super.registerModule(returnIntent)
