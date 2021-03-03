@@ -88,8 +88,11 @@ class ProcessorCentralService: SAFService(){
 
             Log.e("ProcessorCentralService","There is no saved classifier. Requesting training data from core")
             // I don't like how bulky this is
+            //var core = getDefault(CORE).split(";")
+            // var coreDataRequestIntent = Intent().setClassName(core.first(),core.second()
             var coreDataRequestIntent = Intent().setClassName(this,"com.example.sapphireassistantframework.CoreService")
             coreDataRequestIntent.action = ACTION_SAPPHIRE_CORE_REQUEST_DATA
+            // coreDataRequestIntent.putExtra(ROUTE,"${this.packageName};com.example.processormodule.${this.javaClass.name}")
             coreDataRequestIntent.putExtra(ROUTE,"com.example.sapphireassistantframework;com.example.processormodule.ProcessorCentralService")
             coreDataRequestIntent.putStringArrayListExtra(DATA_KEYS,requestedDataKeys)
             Log.i("ProcessorCentralService","Requesting data keys ${coreDataRequestIntent.getStringArrayListExtra(DATA_KEYS)}" )

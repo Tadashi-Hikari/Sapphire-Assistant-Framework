@@ -37,24 +37,24 @@ class MultiprocessService: SAFService(){
     override fun onStartCommand(startIntent: Intent?, flags: Int, startId: Int): Int {
         try{
             var intent = startIntent!!
-            Log.i("MultiprocessService","MultiprocessService intent received")
+            Log.i(this.javaClass.name,"MultiprocessService intent received")
             if(intent.hasExtra(MULTIPROCESS_ID)){
                 // If this ID value is null
                 if(JSONDatabase.isNull(intent.getStringExtra(MULTIPROCESS_ID))){
-                    Log.e("MultiprocessService","This intent has an ID that isn't in our database. discarding")
+                    Log.e(this.javaClass.name,"This intent has an ID that isn't in our database. discarding")
                 }else{
-                    Log.i("MultiprocessService","This is a response to an existing multiprocess. Handling... ")
+                    Log.i(this.javaClass.name,"This is a response to an existing multiprocess. Handling... ")
                     evaluateMultiprocessIntent(intent)
                 }
             }else{
-                Log.i("MultiprocessService","This is a new multiprocess intent. Handling... ")
+                Log.i(this.javaClass.name,"This is a new multiprocess intent. Handling... ")
                 startMultiprocessIntent(intent)
             }
 
         }catch(exception: Exception){
             //Error
-            Log.e("MultiprocessService","There was an error with the incoming intent")
-            Log.e("MultiprocessService",exception.toString())
+            Log.e(this.javaClass.name,"There was an error with the incoming intent")
+            Log.e(this.javaClass.name,exception.toString())
         }
         return super.onStartCommand(startIntent, flags, startId)
     }
@@ -173,7 +173,7 @@ class MultiprocessService: SAFService(){
             Log.i("MultiprocessService","This intent is going to ${packageClass[0]};${packageClass[1]}")
             outgoingIntent.putExtra(SEQUENCE_NUMBER,multiprocessRoute.indexOf(route))
             // So the retrieveal skill knows to return here
-            outgoingIntent.putExtra(ROUTE,"${packageName};com.example.multiprocessmodule.MultiprocessService")
+            outgoingIntent.putExtra(ROUTE,"${this.packageName};com.example.multiprocessmodule.MultiprocessService")
             Log.i("MultiprocessService","Starting outgoing intent for MULTIPROCESS_ID ${id}")
             startService(outgoingIntent)
         }

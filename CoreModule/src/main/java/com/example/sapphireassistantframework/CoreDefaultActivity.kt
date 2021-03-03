@@ -7,9 +7,14 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.core.content.ContextCompat
+import java.io.File
 
 
 class CoreCentralActivity: Activity(){
+
+    private var tables = listOf("registration.tbl","defaultmodules.tbl","background.tbl","routetable.tbl","alias.tbl")
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_core_central)
@@ -18,11 +23,14 @@ class CoreCentralActivity: Activity(){
     // This will likely need to be more dynamic. This is just checking for permissions
     fun checkForPermissions(){
         when{
-            ContextCompat.checkSelfPermission(this,"android.permission.RECORD_AUDIO") == PackageManager.PERMISSION_DENIED -> {
-                requestPermissions(arrayOf("android.permission.RECORD_AUDIO"),PackageManager.PERMISSION_GRANTED)
-            }
-            ContextCompat.checkSelfPermission(this,"android.permission.WRITE_EXTERNAL_STORAGE") == PackageManager.PERMISSION_DENIED -> {
-                requestPermissions(arrayOf("android.permission.WRITE_EXTERNAL_STORAGE"),PackageManager.PERMISSION_GRANTED)
+            ContextCompat.checkSelfPermission(
+                this,
+                "android.permission.RECORD_AUDIO"
+            ) == PackageManager.PERMISSION_DENIED -> {
+                requestPermissions(
+                    arrayOf("android.permission.RECORD_AUDIO"),
+                    PackageManager.PERMISSION_GRANTED
+                )
             }
         }
     }
@@ -54,6 +62,12 @@ class CoreCentralActivity: Activity(){
         var resetIntent = Intent().setClassName(this,"com.example.processormodule.ProcessorCentralService")
         resetIntent.setAction("DELETE_CLASSIFIER")
         startService(resetIntent)
+
+        for(table in tables){
+            var file = File(filesDir,table)
+            file.delete()
+        }
+
         var foregroundService = Intent().setClassName(this,"com.example.sapphireassistantframework.CoreService")
         stopService(foregroundService)
     }
