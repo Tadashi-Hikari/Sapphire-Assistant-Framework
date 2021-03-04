@@ -3,6 +3,7 @@ package com.example.sapphireassistantframework
 import android.content.Intent
 import android.util.Log
 import com.example.componentframework.SAFInstallService
+import com.example.componentframework.SAFService
 
 class CoreModuleInstallService: SAFInstallService(){
     val VERSION = "0.0.1"
@@ -13,7 +14,7 @@ class CoreModuleInstallService: SAFInstallService(){
                 registerModule(intent!!)
             }
         }catch(exception: Exception){
-            Log.i("VoskModuleInstallService","There was some kind of error with the install intent")
+            Log.i(this.javaClass.name,"There was some kind of error with the install intent")
         }
         return super.onStartCommand(intent, flags, startId)
     }
