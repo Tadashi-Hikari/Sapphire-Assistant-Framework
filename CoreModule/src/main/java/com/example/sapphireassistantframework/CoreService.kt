@@ -2,10 +2,7 @@ package com.example.sapphireassistantframework
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.content.ComponentName
-import android.content.Context
-import android.content.Intent
-import android.content.ServiceConnection
+import android.content.*
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
@@ -23,9 +20,11 @@ class CoreService: SAFService(){
     private lateinit var sapphire_apps: LinkedList<Pair<String, String>>
 
     /*
-    These could be static, to be shared between this and CoreRegistrationService
+    These could be static in SAFService, to be shared between this and CoreRegistrationService
+    though that'd cause an issue w/ the other modules
      */
     private val CONFIG = "core.conf"
+    // I don't actually think this is used
     private val DATABASE = "core.db"
 
     // These are table names
@@ -129,19 +128,15 @@ class CoreService: SAFService(){
                 var modulesWithData = packageManager.queryIntentServices(queryIntent, 0)
                 Log.i(this.javaClass.name,"Query results ${modulesWithData}")
                 var multiprocessRoute = "("
-                // I"ll fix this later, but this will likely produce doubles, and I only have one w/ data right now
-                for(dataModule in modulesWithData.take(1)) {
+                for(dataModule in modulesWithData) {
                     try{
-                        var packageName = dataModule.serviceInfo.packageName
-                        var className = dataModule.serviceInfo.name
-                        // Should I check if it's registered?
-                        // This is making a multiprocess route
-                        multiprocessRoute+="${packageName};${className},"
+                        var packageClass= "${dataModule.serviceInfo.packageName};${dataModule.serviceInfo.name}"
+                        multiprocessRoute = (verifyUniqueData(packageClass,multiprocessRoute))
                     }catch(exception: Exception){
                         continue
                     }
                 }
-                // Janky, but should do. I just made a (multiprocess route)
+                // Jainky, but should do. I just made a (multiprocess route)
                 multiprocessRoute = multiprocessRoute.subSequence(0,multiprocessRoute.length-1) as String
                 multiprocessRoute+=")"
                 Log.i(this.javaClass.name,"Multiprocess route: ${multiprocessRoute}")
@@ -159,6 +154,16 @@ class CoreService: SAFService(){
             Log.e(this.javaClass.name,exception.toString())
         }
         return super.onStartCommand(intent, flags, startId)
+    }
+
+    // This is a temporary hack
+    // This should be brought in to CoreRegistrationService to fix it's multipackage issue
+    fun verifyUniqueData(newPackage: String, existingPackages: String): String{
+        if(existingPackages.contains(newPackage)) {
+            return existingPackages
+        }else{
+            return "${existingPackages}${newPackage},"
+        }
     }
 
     // It really just pulls the alias from Route.

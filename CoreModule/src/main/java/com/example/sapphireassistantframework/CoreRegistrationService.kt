@@ -1,10 +1,14 @@
 package com.example.sapphireassistantframework
 
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager.GET_RESOLVED_FILTER
 import android.content.pm.ResolveInfo
 import android.os.IBinder
 import android.util.Log
+import android.widget.Toast
 import com.example.componentframework.SAFService
 import org.json.JSONObject
 import java.io.File
@@ -56,10 +60,10 @@ class CoreRegistrationService: SAFService(){
 		super.onCreate()
 	}
 
-	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+	override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
 		try {
 			Log.v(this.javaClass.name,"CoreRegistrationIntent received")
-			if(intent?.action == null){
+			if(intent.action == null){
 				Log.v(this.javaClass.name,"No action specified, initializing...")
 				// This is the Init action
 				initializing = true

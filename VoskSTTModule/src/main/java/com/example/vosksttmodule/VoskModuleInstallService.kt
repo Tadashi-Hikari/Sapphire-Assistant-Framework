@@ -10,7 +10,7 @@ import java.lang.Exception
 class VoskModuleInstallService: SAFInstallService(){
 	val VERSION = "0.0.1"
 
-	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+	override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
 		try {
 			if (intent!!.action == ACTION_SAPPHIRE_MODULE_REGISTER) {
 				registerModule(intent!!)

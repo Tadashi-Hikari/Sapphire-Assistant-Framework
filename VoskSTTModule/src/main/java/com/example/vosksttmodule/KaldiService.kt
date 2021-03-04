@@ -30,7 +30,7 @@ class KaldiService: RecognitionListener, SAFService(){
         setup()
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         Log.v(this.javaClass.name,"KaldiService intent received")
         return super.onStartCommand(intent, flags, startId)
     }

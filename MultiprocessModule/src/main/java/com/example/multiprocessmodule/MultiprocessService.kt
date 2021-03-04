@@ -24,7 +24,8 @@ class MultiprocessService: SAFService(){
     val MULTIPROCESS_ID = "assistant.framework.multiprocess.protocol.ID"
     val SEQUENCE_NUMBER = "assistant.framework.multiprocess.protocol.SEQUENCE_NUMBER"
     val SEQUENCE_TOTAL = "assistant.framework.multiprocess.column.SEQUENCE_TOTAL"
-    var PRIMARY_KEY = "assistant.framewoke.multiprocess.column.PRIMARY_KEY"
+
+    val MULTIPROCESS_TABLE = "multiprocess.tbl"
 
     lateinit var databaseFile: File
     lateinit var JSONDatabase: JSONObject
@@ -34,7 +35,7 @@ class MultiprocessService: SAFService(){
         JSONDatabase = loadDatabase()
     }
 
-    override fun onStartCommand(startIntent: Intent?, flags: Int, startId: Int): Int {
+    override fun onStartCommand(startIntent: Intent, flags: Int, startId: Int): Int {
         try{
             var intent = startIntent!!
             Log.i(this.javaClass.name,"MultiprocessService intent received")
@@ -205,12 +206,12 @@ class MultiprocessService: SAFService(){
     }
 
     fun loadDatabase(): JSONObject{
-        databaseFile = File(filesDir, "MultiprocessDatabase.txt")
+        databaseFile = File(filesDir, MULTIPROCESS_TABLE)
         if(databaseFile.exists()){
-            Log.i("MultiprocessService","Database loaded")
+            Log.i(this.javaClass.name,"Table loaded")
             return JSONObject(databaseFile.readText())
         }
-        Log.i("MultiprocessService","Database created")
+        Log.i(this.javaClass.name,"Table created")
         return JSONObject()
     }
 

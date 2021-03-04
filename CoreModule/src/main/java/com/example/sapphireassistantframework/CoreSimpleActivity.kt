@@ -1,23 +1,50 @@
 package com.example.sapphireassistantframework
 
 import android.app.Activity
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
-import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.EditText
+import android.widget.TextView
 import androidx.core.content.ContextCompat
 import java.io.File
+import android.os.Bundle as Bundle
 
 
-class CoreCentralActivity: Activity(){
-
+class CoreSimpleActivity: Activity()
+{
     private var tables = listOf("registration.tbl","defaultmodules.tbl","background.tbl","routetable.tbl","alias.tbl")
-
+    val GUI_BROADCAST = "assistant.framework.broadcast.GUI_UPDATE"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_core_central)
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        // Maybe an optimization issue
+        var coreBroadcastReceiver = object : BroadcastReceiver(){
+            override fun onReceive(context: Context?, intent: Intent?) {
+                updateUI(intent.toString())
+                Log.i(this.javaClass.name,"SAF Broadcast receieved")
+            }
+        }
+
+        var filter = IntentFilter()
+        filter.addAction(GUI_BROADCAST)
+        this.registerReceiver(coreBroadcastReceiver,filter)
+        Log.i(this.javaClass.name,"Receiver registered")
+    }
+
+    fun updateUI(string: String){
+        var textView: TextView = findViewById(R.id.textView)
+        textView.setText(string)
     }
 
     // This will likely need to be more dynamic. This is just checking for permissions
