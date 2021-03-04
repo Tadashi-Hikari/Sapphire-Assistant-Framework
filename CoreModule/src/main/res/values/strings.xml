@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Sapphire Assistant Framework</string>
-    <string name="title_activity_core_central_">Core_Central_Activity</string>
+    <string name="title_activity_core_central_">Sapphire Assistant Framework</string>
     <!--
     This string is used for square devices and overridden by hello_world in
     values-round/strings.xml for round devices.

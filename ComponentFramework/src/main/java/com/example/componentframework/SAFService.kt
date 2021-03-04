@@ -1,5 +1,6 @@
 package com.example.componentframework
 
+import android.Manifest
 import android.app.Service
 import android.content.Intent
 import android.util.Log
@@ -56,6 +57,20 @@ abstract class SAFService: Service(){
     val ACTION_SAPPHIRE_MODULE_VERSION = "assistant.framework.module.action.VERSION"
     // This is for core to request data from a specific module
     val ACTION_SAPPHIRE_TRAIN="assistant.framework.processor.action.TRAIN"
+    val GUI_BROADCAST = "assistant.framework.broadcast.GUI_UPDATE"
+
+    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int{
+        // Why is this intent coming in empty?
+        var notifyIntent = Intent()
+        try {
+            notifyIntent.setAction(GUI_BROADCAST)
+            sendBroadcast(notifyIntent)
+            Log.i(this.javaClass.name,"SAF broadcast sent")
+        }catch (exception: Exception){
+            Log.e(this.javaClass.name,"SAF broadcast error")
+        }
+        return super.onStartCommand(intent, flags, startId)
+    }
 
     // This is for having a SAF compontent pass along the route w/o a callback to core
     fun parseRoute(string: String): List<String>{
