@@ -17,6 +17,7 @@ import android.os.Bundle as Bundle
 
 class CoreSimpleActivity: Activity()
 {
+    // This needs to be loaded from a config table
     private var tables = listOf("registration.tbl","defaultmodules.tbl","background.tbl","routetable.tbl","alias.tbl")
     val GUI_BROADCAST = "assistant.framework.broadcast.GUI_UPDATE"
 
@@ -44,7 +45,7 @@ class CoreSimpleActivity: Activity()
 
     fun updateUI(string: String){
         var textView: TextView = findViewById(R.id.textView)
-        textView.setText(string)
+        textView.append(string)
     }
 
     // This will likely need to be more dynamic. This is just checking for permissions
@@ -66,6 +67,7 @@ class CoreSimpleActivity: Activity()
         Log.v(this.localClassName,"starting ${this.packageName}, ${this.packageName}.CoreService")
         var intent: Intent = Intent().setClassName(this.packageName,"${this.packageName}.CoreService")
         checkForPermissions()
+        // This needs to be formalized and moved over
         intent.setAction("INIT")
         // This doesn't do anything in particular to indicate that it is starting SF for the first time
         startService(intent)

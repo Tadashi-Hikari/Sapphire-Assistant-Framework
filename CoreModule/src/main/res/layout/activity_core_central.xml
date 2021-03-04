@@ -22,17 +22,34 @@
             <Space
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_weight="8" />
+                android:layout_weight="8"
+                android:background="#000000"
+                android:visibility="visible" />
+
+            <androidx.constraintlayout.widget.Barrier
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:foregroundTint="#000000"
+                android:visibility="visible"
+                app:barrierDirection="top" />
 
             <TextView
                 android:id="@+id/textView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="textMultiLine"
+                android:clickable="true"
+                android:freezesText="false"
+                android:hapticFeedbackEnabled="true"
+                android:isScrollContainer="true"
+                android:scrollIndicators="right"
+                android:scrollbars="vertical"
                 android:text="Demo text"
                 android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-                android:textColor="#000000" />
+                android:textColor="#000000"
+                android:textIsSelectable="true"
+                android:verticalScrollbarPosition="defaultPosition" />
 
             <androidx.constraintlayout.widget.Barrier
                 android:layout_width="match_parent"

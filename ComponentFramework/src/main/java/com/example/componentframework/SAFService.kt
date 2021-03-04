@@ -1,6 +1,5 @@
 package com.example.componentframework
 
-import android.Manifest
 import android.app.Service
 import android.content.Intent
 import android.util.Log
@@ -60,8 +59,10 @@ abstract class SAFService: Service(){
     val GUI_BROADCAST = "assistant.framework.broadcast.GUI_UPDATE"
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int{
-        // Why is this intent coming in empty?
+        Log.d(this.javaClass.name,"----------------------------------INCOMING INTENT: ${intent.extras.toString()}")
+        // I don't know why I can't copy or send out the incoming intent. I suppose its the broadcast propogation thing
         var notifyIntent = Intent()
+        notifyIntent.putExtra(MESSAGE,"${this.packageName};${this.javaClass.name}")
         try {
             notifyIntent.setAction(GUI_BROADCAST)
             sendBroadcast(notifyIntent)
