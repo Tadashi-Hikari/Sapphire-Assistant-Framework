@@ -16,7 +16,7 @@ abstract class SAFService: Service(){
 
         fun broadcastStatus(name: String, message:String) {
             var notifyIntent = Intent()
-            notifyIntent.putExtra(MESSAGE, "${name}: ${message}")
+            notifyIntent.putExtra(MESSAGE, "${message}")
             notifyIntent.setAction(GUI_BROADCAST)
             sendBroadcast(notifyIntent)
         }
