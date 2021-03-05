@@ -10,6 +10,45 @@ import java.io.InputStreamReader
 import java.lang.Exception
 
 abstract class SAFService: Service(){
+
+    // This is just to override
+    inner class LogOverride{
+
+        fun broadcastStatus(name: String, message:String) {
+            var notifyIntent = Intent()
+            notifyIntent.putExtra(MESSAGE, "${name}: ${message}")
+            notifyIntent.setAction(GUI_BROADCAST)
+            sendBroadcast(notifyIntent)
+        }
+
+        fun i(name: String, message: String){
+            android.util.Log.i(name,message)
+            broadcastStatus(name,message)
+        }
+
+        fun d(name: String, message: String){
+            android.util.Log.d(name,message)
+            broadcastStatus(name,message)
+        }
+
+        fun e(name: String, message: String){
+            android.util.Log.e(name,message)
+            broadcastStatus(name,message)
+        }
+
+        fun v(name: String, message: String){
+            android.util.Log.v(name,message)
+            broadcastStatus(name,message)
+        }
+
+        fun w(name: String, message: String){
+            android.util.Log.w(name,message)
+            broadcastStatus(name,message)
+        }
+    }
+
+    var Log = LogOverride()
+
     // Standard extras
     val MESSAGE="assistant.framework.protocol.MESSAGE"
     val STDERR="assistant.framework.protocol.STDERR"
@@ -59,7 +98,6 @@ abstract class SAFService: Service(){
     val GUI_BROADCAST = "assistant.framework.broadcast.GUI_UPDATE"
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int{
-        Log.d(this.javaClass.name,"----------------------------------INCOMING INTENT: ${intent.extras.toString()}")
         // I don't know why I can't copy or send out the incoming intent. I suppose its the broadcast propogation thing
         var notifyIntent = Intent()
         notifyIntent.putExtra(MESSAGE,"${this.packageName};${this.javaClass.name}")
@@ -169,7 +207,7 @@ abstract class SAFService: Service(){
     }
 
     fun parseConfigFile(filename: String): JSONObject{
-        Log.v(this.applicationInfo.className,"Parsing config file")
+        Log.v(this.javaClass.name,"Parsing config file")
         return JSONObject()
     }
 

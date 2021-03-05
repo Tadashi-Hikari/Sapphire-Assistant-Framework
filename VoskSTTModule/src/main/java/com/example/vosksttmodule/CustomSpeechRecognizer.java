@@ -5,17 +5,11 @@ package com.example.vosksttmodule;
  **/
 
 import android.media.AudioRecord;
-import android.media.MediaRecorder;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
-
 import org.kaldi.KaldiRecognizer;
 import org.kaldi.Model;
 import org.kaldi.RecognitionListener;
-
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;

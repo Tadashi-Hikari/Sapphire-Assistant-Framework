@@ -1,7 +1,6 @@
 package com.example.termuxmodule
 
 import android.content.Intent
-import android.util.Log
 import com.example.componentframework.SAFInstallService
 
 class TermuxModuleInstallService: SAFInstallService() {
