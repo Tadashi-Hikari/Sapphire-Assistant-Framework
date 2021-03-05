@@ -8,7 +8,7 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.util.Log
 import android.view.View
-import android.widget.EditText
+import android.widget.ScrollView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import java.io.File
@@ -20,10 +20,14 @@ class CoreSimpleActivity: Activity()
     // This needs to be loaded from a config table
     private var tables = listOf("registration.tbl","defaultmodules.tbl","background.tbl","routetable.tbl","alias.tbl")
     val GUI_BROADCAST = "assistant.framework.broadcast.GUI_UPDATE"
+    val MESSAGE="assistant.framework.protocol.MESSAGE"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_core_central)
+        setContentView(R.layout.core_activity)
+        var textView = findViewById<TextView>(R.id.textView)
+        // For some reason this won't work when set in the XML
+        textView.setHorizontallyScrolling(true)
     }
 
     override fun onResume() {
@@ -32,7 +36,8 @@ class CoreSimpleActivity: Activity()
         // Maybe an optimization issue
         var coreBroadcastReceiver = object : BroadcastReceiver(){
             override fun onReceive(context: Context?, intent: Intent?) {
-                updateUI(intent.toString())
+                var test = intent?.getStringExtra(MESSAGE)
+                updateUI(test!!)
                 Log.i(this.javaClass.name,"SAF Broadcast receieved")
             }
         }
@@ -45,7 +50,7 @@ class CoreSimpleActivity: Activity()
 
     fun updateUI(string: String){
         var textView: TextView = findViewById(R.id.textView)
-        textView.append(string)
+        textView.append("\n${string}")
     }
 
     // This will likely need to be more dynamic. This is just checking for permissions
