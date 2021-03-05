@@ -5,4 +5,4 @@ I've just uploaded a prealpha APK (under releases on github) that can be tried o
 
 I am starting to update the wiki based on my own hacking ideas for it, roadmaps, ideas, and the like. If you have a question about how it should work, feel free to open an issue and ask. I'll add the information to the wiki so that way the whole community benefits
 
-If you'd like to donate to help support this project (I do it for free, only using my own time and money) you can donate to https://paypal.me/pools/c/8vWDFtysV4
+If you'd like to donate to help support this project (the sooner I can buy out my work contract, the sooner I can do this full time) you can donate to https://paypal.me/pools/c/8vWDFtysV4
