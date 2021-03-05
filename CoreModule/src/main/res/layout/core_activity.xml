@@ -46,6 +46,7 @@
                 android:hyphenationFrequency="none"
                 android:isScrollContainer="true"
                 android:lineSpacingExtra="4sp"
+                android:scrollHorizontally="true"
                 android:scrollbarAlwaysDrawHorizontalTrack="true"
                 android:scrollbars="horizontal|vertical"
                 android:singleLine="false"
