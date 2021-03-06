@@ -4,7 +4,6 @@ plugins {
 }
 
 configurations.maybeCreate("default")
-artifacts.add("default", file('pocketsphinx-android-5prealpha-release.aar'))
 
 android {
     compileSdkVersion 30
@@ -26,6 +25,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
+    lintOptions {
+        checkReleaseBuilds false
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -33,7 +37,7 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
-    dynamicFeatures = [':VoskSTTModule', ':ProcessorModule', ':CalendarSkill', ':MultiprocessModule', ':TermuxModule', ':MycroftModule', ':TaskerModule']
+    //dynamicFeatures = [':VoskSTTModule', ':ProcessorModule', ':CalendarSkill', ':MultiprocessModule', ':TermuxModule', ':MycroftModule', ':TaskerModule']
 }
 
 //ant.importBuild 'assets.xml'
@@ -46,14 +50,9 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'com.google.android.material:material:1.2.1'
-    implementation 'androidx.wear:wear:1.0.0'
-    implementation files('libs/stanford-corenlp-4.1.0.jar')
     implementation 'androidx.constraintlayout:constraintlayout:2.0.2'
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
-    compileOnly 'com.google.android.wearable:wearable:2.6.0'
     implementation project(":ComponentFramework")
-    implementation fileTree(dir: 'aars', include: ['*'])
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
 }
