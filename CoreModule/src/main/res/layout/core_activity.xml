@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.wear.widget.BoxInsetLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/box_insert_layout"
@@ -98,7 +98,5 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1" />
         </LinearLayout>
-
     </LinearLayout>
-
-</androidx.wear.widget.BoxInsetLayout>
+</FrameLayout>
