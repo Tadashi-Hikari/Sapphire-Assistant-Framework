@@ -89,13 +89,13 @@ class CoreRegistrationService: SAFService(){
 			if(sapphireModuleStack.isNotEmpty()){
 				Log.v(this.javaClass.name,"Dispatching a new registration service from the registration stack")
 				// This will basically trigger itself as a loop, until finished
-				startService(sapphireModuleStack.pop())
+				startSAFInstallService(sapphireModuleStack.pop())
 			}else{
 				if(initializing) {
 					Log.v(this.javaClass.name,"All services have been registered. Continuing...")
 					var finished = Intent().setAction(ACTION_SAPPHIRE_CORE_REGISTRATION_COMPLETE)
 					finished.setClassName(this, "${this.packageName}.CoreService")
-					startService(finished)
+					startSAFInstallService(finished)
 					initializing = false
 				}
 			}

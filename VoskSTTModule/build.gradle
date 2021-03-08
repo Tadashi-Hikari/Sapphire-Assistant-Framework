@@ -1,10 +1,8 @@
-def test = true
-
-if(test){
-    apply plugin: 'com.android.application'
+if(project.single){
+    apply plugin: 'com.android.library'
     apply plugin: 'kotlin-android'
 }else{
-    apply plugin: 'com.android.library'
+    apply plugin: 'com.android.application'
     apply plugin: 'kotlin-android'
 }
 
@@ -21,7 +19,7 @@ android {
     }
 
     defaultConfig {
-        if(test == false) {
+        if(project.single != true) {
             applicationId "com.example.vosksttmodule"
         }
         minSdkVersion 25
@@ -34,7 +32,7 @@ android {
 
     buildTypes {
         debug{
-            if(test) {
+            if(project.single != true) {
                 applicationIdSuffix ".debug"
             }
             debuggable true
@@ -46,7 +44,7 @@ android {
         }
 
         singleAPK{
-            if(test) {
+            if(project.single) {
                 applicationIdSuffix ".singleAPK"
             }
             debuggable true

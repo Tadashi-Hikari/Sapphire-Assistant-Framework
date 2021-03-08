@@ -2,7 +2,6 @@ package com.example.componentframework
 
 import android.app.Service
 import android.content.Intent
-import android.util.Log
 import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
@@ -55,6 +54,7 @@ abstract class SAFService: Service(){
     // This is going to be for ENV_VARIABLES
     val POSTAGE="assistant.framework.protocol.POSTAGE"
     val ROUTE="assistant.framework.protocol.ROUTE"
+    val FROM= "assistant.framework.protocol.FROM"
     val ID = "assistant.framework.module.protocol.ID"
 
     // Maybe this should be used elsewhere...
@@ -119,6 +119,7 @@ abstract class SAFService: Service(){
     }
 
     // This doesn't actually impact the list, which I would have to return... Should it take intent?
+    // This can be streamlined w/ parseRoute
     fun getNextAlongRoute(route: List<String>): String{
         return route[0]
     }
@@ -211,9 +212,24 @@ abstract class SAFService: Service(){
         return JSONObject()
     }
 
+    // This needs to be changed to send things back to the core, to prevent background limitations
     fun startSAFService(intent: Intent){
         var SAFIntent = Intent(intent)
+        // I don't know that I like this. It seems bulky, but I'll worry about it after actually checking. No premature optimizations
         SAFIntent = checkRouteForVariables(intent)
+        // This is temporary
+        SAFIntent.setClassName(this,"com.example.sapphireassistantframework.CoreService")
+        // This should take care of populating that information quite nicely
+        SAFIntent.putExtra(FROM,"${this.packageName};${this.javaClass.canonicalName}")
+        startService(SAFIntent)
+    }
+
+    fun startSAFInstallService(intent: Intent){
+        var SAFIntent = Intent(intent)
+        // This is temporary
+        SAFIntent.setClassName(this,"com.example.sapphireassistantframework.CoreService")
+        // This should take care of populating that information quite nicely
+        SAFIntent.putExtra(FROM,"${this.packageName};${this.javaClass.canonicalName}")
         startService(SAFIntent)
     }
 
