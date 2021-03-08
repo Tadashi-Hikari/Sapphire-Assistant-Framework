@@ -1,6 +1,11 @@
-plugins {
-    id 'com.android.application'
-    id 'kotlin-android'
+def test = true
+
+if(test){
+    apply plugin: 'com.android.application'
+    apply plugin: 'kotlin-android'
+}else{
+    apply plugin: 'com.android.library'
+    apply plugin: 'kotlin-android'
 }
 
 configurations.maybeCreate("default")
@@ -16,7 +21,9 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.example.vosksttmodule"
+        if(test == false) {
+            applicationId "com.example.vosksttmodule"
+        }
         minSdkVersion 25
         targetSdkVersion 30
         versionCode 1
@@ -26,9 +33,26 @@ android {
     }
 
     buildTypes {
+        debug{
+            if(test) {
+                applicationIdSuffix ".debug"
+            }
+            debuggable true
+        }
+
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+
+        singleAPK{
+            if(test) {
+                applicationIdSuffix ".singleAPK"
+            }
+            debuggable true
+            dependencies{
+                //api project(":CoreModule")
+            }
         }
     }
 
