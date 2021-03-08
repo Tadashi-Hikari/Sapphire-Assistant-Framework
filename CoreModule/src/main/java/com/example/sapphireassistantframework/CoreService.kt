@@ -10,6 +10,8 @@ import androidx.core.app.NotificationCompat
 import com.example.componentframework.SAFService
 import org.json.JSONObject
 import java.util.*
+import kotlin.math.absoluteValue
+import kotlin.random.Random
 
 class CoreService: SAFService(){
     private var connections: LinkedList<Pair<String, Connection>> = LinkedList()
@@ -214,14 +216,47 @@ class CoreService: SAFService(){
         }
     }
 
+    fun getNewID(): String{
+        Log.v(this.javaClass.name,"Generating a new ID")
+        var id = -1
+        // If the ID exists in the database, or it's -1 (never created)
+        while((id == -1)){ //or (JSONDatabase.has(id.toString()))){
+            id = Random.nextInt().absoluteValue
+        }
+        Log.v(this.javaClass.name,"Newly created ID is ${id}")
+        return id.toString()
+    }
+
     // It's gonna work like this. Whatever is the LAST thing in the pipeline, core will read and upload pipeline data for.
     fun sortMail(intent: Intent){
         Log.v(this.javaClass.name,"sorting the incoming mail")
         var routeRequest = ""
 
-        // It reads from the ROUTE, assuming it is the requested info! This is the only module that works different
-        if(intent.hasExtra(ROUTE)){
-            routeRequest = intent.getStringExtra(ROUTE)!!
+
+        // This is a pretty straightforward passthrough
+        if(intent.hasExtra(ID)){
+            var routeData = intent.getStringExtra(ROUTE)!!
+            var route = parseRoute(routeData)
+            var packageClass = route.first().split(";")
+            // the packageName, and the className
+            intent.setClassName(packageClass.component1(), packageClass.component2())
+            intent.putExtra(MESSAGE, intent.getStringExtra(MESSAGE))
+            startService(intent)
+            // I could replace this w/ a variable check...?
+        }else if(intent.hasExtra(FROM) and (intent.getStringExtra(FROM)!! == "${this.packageName}:com.example.sapphireassistantframework.CoreRegistrationService")){
+            var installPackageName = intent!!.getStringExtra(MODULE_PACKAGE)!!
+            var installClassName = intent!!.getStringExtra(MODULE_CLASS)!!
+            intent.setClassName(installPackageName,installClassName)
+            startService(intent)
+        }else{
+            var id = getNewID()
+            intent.putExtra(ID,id)
+        }
+
+
+        // Checks if it's a new incoming intent
+        if(intent.hasExtra(FROM) and (intent.getStringExtra(ROUTE).isNullOrBlank())){
+            routeRequest = intent.getStringExtra(FROM)!!
             // This is just to let me know what is going on
             Log.i("PostOffice","pipelineRequest: ${routeRequest}")
         }else{
@@ -229,7 +264,6 @@ class CoreService: SAFService(){
             // currently, the default is to do nothing
             return
         }
-
         // This is *NOT* an ideal spot for this
         intent.putExtra(POSTAGE,addPostage())
 

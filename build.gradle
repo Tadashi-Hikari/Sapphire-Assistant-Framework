@@ -1,5 +1,8 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
+    // This is used to switch whether I want to build it as individal APKs, or as a single APK
+    project.ext.single = false
+
     ext.kotlin_version = "1.4.10"
     repositories {
         google()
@@ -10,7 +13,7 @@ buildscript {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
         // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
+        // in the individual module build.gradle file
     }
 }
 

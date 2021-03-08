@@ -28,8 +28,14 @@ android {
         singleAPK{
             initWith debug
             applicationIdSuffix ".singleAPK"
-            dependencies{
-                api project(":VoskSTTModule")
+            dependencies {
+                if (project.single) {
+                    implementation project(":VoskSTTModule")
+                    implementation project(":MultiprocessModule")
+                    implementation project(":ProcessorModule")
+                    implementation project(":CalendarModule")
+                    implementation project(":CoreModule")
+                }
             }
         }
     }
@@ -65,7 +71,4 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
     implementation project(":ComponentFramework")
-    if(single) {
-        implementation project(":VoskSTTModule")
-    }
 }

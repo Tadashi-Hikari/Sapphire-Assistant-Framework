@@ -45,7 +45,7 @@ class VoskModuleInstallService: SAFInstallService(){
 		var routeData = PROCESSOR
 		returnIntent = registerRouteInformation(returnIntent, routeData)
 		returnIntent = registerModuleType(returnIntent,INPUT)
-		returnIntent = registerVersion(returnIntent, VERSION)
+		//returnIntent = registerVersion(returnIntent, VERSION)
 		super.registerModule(returnIntent)
 	}
 }
