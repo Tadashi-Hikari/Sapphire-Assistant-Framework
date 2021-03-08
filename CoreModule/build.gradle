@@ -24,6 +24,14 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+
+        singleAPK{
+            initWith debug
+            applicationIdSuffix ".singleAPK"
+            dependencies{
+                api project(":VoskSTTModule")
+            }
+        }
     }
 
     lintOptions {
@@ -44,6 +52,8 @@ android {
 //preBuild.dependsOn(list, checksum)
 //clean.dependsOn(clean_assets)
 
+def single = false
+
 dependencies {
     implementation "androidx.core:core-ktx:1.3.2"
     implementation "androidx.fragment:fragment-ktx:1.2.5"
@@ -55,4 +65,7 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
     implementation project(":ComponentFramework")
+    if(single) {
+        implementation project(":VoskSTTModule")
+    }
 }
