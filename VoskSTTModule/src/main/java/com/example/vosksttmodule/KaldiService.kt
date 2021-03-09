@@ -49,16 +49,7 @@ class KaldiService: RecognitionListener, SAFService(){
 
             // This is a input module, it should always be sending to core. How would I wrap it?
             var coreServiceIntent: Intent = Intent()
-
-            //var coreModule = getCoreModule(startupIntent)
-            //var packageClass = coreModule.split(";")
-            var packageName = "com.example.sapphireassistantframework"
-            var className = "${packageName}.CoreService"
-
-            // This is setting it to go explicitly to CORE... which means I need to change SAFService
-            coreServiceIntent.setClassName(packageName,className)
             coreServiceIntent.putExtra(MESSAGE, utterance)
-            coreServiceIntent.putExtra(ROUTE,"${this.packageName};com.example.vosksttmodule.KaldiService")
             Log.i("KaldiService", "Utterance hypothesis dispatched")
             startSAFService(coreServiceIntent)
         }

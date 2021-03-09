@@ -178,7 +178,7 @@ class CoreRegistrationService: SAFService(){
 		var routeData = intent.getStringExtra(ROUTE)
 		// This is being used for the ROUTE id, so it can be looked up.
 		var routeName = intent.getStringExtra("ROUTE_NAME")
-		Log.v(this.javaClass.name,"Registering route: ${routeName}: ${routeData}")
+		Log.v(this.javaClass.name,"Registering ${routeName} as going to route ${routeData}")
 		jsonRouteTable.put(routeName,routeData)
 		var file = File(filesDir,ROUTE_TABLE)
 		file.writeText(jsonRouteTable.toString())
