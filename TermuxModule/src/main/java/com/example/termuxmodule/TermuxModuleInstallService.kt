@@ -1,6 +1,7 @@
 package com.example.termuxmodule
 
 import android.content.Intent
+import android.util.Log
 import com.example.componentframework.SAFInstallService
 
 class TermuxModuleInstallService: SAFInstallService() {
@@ -12,7 +13,7 @@ class TermuxModuleInstallService: SAFInstallService() {
 				registerModule(intent!!)
 			}
 		}catch(exception: Exception){
-			Log.i("TermuxModuleInstallService","There was some kind of error with the install intent")
+			Log.e(this.javaClass.name,"There was some kind of error with the install intent")
 		}
 		return super.onStartCommand(intent, flags, startId)
 	}
@@ -25,8 +26,7 @@ class TermuxModuleInstallService: SAFInstallService() {
 
 		returnIntent.putExtra("ROUTE_NAME","${this.packageName};com.example.termuxmodule.TermuxService")
 		returnIntent = registerRouteInformation(returnIntent,"${this.packageName};com.example.termuxmodule.TermuxService")
-
-		registerVersion(returnIntent,VERSION)
+		returnIntent = registerVersion(returnIntent,VERSION)
 
 		super.registerModule(returnIntent)
 	}

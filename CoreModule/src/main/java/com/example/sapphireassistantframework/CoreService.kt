@@ -59,6 +59,7 @@ class CoreService: SAFService(){
     // Run through the registration process
     fun startRegistrationService(){
         var registrationIntent = Intent().setClassName(this.packageName,"${this.packageName}.CoreRegistrationService")
+        registrationIntent.setAction("INIT")
         Log.v(this.javaClass.name,"starting service ${"${this.packageName}.CoreRegistrationService"}")
         startService(registrationIntent)
     }
@@ -103,9 +104,17 @@ class CoreService: SAFService(){
             if((intent.action == ACTION_SAPPHIRE_CORE_BIND) or (intent.action == "INIT")) {
                 // Do the binding
             }else if(intent.action == ACTION_SAPPHIRE_MODULE_REGISTER) {
-                intent.setClassName(this,"${this.packageName}.CoreRegistrationService")
-                // just forward the prior intent right along
-                startService(intent)
+                if(intent.hasExtra(FROM)){
+                    Log.v(this.javaClass.name, "Passing this intent to an installer")
+                    var installPackageName = intent!!.getStringExtra(MODULE_PACKAGE)!!
+                    var installClassName = intent!!.getStringExtra(MODULE_CLASS)!!
+                    intent.setClassName(installPackageName, installClassName)
+                    startService(intent)
+                }else{
+                    intent.setClassName(this, "${this.packageName}.CoreRegistrationService")
+                    // just forward the prior intent right along
+                    startService(intent)
+                }
             // This will be triggered until the stack is empty, at which point it will allow the rest of the init
             }else if(intent.action == ACTION_SAPPHIRE_CORE_REGISTRATION_COMPLETE && readyToGoSemaphore == false) {
                 startBackgroundServicesConfigurable()
@@ -121,7 +130,8 @@ class CoreService: SAFService(){
                 in a route
                  */
             // This is not going to trigger when complete
-            }else if(readyToGoSemaphore == false){
+                // I think this is causing an install issue.
+            }else if(readyToGoSemaphore == false && intent.action != "INIT"){
                 // Don't do other stuff until it's initialized
                 return super.onStartCommand(intent, flags, startId)
             }else if(intent.action == ACTION_SAPPHIRE_CORE_REQUEST_DATA){
@@ -149,6 +159,7 @@ class CoreService: SAFService(){
                 Log.i(this.javaClass.name,"Requesting data keys ${multiprocessIntent.getStringArrayListExtra(DATA_KEYS)}" )
                 startService(multiprocessIntent)
             }else {
+                Log.v(this.javaClass.name,"-------SORTING MAIL-------")
                 sortMail(intent)
             }
         }catch(exception: Exception){
@@ -216,43 +227,10 @@ class CoreService: SAFService(){
         }
     }
 
-    fun getNewID(): String{
-        Log.v(this.javaClass.name,"Generating a new ID")
-        var id = -1
-        // If the ID exists in the database, or it's -1 (never created)
-        while((id == -1)){ //or (JSONDatabase.has(id.toString()))){
-            id = Random.nextInt().absoluteValue
-        }
-        Log.v(this.javaClass.name,"Newly created ID is ${id}")
-        return id.toString()
-    }
-
     // It's gonna work like this. Whatever is the LAST thing in the pipeline, core will read and upload pipeline data for.
     fun sortMail(intent: Intent){
         Log.v(this.javaClass.name,"sorting the incoming mail")
         var routeRequest = ""
-
-
-        // This is a pretty straightforward passthrough
-        if(intent.hasExtra(ID)){
-            var routeData = intent.getStringExtra(ROUTE)!!
-            var route = parseRoute(routeData)
-            var packageClass = route.first().split(";")
-            // the packageName, and the className
-            intent.setClassName(packageClass.component1(), packageClass.component2())
-            intent.putExtra(MESSAGE, intent.getStringExtra(MESSAGE))
-            startService(intent)
-            // I could replace this w/ a variable check...?
-        }else if(intent.hasExtra(FROM) and (intent.getStringExtra(FROM)!! == "${this.packageName}:com.example.sapphireassistantframework.CoreRegistrationService")){
-            var installPackageName = intent!!.getStringExtra(MODULE_PACKAGE)!!
-            var installClassName = intent!!.getStringExtra(MODULE_CLASS)!!
-            intent.setClassName(installPackageName,installClassName)
-            startService(intent)
-        }else{
-            var id = getNewID()
-            intent.putExtra(ID,id)
-        }
-
 
         // Checks if it's a new incoming intent
         if(intent.hasExtra(FROM) and (intent.getStringExtra(ROUTE).isNullOrBlank())){

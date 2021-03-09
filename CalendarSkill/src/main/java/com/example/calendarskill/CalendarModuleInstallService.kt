@@ -56,7 +56,7 @@ class CalendarModuleInstallService: SAFInstallService(){
         var returnIntent = Intent(intent)
         returnIntent.putExtra(MODULE_PACKAGE,this.packageName)
         returnIntent.putExtra(MODULE_CLASS,"com.example.calendarskill.CalendarService")
-        registerVersion(returnIntent, VERSION)
+        returnIntent = registerVersion(returnIntent, VERSION)
         registerData(returnIntent, intentFiles)
 
         super.registerModule(returnIntent)
