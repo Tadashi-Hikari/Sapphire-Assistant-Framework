@@ -39,7 +39,6 @@ class CoreSimpleActivity: Activity()
             override fun onReceive(context: Context?, intent: Intent?) {
                 var test = intent?.getStringExtra(MESSAGE)
                 updateUI(test!!)
-                Log.i(this.javaClass.name,"SAF Broadcast receieved")
             }
         }
 

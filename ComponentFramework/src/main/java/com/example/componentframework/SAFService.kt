@@ -105,7 +105,6 @@ abstract class SAFService: Service(){
         try {
             notifyIntent.setAction(GUI_BROADCAST)
             sendBroadcast(notifyIntent)
-            Log.i(this.javaClass.name,"SAF broadcast sent")
         }catch (exception: Exception){
             Log.e(this.javaClass.name,"SAF broadcast error")
         }
