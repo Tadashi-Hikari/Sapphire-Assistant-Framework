@@ -99,19 +99,20 @@ class CoreService: SAFService(){
 
     // This is where the actual mail sorting happens
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        Log.i(this.javaClass.name,"An CoreService intent was received")
+        Log.v(this.javaClass.name,"An CoreService intent was received")
         try {
             if((intent.action == ACTION_SAPPHIRE_CORE_BIND) or (intent.action == "INIT")) {
                 // Do the binding
             }else if(intent.action == ACTION_SAPPHIRE_MODULE_REGISTER) {
-                if(intent.hasExtra(FROM)){
-                    Log.v(this.javaClass.name, "Passing this intent to an installer")
+                if(intent.hasExtra(FROM) && (intent.getStringExtra(FROM) =="${this.packageName};com.example.sapphireassistantframework.CoreRegistrationService")){
                     var installPackageName = intent!!.getStringExtra(MODULE_PACKAGE)!!
                     var installClassName = intent!!.getStringExtra(MODULE_CLASS)!!
+                    Log.v(this.javaClass.name, "Passing ${installPackageName};${installClassName} to an installer")
                     intent.setClassName(installPackageName, installClassName)
                     startService(intent)
                 }else{
                     intent.setClassName(this, "${this.packageName}.CoreRegistrationService")
+                    Log.v(this.javaClass.name, "Passing intent to CoreRegistrationService")
                     // just forward the prior intent right along
                     startService(intent)
                 }
@@ -131,7 +132,7 @@ class CoreService: SAFService(){
                  */
             // This is not going to trigger when complete
                 // I think this is causing an install issue.
-            }else if(readyToGoSemaphore == false && intent.action != "INIT"){
+            }else if(readyToGoSemaphore == false){
                 // Don't do other stuff until it's initialized
                 return super.onStartCommand(intent, flags, startId)
             }else if(intent.action == ACTION_SAPPHIRE_CORE_REQUEST_DATA){
@@ -159,7 +160,6 @@ class CoreService: SAFService(){
                 Log.i(this.javaClass.name,"Requesting data keys ${multiprocessIntent.getStringArrayListExtra(DATA_KEYS)}" )
                 startService(multiprocessIntent)
             }else {
-                Log.v(this.javaClass.name,"-------SORTING MAIL-------")
                 sortMail(intent)
             }
         }catch(exception: Exception){

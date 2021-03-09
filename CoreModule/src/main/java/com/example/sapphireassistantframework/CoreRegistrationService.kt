@@ -64,7 +64,7 @@ class CoreRegistrationService: SAFService(){
 		try {
 			Log.v(this.javaClass.name,"CoreRegistrationIntent received")
 			if(intent.action == "INIT"){
-				Log.v(this.javaClass.name,"No action specified, initializing...")
+				Log.v(this.javaClass.name,"initializing...")
 				// This is the Init action
 				initializing = true
 				scanInstalledModules()
