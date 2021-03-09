@@ -25,6 +25,7 @@ class CoreSimpleActivity: Activity()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        checkForPermissions()
         setContentView(R.layout.core_activity)
         var textView = findViewById<TextView>(R.id.textView)
         // For some reason this won't work when set in the XML
@@ -78,7 +79,6 @@ class CoreSimpleActivity: Activity()
     fun startCoreService(view: View){
         Log.v(this.localClassName,"starting ${this.packageName}, ${this.packageName}.CoreService")
         var intent: Intent = Intent().setClassName(this.packageName,"${this.packageName}.CoreService")
-        checkForPermissions()
         // This needs to be formalized and moved over
         intent.setAction("INIT")
         // This doesn't do anything in particular to indicate that it is starting SF for the first time
