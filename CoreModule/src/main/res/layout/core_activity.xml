@@ -6,9 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
-    android:padding="@dimen/box_inset_layout_padding"
-    tools:context=".CoreSimpleActivity"
-    tools:deviceIds="wear">
+    android:padding="@dimen/box_inset_layout_padding">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -22,46 +20,32 @@
             android:background="#000000"
             android:visibility="visible" />
 
-        <androidx.constraintlayout.widget.Barrier
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:foregroundTint="#000000"
-            android:visibility="visible"
-            app:barrierDirection="top" />
-
-        <ScrollView
+        <HorizontalScrollView
             android:id="@+id/scrollView3"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:isScrollContainer="true"
             android:scrollbars="horizontal|vertical">
-
-            <TextView
-                android:id="@+id/textView"
+            <ScrollView
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:ellipsize="end"
-                android:hyphenationFrequency="none"
-                android:isScrollContainer="true"
-                android:lineSpacingExtra="4sp"
-                android:scrollHorizontally="true"
-                android:scrollbarAlwaysDrawHorizontalTrack="true"
-                android:scrollbars="horizontal|vertical"
-                android:singleLine="false"
-                android:text="Demo text \nTesting"
-                android:textColor="@color/black"
-                android:visibility="visible"
-                tools:visibility="visible" />
-        </ScrollView>
-
-        <androidx.constraintlayout.widget.Barrier
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:visibility="visible"
-            app:barrierDirection="top" />
+                android:layout_height="wrap_content">
+                <TextView
+                    android:id="@+id/textView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:hyphenationFrequency="none"
+                    android:isScrollContainer="true"
+                    android:lineSpacingExtra="4sp"
+                    android:scrollbars="horizontal|vertical"
+                    android:singleLine="false"
+                    android:text="Demo text \nTesting"
+                    android:textColor="@color/black"
+                    android:visibility="visible"
+                    tools:visibility="visible" />
+            </ScrollView>
+        </HorizontalScrollView>
 
         <LinearLayout
             android:layout_width="match_parent"

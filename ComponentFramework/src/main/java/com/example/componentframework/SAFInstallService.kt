@@ -1,6 +1,7 @@
 package com.example.componentframework
 
 import android.content.Intent
+import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import org.json.JSONArray
@@ -30,6 +31,11 @@ abstract class SAFInstallService: SAFService(){
 		return intent
 	}
 
+	fun version(intent: Intent, version: String): Intent{
+		intent.putExtra(MODULE_VERSION,version)
+		return intent
+	}
+
 	// This is called for retrieveData as well
 	// This one WILL save time
 	fun registerData(intent: Intent, filenames: List<String>): Intent{
@@ -40,12 +46,7 @@ abstract class SAFInstallService: SAFService(){
 		// This needs to not be hardcoded. I can get the info from POSTAGE
 		intent.setClassName(this,"com.example.sapphireassistantframework.CoreService")
 		intent.setAction(ACTION_SAPPHIRE_MODULE_REGISTER)
-		startService(intent)
-	}
-
-	fun version(){
-		var intent = Intent().setClassName(this,"com.example.sapphireassistantframework.CoreService")
-		intent.setAction(ACTION_SAPPHIRE_MODULE_VERSION)
+		Log.d(this.javaClass.name, "Intent: ${intent.extras.toString()}")
 		startService(intent)
 	}
 

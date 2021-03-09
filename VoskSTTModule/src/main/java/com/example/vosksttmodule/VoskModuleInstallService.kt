@@ -1,6 +1,7 @@
 package com.example.vosksttmodule
 
 import android.content.Intent
+import android.util.Log
 import com.example.componentframework.SAFInstallService
 import org.json.JSONObject
 import java.lang.Exception
@@ -15,7 +16,7 @@ class VoskModuleInstallService: SAFInstallService(){
 				registerModule(intent!!)
 			}
 		}catch(exception: Exception){
-			Log.i("VoskModuleInstallService","There was some kind of error with the install intent")
+			Log.e(this.javaClass.name,"There was some kind of error with the install intent")
 		}
 		return super.onStartCommand(intent, flags, startId)
 	}
@@ -37,6 +38,7 @@ class VoskModuleInstallService: SAFInstallService(){
 		returnIntent.putExtra(MODULE_PACKAGE,this.packageName)
 		// Not needed, cause it's set in the CoreRegistrationService. This will be an issue w/ multiple entries though
 		returnIntent.putExtra(MODULE_CLASS,"com.example.vosksttmodule.KaldiService")
+		returnIntent = registerVersion(returnIntent, VERSION)
 
 		// This is the unique ROUTE_NAME, so that it can be looked up
 		// Currently, this is the default. This is not currently used..., and it needs to be paired w/ route data

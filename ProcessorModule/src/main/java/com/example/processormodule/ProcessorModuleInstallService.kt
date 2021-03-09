@@ -29,7 +29,7 @@ class ProcessorModuleInstallService: SAFInstallService(){
 		var route = "${this.packageName};com.example.processormodule.ProcessorCentralService"
 		returnIntent.putExtra("ROUTE_NAME",route)
 		returnIntent = registerRouteInformation(returnIntent, route)
-		registerVersion(returnIntent, VERSION)
+		returnIntent = registerVersion(returnIntent, VERSION)
 		registerModuleType(returnIntent,PROCESSOR)
 		super.registerModule(returnIntent)
 	}

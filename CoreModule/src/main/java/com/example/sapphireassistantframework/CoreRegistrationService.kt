@@ -63,7 +63,7 @@ class CoreRegistrationService: SAFService(){
 	override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
 		try {
 			Log.v(this.javaClass.name,"CoreRegistrationIntent received")
-			if(intent.action == null){
+			if(intent.action == "INIT"){
 				Log.v(this.javaClass.name,"No action specified, initializing...")
 				// This is the Init action
 				initializing = true
@@ -94,7 +94,7 @@ class CoreRegistrationService: SAFService(){
 				if(initializing) {
 					Log.v(this.javaClass.name,"All services have been registered. Continuing...")
 					var finished = Intent().setAction(ACTION_SAPPHIRE_CORE_REGISTRATION_COMPLETE)
-					finished.setClassName(this, "${this.packageName}.CoreService")
+					finished.setClassName(this.packageName, "${this.packageName}.CoreService")
 					startSAFInstallService(finished)
 					initializing = false
 				}
@@ -174,11 +174,11 @@ class CoreRegistrationService: SAFService(){
 	}
 
 	fun registerRoute(intent: Intent){
-		Log.v(this.javaClass.name,"Registering route...")
 		// This is telling it to call itself, due to ROUTE being used for background service
 		var routeData = intent.getStringExtra(ROUTE)
 		// This is being used for the ROUTE id, so it can be looked up.
 		var routeName = intent.getStringExtra("ROUTE_NAME")
+		Log.v(this.javaClass.name,"Registering route: ${routeName}: ${routeData}")
 		jsonRouteTable.put(routeName,routeData)
 		var file = File(filesDir,ROUTE_TABLE)
 		file.writeText(jsonRouteTable.toString())

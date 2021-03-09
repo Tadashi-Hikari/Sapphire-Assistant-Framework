@@ -21,6 +21,7 @@ class CoreSimpleActivity: Activity()
     private var tables = listOf("registration.tbl","defaultmodules.tbl","background.tbl","routetable.tbl","alias.tbl")
     val GUI_BROADCAST = "assistant.framework.broadcast.GUI_UPDATE"
     val MESSAGE="assistant.framework.protocol.MESSAGE"
+    lateinit var coreBroadcastReceiver: BroadcastReceiver
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,7 +35,7 @@ class CoreSimpleActivity: Activity()
         super.onResume()
 
         // Maybe an optimization issue
-        var coreBroadcastReceiver = object : BroadcastReceiver(){
+        coreBroadcastReceiver = object : BroadcastReceiver(){
             override fun onReceive(context: Context?, intent: Intent?) {
                 var test = intent?.getStringExtra(MESSAGE)
                 updateUI(test!!)
@@ -46,6 +47,11 @@ class CoreSimpleActivity: Activity()
         filter.addAction(GUI_BROADCAST)
         this.registerReceiver(coreBroadcastReceiver,filter)
         Log.i(this.javaClass.name,"Receiver registered")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        unregisterReceiver(coreBroadcastReceiver)
     }
 
     fun updateUI(string: String){

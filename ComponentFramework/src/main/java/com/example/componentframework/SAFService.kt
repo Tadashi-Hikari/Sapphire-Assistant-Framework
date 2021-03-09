@@ -2,6 +2,7 @@ package com.example.componentframework
 
 import android.app.Service
 import android.content.Intent
+import android.util.Log
 import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
@@ -12,14 +13,6 @@ abstract class SAFService: Service(){
 
     // This is just to override
     inner class LogOverride{
-
-        fun broadcastStatus(name: String, message:String) {
-            var notifyIntent = Intent()
-            notifyIntent.putExtra(MESSAGE, "${message}")
-            notifyIntent.setAction(GUI_BROADCAST)
-            sendBroadcast(notifyIntent)
-        }
-
         fun i(name: String, message: String){
             android.util.Log.i(name,message)
             broadcastStatus(name,message)
@@ -45,6 +38,7 @@ abstract class SAFService: Service(){
             broadcastStatus(name,message)
         }
     }
+
 
     var Log = LogOverride()
 
@@ -97,6 +91,13 @@ abstract class SAFService: Service(){
     val ACTION_SAPPHIRE_TRAIN="assistant.framework.processor.action.TRAIN"
     val GUI_BROADCAST = "assistant.framework.broadcast.GUI_UPDATE"
 
+    fun broadcastStatus(name: String, message:String) {
+        var notifyIntent = Intent()
+        notifyIntent.putExtra(MESSAGE, "${name}: ${message}")
+        notifyIntent.setAction(GUI_BROADCAST)
+        sendBroadcast(notifyIntent)
+    }
+
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int{
         // I don't know why I can't copy or send out the incoming intent. I suppose its the broadcast propogation thing
         var notifyIntent = Intent()
@@ -113,8 +114,7 @@ abstract class SAFService: Service(){
 
     // This is for having a SAF compontent pass along the route w/o a callback to core
     fun parseRoute(string: String): List<String>{
-        var route = emptyList<String>()
-        route = string.split(",")
+        var route = string.split(",")
         return route
     }
 
@@ -225,7 +225,7 @@ abstract class SAFService: Service(){
     }
 
     fun startSAFInstallService(intent: Intent){
-        var SAFIntent = Intent(intent)
+        var SAFIntent = intent
         // This is temporary
         SAFIntent.setClassName(this,"com.example.sapphireassistantframework.CoreService")
         // This should take care of populating that information quite nicely

@@ -1,6 +1,7 @@
 package com.example.sapphireassistantframework
 
 import android.content.Intent
+import android.util.Log
 import com.example.componentframework.SAFInstallService
 
 class CoreModuleInstallService: SAFInstallService(){
@@ -12,7 +13,7 @@ class CoreModuleInstallService: SAFInstallService(){
                 registerModule(intent!!)
             }
         }catch(exception: Exception){
-            Log.i(this.javaClass.name,"There was some kind of error with the install intent")
+             Log.e(this.javaClass.name,"There was some kind of error with the install intent")
         }
         return super.onStartCommand(intent, flags, startId)
     }
@@ -23,7 +24,7 @@ class CoreModuleInstallService: SAFInstallService(){
         // Not needed, cause it's set in the CoreRegistrationService. This will be an issue w/ multiple entries though
         //returnIntent.putExtra(MODULE_CLASS,"${this.packageName}.CoreService")
         registerModuleType(returnIntent,CORE)
-        registerVersion(returnIntent,VERSION)
+        returnIntent = registerVersion(returnIntent,VERSION)
 
         super.registerModule(returnIntent)
     }

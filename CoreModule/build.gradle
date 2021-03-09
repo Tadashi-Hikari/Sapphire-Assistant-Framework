@@ -24,20 +24,6 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
-
-        singleAPK{
-            initWith debug
-            applicationIdSuffix ".singleAPK"
-            dependencies {
-                if (project.single) {
-                    implementation project(":VoskSTTModule")
-                    implementation project(":MultiprocessModule")
-                    implementation project(":ProcessorModule")
-                    implementation project(":CalendarModule")
-                    implementation project(":CoreModule")
-                }
-            }
-        }
     }
 
     lintOptions {
@@ -51,7 +37,10 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
-    //dynamicFeatures = [':VoskSTTModule', ':ProcessorModule', ':CalendarSkill', ':MultiprocessModule', ':TermuxModule', ':MycroftModule', ':TaskerModule']
+
+    if(project.single) {
+        dynamicFeatures = [':VoskSTTModule', ':ProcessorModule', ':CalendarSkill', ':MultiprocessModule', ':TermuxModule', ':MycroftModule', ':TaskerModule']
+    }
 }
 
 //ant.importBuild 'assets.xml'

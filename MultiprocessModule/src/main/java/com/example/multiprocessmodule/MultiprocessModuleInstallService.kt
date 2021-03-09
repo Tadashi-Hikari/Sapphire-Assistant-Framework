@@ -25,7 +25,7 @@ class MultiprocessModuleInstallService: SAFInstallService(){
 		registerIntent.putExtra(MODULE_PACKAGE,this.packageName)
 		registerIntent.putExtra(MODULE_CLASS,"${this.packageName}.MultiprocessService")
 		registerModuleType(registerIntent,MULTIPROCESS)
-		registerVersion(registerIntent, VERSION)
+		registerIntent = registerVersion(registerIntent, VERSION)
 		super.registerModule(registerIntent)
 	}
 }
