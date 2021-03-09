@@ -1,0 +1,3 @@
+alarm	what alarms do i have set
+alarm	wake me (up|) at {time}
+alarm	set an alarm for {time}
