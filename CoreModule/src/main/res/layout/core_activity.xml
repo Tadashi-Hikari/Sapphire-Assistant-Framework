@@ -28,6 +28,7 @@
             android:isScrollContainer="true"
             android:scrollbars="horizontal|vertical">
             <ScrollView
+                android:id="@+id/verticalScrollView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
                 <TextView
