@@ -56,6 +56,8 @@ class CoreSimpleActivity: Activity()
     fun updateUI(string: String){
         var textView: TextView = findViewById(R.id.textView)
         textView.append("\n${string}")
+        var scrollView = findViewById<ScrollView>(R.id.verticalScrollView)
+        scrollView.fullScroll(View.FOCUS_DOWN)
     }
 
     // This will likely need to be more dynamic. This is just checking for permissions
