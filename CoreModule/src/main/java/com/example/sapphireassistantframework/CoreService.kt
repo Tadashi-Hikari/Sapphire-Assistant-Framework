@@ -229,16 +229,29 @@ class CoreService: SAFService(){
 
     // It's gonna work like this. Whatever is the LAST thing in the pipeline, core will read and upload pipeline data for.
     fun sortMail(intent: Intent){
-        Log.v(this.javaClass.name,"sorting the incoming mail")
+        Log.v(this.javaClass.name,"sorting the incoming mail...")
         var routeRequest = ""
+
+        if(intent.hasExtra(FROM)){
+            Log.v(this.javaClass.name,"The intent is from ${intent.getStringExtra(FROM)}")
+        }
 
         // Checks if it's a new incoming intent
         if(intent.hasExtra(FROM) and (intent.getStringExtra(ROUTE).isNullOrBlank())){
             routeRequest = intent.getStringExtra(FROM)!!
             // This is just to let me know what is going on
             Log.i("PostOffice","pipelineRequest: ${routeRequest}")
+        // If it is an existing intent, pass it along
+        }else if(intent.hasExtra(FROM) and (intent.getStringExtra(ROUTE)!!.isNotBlank())) {
+            // I could just let it go through here, instead of making it an else-if. It's the same as below, mostly
+            var routeData = intent.getStringExtra(ROUTE)
+            var route = parseRoute(routeData!!)
+            // This should be popped
+            var packageClass = route.first().split(";")
+            intent.setClassName(packageClass.component1(),packageClass.component2())
+            startService(intent)
         }else{
-            Log.i("PostOffice","Nothing was found, sending it the default way")
+            Log.i("PostOffice","Nothing was found. Sent from ${intent.getStringExtra(FROM)}. sending it the default way")
             // currently, the default is to do nothing
             return
         }
@@ -273,8 +286,9 @@ class CoreService: SAFService(){
 
         // I need to update the incoming ROUTE with the route its supposed to take
         // This is confusing, and I don't like it
-        outgoingIntent.putExtra(ROUTE,jsonRouteTable.getString(intent.getStringExtra(ROUTE)!!))
+        outgoingIntent.putExtra(ROUTE,jsonRouteTable.getString(intent.getStringExtra(FROM)!!))
         // This could have taken the string, I think
+        Log.d(this.javaClass.name,"Made it")
         var checkedIntent = checkRouteForVariables(outgoingIntent)
         var routeData = checkedIntent.getStringExtra(ROUTE)!!
         return routeData
