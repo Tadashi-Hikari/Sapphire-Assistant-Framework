@@ -1,5 +1,5 @@
 # The Sapphire Assistant Framework
-IF you are looking for an Android assistant that is easy to use, flexible, and respects your privacy then look no further.
+If you are looking for an Android assistant that is easy to use, flexible, and respects your privacy then look no further.
 
 The Sapphire Framework is a data aggregation and processing framework for Android that allows users and developers to refine, customize, or develop a mobile assistant tailored to their needs.
 
