@@ -2,9 +2,12 @@ package com.example.componentframework
 
 import android.app.Service
 import android.content.Intent
-import android.os.IBinder
+import org.json.JSONObject
+import java.io.File
+import java.io.FileOutputStream
+import java.io.InputStreamReader
 
-abstract class NervousSystemService: Service() {
+abstract class SapphireFrameworkService: Service() {
 	inner class LogOverride{
 		fun i(name: String, message: String){
 			android.util.Log.i(name,message)
@@ -85,8 +88,65 @@ abstract class NervousSystemService: Service() {
 
 	val GUI_BROADCAST = "assistant.framework.broadcast.GUI_UPDATE"
 
+	var jsonPostage = JSONObject()
+
 	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+		when{
+			intent == null -> Log.d(this.javaClass.name, "There was an unrescuable error with the intent")
+			// Get the environmental variables
+			intent.hasExtra(POSTAGE) -> jsonPostage = JSONObject(intent.getStringExtra(POSTAGE))
+		}
+
 		return super.onStartCommand(intent, flags, startId)
+	}
+
+	// Checks cascading configs
+	fun getTextData(name: String): String{
+		var textData = ""
+		when{
+			jsonPostage.has("exported") -> textData = readFromEnvVars(name)
+			File(filesDir,name).exists() -> textData = readFromLocalFile(name)
+			else -> textData = readFromAsset(name)
+		}
+		return textData
+	}
+
+	// I am not quite sure this will work, but what can you do.
+	fun readFromEnvVars(name: String): String{
+		return jsonPostage.toString()
+	}
+
+	// I am not quite sure this will work, but what can you do.
+	fun readFromLocalFile(name: String): String{
+		var file = File(filesDir,name)
+		return file.readText()
+	}
+
+	// I am not quite sure this will work, but what can you do.
+	fun readFromAsset(name: String): String {
+		var file = convertStreamToFile(name)
+		return file.readText()
+	}
+
+	fun convertStreamToFile(filename: String): File {
+		var suffix = ".temp"
+		// This file needs to be tab separated columns
+		var asset = assets.open(filename)
+		var fileReader = InputStreamReader(asset)
+
+		var tempFile = File.createTempFile(filename, suffix)
+		var tempFileWriter = FileOutputStream(tempFile)
+		// This is ugly AF
+		var data = fileReader.read()
+		while (data != -1) {
+			tempFileWriter.write(data)
+			data = fileReader.read()
+		}
+		// Do a little clean up
+		asset.close()
+		tempFileWriter.close()
+
+		return tempFile
 	}
 
 	fun broadcastStatus(name: String, message:String) {
@@ -96,20 +156,25 @@ abstract class NervousSystemService: Service() {
 		sendBroadcast(notifyIntent)
 	}
 
-	fun initialSynapse(signal: Intent){
-		var updatedSignal = Intent(signal)
-		updatedSignal = updatePostage(signal)
-
-		synapse(signal)
+	fun dispatchSapphireServiceFromCore(intent: Intent){
+		var updatedIntent = intent
+		updatedIntent = validatePostage(intent)
+		startService(updatedIntent)
 	}
 
-	fun synapse(signal: Intent){
-		var updatedSignal = Intent(signal)
-		updatedSignal = updatePostage(signal)
-		startService(updatedSignal)
+	fun dispatchSapphireServiceToCore(){
+
+
 	}
 
-	fun updatePostage(signal: Intent): Intent{
+	fun validatePostage(intent: Intent): Intent{
+		var jsonDefaultModules = JSONObject()
+		for(key in jsonDefaultModules.keys()){
+			jsonPostage!!.put(key,jsonDefaultModules.getString(key))
+		}
+		Log.v(this.javaClass.name,"Postage is ${jsonPostage.toString()}")
+		intent.putExtra(POSTAGE,jsonPostage!!.toString())
 
+		return intent
 	}
 }
