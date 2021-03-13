@@ -99,12 +99,12 @@ class CoreService: SAFService(){
 
         // This is the notification for the foreground service. Maybe have it lead into other bound services
         var notification = NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.assistant)
-                .setContentTitle("Sapphire Assistant Framework")
-                .setContentText("SAF is running")
-                .setOngoing(true)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .build()
+            .setSmallIcon(R.drawable.assistant)
+            .setContentTitle("Sapphire Assistant Framework")
+            .setContentText("SAF is running")
+            .setOngoing(true)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .build()
 
         startForeground(1337, notification)
     }
