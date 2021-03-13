@@ -1,17 +1,22 @@
 package com.example.sapphireassistantframework
 
 import android.app.Activity
+import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.os.IBinder
 import android.util.Log
 import android.view.View
 import android.widget.ScrollView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import org.json.JSONArray
+import org.json.JSONObject
 import java.io.File
+import java.lang.Exception
 import android.os.Bundle as Bundle
 
 
@@ -22,6 +27,7 @@ class CoreSimpleActivity: Activity()
     val GUI_BROADCAST = "assistant.framework.broadcast.GUI_UPDATE"
     val MESSAGE="assistant.framework.protocol.MESSAGE"
     lateinit var coreBroadcastReceiver: BroadcastReceiver
+    lateinit var coreDirectoryPicker: Service
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,6 +37,7 @@ class CoreSimpleActivity: Activity()
         // For some reason this won't work when set in the XML
         textView.setHorizontallyScrolling(true)
     }
+
 
     override fun onResume() {
         super.onResume()
@@ -47,6 +54,18 @@ class CoreSimpleActivity: Activity()
         filter.addAction(GUI_BROADCAST)
         this.registerReceiver(coreBroadcastReceiver,filter)
         Log.i(this.javaClass.name,"Receiver registered")
+    }
+
+    fun switchToSettings(view: View){
+        var intent = Intent().setClassName(this,"com.example.sapphireassistantframework.CoreSettingsActivity")
+        startActivity(intent)
+    }
+
+    fun export(){
+        var jsonExport = JSONObject()
+        if(jsonExport.getBoolean("export")){
+            //writeFileToDir(EXPORT)
+        }
     }
 
     override fun onPause() {

@@ -1,21 +1,37 @@
 <resources>
-    <string name="app_name">Sapphire Assistant Framework</string>
-    <string name="title_activity_core_central_">Sapphire Assistant Framework</string>
-    <!--
+	<string name="app_name">Sapphire Assistant Framework</string>
+	<string name="title_activity_core_central_">Sapphire Assistant Framework</string>
+	<!--
     This string is used for square devices and overridden by hello_world in
     values-round/strings.xml for round devices.
     -->
-    <string name="hello_world">Hello Square World!</string>
-    <string name="title_vosk_stt_module">Vosk Speech To Text</string>
-    <string name="title_parsermodule">SAF Parser Module</string>
-    <string name="title_calendarskill">SAF Calendar Skill</string>
-    <string name="title_runnermodule">Runner Module</string>
-    <string name="title_generictemplatemodule">Generic Template Module</string>
-    <string name="title_multiprocessmodule">Multiprocess Module</string>
-    <string name="title_filtermodule">Filter Module</string>
-    <string name="title_spontaneousdatatracker">Spontaneous Data Tracker</string>
-    <string name="title_termuxsocketmodule">Termux Socket Module</string>
-    <string name="title_taskermodule">Tasker Module</string>
-    <string name="title_termuxmodule">Termux Module</string>
-    <string name="title_mycroftmodule">Mycroft Module</string>
+	<string name="hello_world">Hello Square World!</string>
+	<string name="title_vosk_stt_module">Vosk Speech To Text</string>
+	<string name="title_parsermodule">SAF Parser Module</string>
+	<string name="title_calendarskill">SAF Calendar Skill</string>
+	<string name="title_runnermodule">Runner Module</string>
+	<string name="title_generictemplatemodule">Generic Template Module</string>
+	<string name="title_multiprocessmodule">Multiprocess Module</string>
+	<string name="title_filtermodule">Filter Module</string>
+	<string name="title_spontaneousdatatracker">Spontaneous Data Tracker</string>
+	<string name="title_termuxsocketmodule">Termux Socket Module</string>
+	<string name="title_taskermodule">Tasker Module</string>
+	<string name="title_termuxmodule">Termux Module</string>
+	<string name="title_mycroftmodule">Mycroft Module</string>
+	<string name="title_activity_core_settings">CoreSettingsActivity</string>
+
+	<!-- Preference Titles -->
+	<string name="messages_header">Messages</string>
+	<string name="sync_header">Sync</string>
+
+	<!-- Messages Preferences -->
+	<string name="signature_title">Your signature</string>
+	<string name="reply_title">Default reply action</string>
+
+	<!-- Sync Preferences -->
+	<string name="sync_title">Sync email periodically</string>
+	<string name="attachment_title">Download incoming attachments</string>
+	<string name="attachment_summary_on">Automatically download attachments for incoming emails
+	</string>
+	<string name="attachment_summary_off">Only download attachments when manually requested</string>
 </resources>

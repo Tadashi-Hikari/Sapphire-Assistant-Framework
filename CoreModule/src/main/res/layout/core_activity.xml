@@ -60,11 +60,11 @@
                 android:layout_weight="1" />
 
             <Button
-                android:id="@+id/record"
+                android:id="@+id/start"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:onClick="startCoreService"
-                android:text="Start Assistant" />
+                android:text="Start" />
 
             <Space
                 android:layout_width="wrap_content"
@@ -72,16 +72,30 @@
                 android:layout_weight="1" />
 
             <Button
-                android:id="@+id/button3"
+                android:id="@+id/settingsButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:onClick="reset"
-                android:text="Stop and Reset" />
+                android:layout_weight="1"
+                android:onClick="switchToSettings"
+                android:text="Settings" />
 
             <Space
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1" />
+
+            <Button
+                android:id="@+id/stop"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="reset"
+                android:text="Stop" />
+
+            <Space
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
         </LinearLayout>
     </LinearLayout>
 </FrameLayout>
