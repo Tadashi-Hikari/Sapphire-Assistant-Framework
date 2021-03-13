@@ -1,11 +1,16 @@
 package com.example.componentframework
 
+import android.app.PendingIntent
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import org.json.JSONArray
 import java.io.File
+import java.io.FileOutputStream
+import java.io.InputStreamReader
+import java.lang.Exception
 
 abstract class SAFInstallService: SAFService(){
 
@@ -72,12 +77,63 @@ abstract class SAFInstallService: SAFService(){
 		return processorData
 	}
 
+
+	fun createConfigFile(filename: String){
+		try {
+			convertAssetToFile(filename)
+			Log.v(this.javaClass.name, "${filename} created")
+		}catch (excption: Exception){
+			Log.v(this.javaClass.name, "Error creating configFile")
+		}
+	}
+
+	fun expandInternalData(directory: String){
+		var filenames = loadAssetNames(directory)
+		for(filename in filenames){
+			Log.v(this.javaClass.name,"Converting asset ${filename} to file...")
+			convertAssetToFile(filename)
+		}
+		Log.v(this.javaClass.name, "All assets expanded")
+	}
+
 	// This is for getting asset filenames
-	// It is throwing a major error
-	fun loadAssetNames(): List<File>{
+	fun loadAssetNames(directory: String): Array<String>{
 		// This gives a list of the root directory in assets
-		var assetsList = assets.list("")
-		return assetsList as List<File>
+		var assetArray = emptyArray<String>()
+		try {
+			assetArray = assets.list(directory)!!
+			for(assetFilename in assetArray){
+				Log.v(this.javaClass.name, assetFilename)
+			}
+		}catch (exception: Exception){
+			Log.d(this.javaClass.name, "Error loading assets")
+		}
+		return assetArray
+	}
+
+	fun convertAssetToFile(filename: String){
+		// This file needs to be tab separated columns
+		var asset = assets.open(filename)
+		var fileReader = InputStreamReader(asset)
+
+		var file = File(filesDir,filename)
+		var fileWriter = FileOutputStream(file)
+		// This is ugly AF
+		var data = fileReader.read()
+		while (data != -1) {
+			fileWriter.write(data)
+			data = fileReader.read()
+		}
+		// Do a little clean up
+		asset.close()
+		fileWriter.close()
+	}
+
+	fun exportConfigFile(filename: String): String {
+		val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+		startActivity(intent)
+		return "halt"
 	}
 
 	override fun onBind(intent: Intent?): IBinder? {

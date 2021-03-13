@@ -1,44 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="com.example.sapphireassistantframework">
+	xmlns:tools="http://schemas.android.com/tools"
+	package="com.example.sapphireassistantframework">
 
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+	<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+	<uses-permission android:name="android.permission.RECORD_AUDIO" />
 
-    <application
-        android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
-        android:supportsRtl="true"
-        android:enabled="true"
-        android:theme="@style/Theme.SapphireAssistantFramework">
-        <activity
-            android:name=".CoreSimpleActivity"
-            android:exported="true"
-            android:label="@string/title_activity_core_central_">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <service
-            android:name=".CoreService"
-            android:exported="true">
-        </service>
-        <service
-            android:name=".CoreRegistrationService"
-            android:process=".com.example.sapphireassistantframework.CoreRegistrationService"
-            android:enabled="true"
-            android:exported="true">
-        </service>
-        <service
-            android:name=".CoreModuleInstallService"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="assistant.framework.module.action.REGISTER"/>
-            </intent-filter>
-        </service>
-    </application>
+	<application
+		android:allowBackup="true"
+		android:enabled="true"
+		android:icon="@mipmap/ic_launcher"
+		android:label="@string/app_name"
+		android:roundIcon="@mipmap/ic_launcher_round"
+		android:supportsRtl="true"
+		android:theme="@style/Theme.SapphireAssistantFramework">
+		<activity
+			android:name=".CoreSettingsActivity"
+			android:label="@string/title_activity_core_settings">
+		</activity>
+		<activity
+			android:name=".CoreSimpleActivity"
+			android:exported="true"
+			android:label="@string/title_activity_core_central_">
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN" />
+				<category android:name="android.intent.category.LAUNCHER" />
+			</intent-filter>
+		</activity>
+		<service
+			android:name=".CoreService"
+			android:exported="true">
+		</service>
+		<service
+			android:name=".CoreRegistrationService"
+			android:enabled="true"
+			android:exported="true"
+			android:process=".com.example.sapphireassistantframework.CoreRegistrationService"></service>
+		<service
+			android:name=".CoreModuleInstallService"
+			android:exported="true">
+			<intent-filter>
+				<action android:name="assistant.framework.module.action.REGISTER" />
+			</intent-filter>
+		</service>
+	</application>
+
 </manifest>

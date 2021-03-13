@@ -1,14 +1,8 @@
 package com.example.sapphireassistantframework
 
-import android.content.BroadcastReceiver
-import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.content.pm.PackageManager.GET_RESOLVED_FILTER
-import android.content.pm.ResolveInfo
 import android.os.IBinder
-import android.util.Log
-import android.widget.Toast
 import com.example.componentframework.SAFService
 import org.json.JSONObject
 import java.io.File
@@ -20,7 +14,7 @@ I still need to implement the write to file mechanism
  */
 
 class CoreRegistrationService: SAFService(){
-	private val CONFIG = "core.conf"
+	private val CONFIG = "sample-core-config.conf"
 	//Why does this exist?
 	private val DATABASE = "core.db"
 
@@ -60,8 +54,17 @@ class CoreRegistrationService: SAFService(){
 		super.onCreate()
 	}
 
+	fun updateEnvVars(intent: Intent){
+		var jsonEnvVar = JSONObject(intent.getStringExtra(POSTAGE))
+		if(jsonEnvVar.has("exported")){
+			// This would be an env_var
+			var exported = jsonEnvVar.getBoolean("exported")
+		}
+	}
+
 	override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
 		try {
+			updateEnvVars(intent)
 			Log.v(this.javaClass.name,"CoreRegistrationIntent received")
 			if(intent.action == "INIT"){
 				Log.v(this.javaClass.name,"initializing...")

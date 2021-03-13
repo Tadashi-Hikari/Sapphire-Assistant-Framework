@@ -10,8 +10,7 @@ import java.io.InputStreamReader
 import java.lang.Exception
 
 abstract class SAFService: Service(){
-
-    // This is just to override
+    // This is just to override the Log, and send it as a broadcast
     inner class LogOverride{
         fun i(name: String, message: String){
             android.util.Log.i(name,message)
@@ -87,8 +86,10 @@ abstract class SAFService: Service(){
     val ACTION_SAPPHIRE_MODULE_REGISTER = "assistant.framework.module.action.REGISTER"
     // this is -V on the command line
     val ACTION_SAPPHIRE_MODULE_VERSION = "assistant.framework.module.action.VERSION"
+    val ACTION_SAPPHIRE_EXPORT_CONFIG = "assistant.framework.module.action.EXPORT_CONFIG"
     // This is for core to request data from a specific module
     val ACTION_SAPPHIRE_TRAIN="assistant.framework.processor.action.TRAIN"
+
     val GUI_BROADCAST = "assistant.framework.broadcast.GUI_UPDATE"
 
     fun broadcastStatus(name: String, message:String) {

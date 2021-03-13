@@ -5,13 +5,10 @@ import android.app.NotificationManager
 import android.content.*
 import android.os.Build
 import android.os.IBinder
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.componentframework.SAFService
 import org.json.JSONObject
 import java.util.*
-import kotlin.math.absoluteValue
-import kotlin.random.Random
 
 class CoreService: SAFService(){
     private var connections: LinkedList<Pair<String, Connection>> = LinkedList()
@@ -25,7 +22,7 @@ class CoreService: SAFService(){
     These could be static in SAFService, to be shared between this and CoreRegistrationService
     though that'd cause an issue w/ the other modules
      */
-    private val CONFIG = "core.conf"
+    private val TABLES_CONFIG = "sample-core-config.conf"
     // I don't actually think this is used
     private val DATABASE = "core.db"
 
@@ -45,15 +42,30 @@ class CoreService: SAFService(){
 
     var readyToGoSemaphore = false
     var SapphireModuleStack = LinkedList<Intent>()
+    // Is this the same thing read by the settingsActiviy? I think it should be. Single reference point
+    val CONFIG = "sample-core-config.conf"
+    var jsonSettings = JSONObject()
 
+    // Do all startup tasks
     override fun onCreate() {
-        // Do all startup tasks
-        var configJSON = parseConfigFile(CONFIG)
+        // This isn't really doing anything. It just returns a dummy empty JSONObject for a placeholder in coreReadConfigJSON
+        var configJSON = parseConfigFile(TABLES_CONFIG)
+        // This isn't really reading the config, as much as it's statically loading JSON "tables"
         coreReadConfigJSON(configJSON)
+        // This is actually reading the config file
+        jsonSettings = loadConfig(CONFIG)
+        settingsCascade(jsonSettings)
         buildForegroundNotification()
         // This is where it is checking modules
         startRegistrationService()
         super.onCreate()
+    }
+
+    fun settingsCascade(jsonSettings: JSONObject){
+        if(jsonSettings.has("exported")){
+            // This would be an env_var
+            var exported = jsonSettings.getBoolean("exported")
+        }
     }
 
     // Run through the registration process
@@ -64,7 +76,7 @@ class CoreService: SAFService(){
         startService(registrationIntent)
     }
 
-
+    // This isn't really reading the config, as much as it's statically loading JSON "tables"
     fun coreReadConfigJSON(jsonConfig: JSONObject){
         // These should be global vars, so I really just need to load them.
         // I need to account for just directly loading these, not having them in a separate config
@@ -121,7 +133,7 @@ class CoreService: SAFService(){
                 startBackgroundServicesConfigurable()
                 // This could be the best place to do this, since it's not needed before, it's called only once
                 // and it updates the configs after all modules are installed
-                var configJSON = parseConfigFile(CONFIG)
+                var configJSON = parseConfigFile(TABLES_CONFIG)
                 coreReadConfigJSON(configJSON)
                 Log.i(this.javaClass.name, "All startup tasks finished")
                 // This could be the static initializing var
