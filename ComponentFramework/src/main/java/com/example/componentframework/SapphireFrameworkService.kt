@@ -93,42 +93,13 @@ abstract class SapphireFrameworkService: Service() {
 
 	var jsonPostage = JSONObject()
 
-	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-		when{
-			intent == null -> Log.d(this.javaClass.name, "There was an unrescuable error with the intent")
-			// Get the environmental variables
-			intent.hasExtra(POSTAGE) -> jsonPostage = JSONObject(intent.getStringExtra(POSTAGE))
-		}
+	fun loadTable(tablename: String): JSONObject{
+		var moduleJsonDataTable = JSONObject()
 
-		return super.onStartCommand(intent, flags, startId)
-	}
+		var file = File(filesDir,tablename)
+		moduleJsonDataTable = JSONObject(file.readText())
 
-	// Checks cascading configs
-	fun getTextData(name: String): String{
-		var textData = ""
-		when{
-			jsonPostage.has("exported") -> textData = readFromEnvVars(name)
-			File(filesDir,name).exists() -> textData = readFromLocalFile(name)
-			else -> textData = readFromAsset(name)
-		}
-		return textData
-	}
-
-	// I am not quite sure this will work, but what can you do.
-	fun readFromEnvVars(name: String): String{
-		return jsonPostage.toString()
-	}
-
-	// I am not quite sure this will work, but what can you do.
-	fun readFromLocalFile(name: String): String{
-		var file = File(filesDir,name)
-		return file.readText()
-	}
-
-	// I am not quite sure this will work, but what can you do.
-	fun readFromAsset(name: String): String {
-		var file = convertStreamToFile(name)
-		return file.readText()
+		return moduleJsonDataTable
 	}
 
 	fun convertStreamToFile(filename: String): File {

@@ -50,7 +50,9 @@ abstract class SAFInstallService: SAFService(){
 	open fun registerModule(intent: Intent){
 		// This needs to not be hardcoded. I can get the info from POSTAGE
 		intent.setClassName(this,"com.example.sapphireassistantframework.CoreService")
-		intent.removeExtra(FROM)
+		if(intent.hasExtra(FROM)) {
+			intent.removeExtra(FROM)
+		}
 		intent.setAction(ACTION_SAPPHIRE_MODULE_REGISTER)
 		startService(intent)
 	}

@@ -19,12 +19,11 @@ class ProcessorTrainingService: SAFService(){
         TODO("Not yet implemented")
     }
 
-    // Does this need to check the intent somehow?
-    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.i("ProcessorTrainingService","Training intent received")
-        Log.i("ProcessorTrainingService","Data keys are as follows: ${intent.getStringArrayListExtra(DATA_KEYS)}")
+        Log.i("ProcessorTrainingService","Data keys are as follows: ${intent!!.getStringArrayListExtra(DATA_KEYS)}")
         // This is a terribly named function. It is converting the strings to files, supposedly
-        var processorFiles = getProcessorFilesFromString(intent)
+        var processorFiles = getProcessorFilesFromString(intent!!)
         var intentFiles = mutableListOf<File>()
 
         // Training is expecting differently formatted information, in the form of

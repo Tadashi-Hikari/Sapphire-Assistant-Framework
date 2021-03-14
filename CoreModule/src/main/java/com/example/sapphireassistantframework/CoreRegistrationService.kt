@@ -18,16 +18,13 @@ class CoreRegistrationService: SAFService(){
 	//Why does this exist?
 	private val DATABASE = "core.db"
 
-	/*
-	I can probably do a lot of these programmatically
-	 */
-
 	// These are table names
 	private var REGISTRATION_TABLE = "registration.tbl"
 	private val DEFAULT_MODULES_TABLE = "defaultmodules.tbl"
 	private val STARTUP_TABLE = "background.tbl"
 	private val ROUTE_TABLE = "routetable.tbl"
 	private val ALIAS_TABLE = "alias.tbl"
+	val CONFIG_VAL_DATA_TABLES = "datatables.tbl"
 
 	// These are the config modules
 	var jsonRegistrationTable = JSONObject()
@@ -55,10 +52,10 @@ class CoreRegistrationService: SAFService(){
 	}
 
 	val ACTION_SAPPHIRE_INITIALIZE="assistant.framework.processor.action.INITIALIZE"
-	override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 		try {
 			Log.v(this.javaClass.name,"CoreRegistrationIntent received")
-			if(intent.action == ACTION_SAPPHIRE_INITIALIZE){
+			if(intent!!.action == ACTION_SAPPHIRE_INITIALIZE){
 				Log.v(this.javaClass.name,"initializing...")
 				// This is the Init action
 				initializing = true
@@ -90,6 +87,16 @@ class CoreRegistrationService: SAFService(){
 					Log.v(this.javaClass.name,"All services have been registered. Continuing...")
 					var finished = Intent().setAction(ACTION_SAPPHIRE_CORE_REGISTRATION_COMPLETE)
 					finished.setClassName(this.packageName, "${this.packageName}.CoreService")
+
+					// Added ad-hoc for core
+					var dataTable = JSONObject()
+					dataTable.put(ROUTE_TABLE,"")
+					dataTable.put(STARTUP_TABLE,"")
+					dataTable.put(ALIAS_TABLE,"")
+					dataTable.put(DEFAULT_MODULES_TABLE,"")
+					var file = File(filesDir,CONFIG_VAL_DATA_TABLES)
+					file.writeText(dataTable.toString())
+
 					startSAFInstallService(finished)
 					initializing = false
 				}

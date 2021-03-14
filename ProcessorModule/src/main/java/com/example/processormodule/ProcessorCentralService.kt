@@ -18,7 +18,7 @@ class ProcessorCentralService: SAFService(){
         file.delete()
     }
 
-    override fun onStartCommand(startIntent: Intent, flags: Int, startId: Int): Int {
+    override fun onStartCommand(startIntent: Intent?, flags: Int, startId: Int): Int {
         try {
             var intent = startIntent!!
             Log.i("ProcessorCentralService", "Data processing intent received")

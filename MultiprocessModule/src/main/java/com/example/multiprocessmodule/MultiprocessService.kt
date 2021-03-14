@@ -35,9 +35,9 @@ class MultiprocessService: SAFService(){
         JSONDatabase = loadDatabase()
     }
 
-    override fun onStartCommand(startIntent: Intent, flags: Int, startId: Int): Int {
+    override fun onStartCommand(startIntent: Intent?, flags: Int, startId: Int): Int {
         try{
-            var intent = startIntent!!
+            var intent = Intent(startIntent)
             Log.i(this.javaClass.name,"MultiprocessService intent received")
             if(intent.hasExtra(MULTIPROCESS_ID)){
                 // If this ID value is null

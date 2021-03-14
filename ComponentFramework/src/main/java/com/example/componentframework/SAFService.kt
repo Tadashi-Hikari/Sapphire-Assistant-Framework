@@ -99,7 +99,7 @@ abstract class SAFService: Service(){
         sendBroadcast(notifyIntent)
     }
 
-    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int{
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         // I don't know why I can't copy or send out the incoming intent. I suppose its the broadcast propogation thing
         var notifyIntent = Intent()
         notifyIntent.putExtra(MESSAGE,"${this.packageName};${this.javaClass.name}")
@@ -216,16 +216,16 @@ abstract class SAFService: Service(){
     fun startSAFService(intent: Intent){
         var SAFIntent = Intent(intent)
         // I don't know that I like this. It seems bulky, but I'll worry about it after actually checking. No premature optimizations
-        SAFIntent = checkRouteForVariables(intent)
+        //SAFIntent = checkRouteForVariables(intent)
         // This is temporary
         SAFIntent.setClassName(this,"com.example.sapphireassistantframework.CoreService")
         // This should take care of populating that information quite nicely
-        SAFIntent.putExtra(FROM,"${this.packageName};${this.javaClass.canonicalName}")
+        SAFIntent.putExtra(FROM,"${this.packageName};${this.javaClass.name}")
         startService(SAFIntent)
     }
 
     fun startSAFInstallService(intent: Intent){
-        var SAFIntent = intent
+        var SAFIntent = Intent(intent)
         // This is temporary
         SAFIntent.setClassName(this,"com.example.sapphireassistantframework.CoreService")
         // This should take care of populating that information quite nicely
