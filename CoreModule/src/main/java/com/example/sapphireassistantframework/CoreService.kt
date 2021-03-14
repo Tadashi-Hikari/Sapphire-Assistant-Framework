@@ -16,13 +16,9 @@ import java.lang.Exception
 import java.net.Socket
 import java.util.*
 
-/*
-This exists somewhere between the brain and body. This movement to me, is akain to the nervous system
-and sending information from local spinal column/muscular reflexes, to more complex thinking tasks.
-This would be indicitive of the nervous system as a whole
- */
-
 class CoreService: SapphireCoreService(){
+	val LOCAL_VERSION = "0.2.0"
+
 	// The bound connection. The core attaches to each service as a client, tying them to cores lifecycle
 	inner class Connection() : ServiceConnection {
 		override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
@@ -43,32 +39,11 @@ class CoreService: SapphireCoreService(){
 	private val SERVICE_TEXT = "Sapphire Assistant Framework"
 
 	val CONFIG = "core.conf"
-	val CONFIG_VAL_DATA_TABLES = "DATA_TABLES"
+	val CONFIG_VAL_DATA_TABLES = "datatables.tbl"
 	val DEFAULT_MODULES_TABLE = "defaultmodules.tbl"
 	val BACKGROUND_TABLE = "background.tbl"
 	val ROUTE_TABLE = "routetable.tbl"
 	val ALIAS_TABLE = "alias.tbl"
-	lateinit var tables: JSONObject
-
-	// I already don't like how this is built
-	fun loadConfig(){
-		// I don't like the name getTextData, It's ambiguous
-		var dataTableInfo = getTextData(CONFIG_VAL_DATA_TABLES)
-		tables = loadTables(dataTableInfo)
-	}
-
-	var moduleJsonDataTables = JSONObject()
-
-	fun loadTables(tables: String): JSONObject{
-		var jsonConfigData = JSONObject(tables)
-
-		// Hmm..... I suppose they can be null keys
-		for(tablename in jsonConfigData.keys()){
-			var table = getTextData(tablename)
-			moduleJsonDataTables.put(tablename,table)
-		}
-		return moduleJsonDataTables
-	}
 
 	override fun onBind(intent: Intent?): IBinder? {
 		TODO("Not yet implemented")
@@ -128,7 +103,6 @@ class CoreService: SapphireCoreService(){
 		when(initialized){
 			true ->	when(intent.action) {
 				ACTION_SAPPHIRE_CORE_BIND -> onBind(intent)
-				ACTION_SAPPHIRE_CORE_REGISTRATION_COMPLETE -> initialize()
 				ACTION_SAPPHIRE_CORE_REQUEST_DATA -> handleRoute(intent)
 				ACTION_SAPPHIRE_DATA_TRANSFER -> dataTransfer(intent)
 				ACTION_SAPPHIRE_SOCKET_READY -> startTransfer(intent)
@@ -136,15 +110,16 @@ class CoreService: SapphireCoreService(){
 			}
 			false -> when(intent.action){
 				ACTION_SAPPHIRE_INITIALIZE -> startRegistrationService()
+				ACTION_SAPPHIRE_CORE_REGISTRATION_COMPLETE -> initialize()
 				ACTION_SAPPHIRE_MODULE_REGISTER -> forwardRegistration(intent)
 			}
 		}
 	}
 
-	fun handleRoute(signal: Intent){
-		when(signal.hasExtra(ROUTE)){
-			true -> nextModule(signal)
-			false -> handleNewInput(signal)
+	fun handleRoute(intent: Intent){
+		when(intent.hasExtra(ROUTE)){
+			true -> nextModule(intent)
+			false -> handleNewInput(intent)
 		}
 	}
 
@@ -164,24 +139,29 @@ class CoreService: SapphireCoreService(){
 
 	// Can this be wrapped in to nextModule or handleNewInput
 	fun forwardRegistration(intent: Intent){
-		when(intent.getStringExtra(FROM)){
+		// I don't think the incoming intent can propagate
+		var outgoingIntent = Intent(intent)
+		when(outgoingIntent.getStringExtra(FROM)){
 			"${this.packageName};${this.packageName}.CoreRegistrationService" -> {
-				intent.setClassName(intent.getStringExtra(MODULE_PACKAGE)!!,intent.getStringExtra(MODULE_CLASS)!!)
-				startService(intent)
+				outgoingIntent.setAction(ACTION_SAPPHIRE_MODULE_REGISTER)
+				outgoingIntent.setClassName(intent.getStringExtra(MODULE_PACKAGE)!!,intent.getStringExtra(MODULE_CLASS)!!)
+				startService(outgoingIntent)
 			}
 			else -> {
-				intent.setClassName("${this.packageName}","${this.packageName}.CoreRegistrationService")
-				startService(intent)
+				outgoingIntent.setClassName("${this.packageName}","${this.packageName}.CoreRegistrationService")
+				startService(outgoingIntent)
 			}
 		}
 	}
 
 	fun nextModule(intent: Intent){
 		// This gets the next module in line
-		var route = JSONArray(intent.getStringExtra(ROUTE))
-		var module = route.getString(0).split(";")
+		var route = intent.getStringExtra(ROUTE)!!
+		var cleanedRoute = expandRoute(route).split(",")
+		Log.d("MODULE", intent.getStringExtra(ROUTE)!!)
+		var module = cleanedRoute.get(0).split(";")
 		// pop the module from the route
-		route.remove(0)
+
 		intent.putExtra(ROUTE,route.toString())
 
 		intent.setClassName(module.component1(),module.component2())
@@ -190,9 +170,8 @@ class CoreService: SapphireCoreService(){
 
 	fun handleNewInput(intent: Intent){
 		// Does this load from the proper place (such as a local file)?
-		var routeTable = moduleJsonDataTables.getJSONObject(ROUTE_TABLE)
+		var routeTable = loadTable(ROUTE_TABLE)
 		when{
-			// This is long and ugly. Can I fix it?
 			routeTable.has(intent.getStringExtra(FROM)) -> {
 				intent.putExtra(ROUTE,routeTable.getString(intent.getStringExtra(FROM)))
 				nextModule(intent)
@@ -210,20 +189,21 @@ class CoreService: SapphireCoreService(){
 	 sleep-based data processing (when charging)
 	 */
 	fun initialize(){
-		loadConfig()
 		startBackgroundServices()
 		initialized = true
 	}
 
 	fun startBackgroundServices(){
-		var jsonBackgroundTable = tables.getJSONObject(BACKGROUND_TABLE)
+		var jsonBackgroundTable = loadTable(BACKGROUND_TABLE)
+		Log.i(this.javaClass.name, jsonBackgroundTable.toString())
 		for(recordName in jsonBackgroundTable.keys()){
-			var record = jsonBackgroundTable.getJSONObject(recordName)
+			var record = JSONObject(jsonBackgroundTable.getString(recordName))
 
 			var startupIntent = Intent()
 			startupIntent.putExtra(ROUTE,record.getString(STARTUP_ROUTE))
-			startupIntent.putExtra(POSTAGE,tables.getString(DEFAULT_MODULES_TABLE))
-			var module = startupIntent.getStringExtra(ROUTE)!!.split(";").get(0).split(",")
+			startupIntent.putExtra(POSTAGE,loadTable(DEFAULT_MODULES_TABLE).toString())
+			Log.v(this.javaClass.name,startupIntent.getStringExtra(ROUTE)!!)
+			var module = startupIntent.getStringExtra(ROUTE)!!.split(",").get(0).split(";")
 			startupIntent.setClassName(module.component1(),module.component2())
 			when(record.getBoolean("bound")){
 				true -> startBoundService(startupIntent)

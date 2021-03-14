@@ -24,8 +24,8 @@ class EntityTrainingService: SAFService(){
 	lateinit var classifier: CRFClassifier<CoreLabel>
 	var trainingFile = "Not yet implemented"
 
-	override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-		if(intent.action == "ENTITY"){
+	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+		if(intent!!.action == "ENTITY"){
 			Log.i("EntityProcessing","NER intent received")
 			// This should just be message
 			var utterance = intent.getStringExtra("HYPOTHESIS")

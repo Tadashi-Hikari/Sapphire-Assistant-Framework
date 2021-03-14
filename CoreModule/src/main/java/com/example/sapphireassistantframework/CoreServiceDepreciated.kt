@@ -109,11 +109,10 @@ class CoreServiceDepreciated: SAFService(){
         startForeground(1337, notification)
     }
 
-    // This is where the actual mail sorting happens
-    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.v(this.javaClass.name,"An CoreService intent was received")
         try {
-            if((intent.action == ACTION_SAPPHIRE_CORE_BIND) or (intent.action == "INIT")) {
+            if((intent!!.action == ACTION_SAPPHIRE_CORE_BIND) or (intent!!.action == "INIT")) {
                 // Do the binding
             }else if(intent.action == ACTION_SAPPHIRE_MODULE_REGISTER) {
                 if(intent.hasExtra(FROM) && (intent.getStringExtra(FROM) =="${this.packageName};com.example.sapphireassistantframework.CoreRegistrationService")){

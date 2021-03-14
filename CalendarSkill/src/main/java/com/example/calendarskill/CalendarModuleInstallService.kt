@@ -24,15 +24,15 @@ class CalendarModuleInstallService: SAFInstallService(){
     // I don't like that this is hard installed
     var intentFiles = arrayListOf<String>("get.intent","set.intent")
 
-    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        if(intent.action == ACTION_SAPPHIRE_MODULE_REGISTER) {
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if(intent?.action == ACTION_SAPPHIRE_MODULE_REGISTER) {
             createConfigFile(CONFIG)
             Log.i("SkillInstallService","Register intent received. Installing CalendarSkill")
             registerModule(intent)
         // This will use a pre-prepared intent, to send it through the pipeline for the reuqesting module
-        }else if(intent.action == ACTION_SAPPHIRE_CORE_REQUEST_DATA){
-            requestData(intent)
-        }else if(intent.action == ACTION_SAPPHIRE_EXPORT_CONFIG){
+        }else if(intent?.action == ACTION_SAPPHIRE_CORE_REQUEST_DATA){
+            requestData(intent!!)
+        }else if(intent?.action == ACTION_SAPPHIRE_EXPORT_CONFIG){
             var data = requestFileLines(CONFIG)
             // No need to set class info, cause it's handled in startSAFService()
             var configIntent = Intent()
