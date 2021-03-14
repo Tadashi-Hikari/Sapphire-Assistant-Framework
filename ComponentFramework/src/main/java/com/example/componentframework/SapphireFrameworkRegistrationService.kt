@@ -1,5 +1,7 @@
 package com.example.componentframework
 
+import android.content.Intent
+import android.os.IBinder
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStreamReader

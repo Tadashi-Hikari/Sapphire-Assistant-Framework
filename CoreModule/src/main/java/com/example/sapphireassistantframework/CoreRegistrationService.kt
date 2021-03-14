@@ -54,19 +54,11 @@ class CoreRegistrationService: SAFService(){
 		super.onCreate()
 	}
 
-	fun updateEnvVars(intent: Intent){
-		var jsonEnvVar = JSONObject(intent.getStringExtra(POSTAGE))
-		if(jsonEnvVar.has("exported")){
-			// This would be an env_var
-			var exported = jsonEnvVar.getBoolean("exported")
-		}
-	}
-
+	val ACTION_SAPPHIRE_INITIALIZE="assistant.framework.processor.action.INITIALIZE"
 	override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
 		try {
-			updateEnvVars(intent)
 			Log.v(this.javaClass.name,"CoreRegistrationIntent received")
-			if(intent.action == "INIT"){
+			if(intent.action == ACTION_SAPPHIRE_INITIALIZE){
 				Log.v(this.javaClass.name,"initializing...")
 				// This is the Init action
 				initializing = true
