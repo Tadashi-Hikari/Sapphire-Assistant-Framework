@@ -6,6 +6,9 @@ import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStreamReader
+import java.net.DatagramSocketImpl
+import java.net.InetAddress
+import java.net.Socket
 
 abstract class SapphireFrameworkService: Service() {
 	inner class LogOverride{
@@ -157,7 +160,7 @@ abstract class SapphireFrameworkService: Service() {
 	}
 
 	fun dispatchSapphireServiceFromCore(intent: Intent){
-		var updatedIntent = intent
+		var updatedIntent = Intent(intent)
 		updatedIntent = validatePostage(intent)
 		startService(updatedIntent)
 	}
@@ -176,5 +179,44 @@ abstract class SapphireFrameworkService: Service() {
 		intent.putExtra(POSTAGE,jsonPostage!!.toString())
 
 		return intent
+	}
+
+	lateinit var localSocket: Socket
+
+	fun connectSocket(){
+		// It's over 9000!
+		localSocket = Socket(InetAddress.getLocalHost(),9001)
+	}
+
+	fun fileSendSocket(filename: String) {
+		var file = File(filesDir, filename)
+		var fileOutputStreamReader = file.inputStream()
+		var socketInputStreamWriter = localSocket.getOutputStream()
+		var data = fileOutputStreamReader.read()
+		while (data != -1) {
+			socketInputStreamWriter.write(data)
+			data = fileOutputStreamReader.read()
+		}
+		fileOutputStreamReader.close()
+		socketInputStreamWriter.close()
+	}
+
+	fun fileReceiveSocket(filename: String){
+		var file = File(filesDir, filename)
+		var fileInputStreamWriter = file.outputStream()
+		var socketOutputStreamReader = localSocket.getInputStream()
+		var data = socketOutputStreamReader.read()
+		while (data != -1) {
+			fileInputStreamWriter.write(data)
+			data = socketOutputStreamReader.read()
+		}
+		fileInputStreamWriter.close()
+		socketOutputStreamReader.close()
+	}
+
+	// This is for having a SAF compontent pass along the route w/o a callback to core
+	fun parseRoute(string: String): List<String>{
+		var route = string.split(",")
+		return route
 	}
 }

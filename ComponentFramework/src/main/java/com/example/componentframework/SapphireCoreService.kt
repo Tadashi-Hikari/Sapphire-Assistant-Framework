@@ -2,6 +2,7 @@ package com.example.componentframework
 
 import android.content.Intent
 import org.json.JSONObject
+import java.lang.Exception
 
 abstract class SapphireCoreService: SapphireFrameworkService(){
 
@@ -28,5 +29,43 @@ abstract class SapphireCoreService: SapphireFrameworkService(){
 		}
 		Log.v(this.javaClass.name,"Postage is ${jsonPostageTable.toString()}")
 		return jsonPostageTable.toString()
+	}
+
+	fun checkRouteForVariables(intent: Intent): Intent{
+		var defaultIntent = Intent(intent)
+		try {
+			var routeData = intent.getStringExtra(ROUTE)!!
+			var routeModuleMutableList = parseRoute(routeData).toMutableList()
+			//var environmentalVaribles = intent.getStringExtra(POSTAGE)
+			//var jsonDefaultModules = JSONObject(environmentalVaribles)
+			var postage = JSONObject(intent.getStringExtra(POSTAGE)!!)
+
+			Log.v(this.javaClass.name,"routeData before checking ${routeData}")
+			for(module in routeModuleMutableList.withIndex()) {
+				var temp = module.copy()
+				Log.v(this.javaClass.name,"Checking ${module.value} in route...")
+				if (postage.has(module.value)) {
+					Log.v(this.javaClass.name,"Matched key ${module.value} at index ${module.index} with an ENV_VAR")
+					Log.v(this.javaClass.name,"Postages value is ${postage.optString(module.value,null)}")
+					routeModuleMutableList.set(module.index,postage.optString(module.value))
+				}
+			}
+
+			var finalizedRoute = ""
+			Log.i(this.javaClass.name,"Finalizing route...")
+			for (module in routeModuleMutableList.withIndex()) {
+				if (module.index == 0) {
+					finalizedRoute = module.value
+				} else {
+					finalizedRoute += ",${module.value}"
+				}
+			}
+			intent.putExtra(ROUTE, finalizedRoute)
+			return intent
+		}catch(exception: Exception){
+			Log.e(this.javaClass.name,"Error checking route for variables, returning defaultIntent")
+			Log.e(this.javaClass.name,exception.toString())
+			return defaultIntent
+		}
 	}
 }

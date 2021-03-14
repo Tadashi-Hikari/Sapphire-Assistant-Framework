@@ -229,7 +229,7 @@ abstract class SAFService: Service(){
         // This is temporary
         SAFIntent.setClassName(this,"com.example.sapphireassistantframework.CoreService")
         // This should take care of populating that information quite nicely
-        SAFIntent.putExtra(FROM,"${this.packageName};${this.javaClass.canonicalName}")
+        SAFIntent.putExtra(FROM,"${this.packageName};${this.javaClass.name}")
         startService(SAFIntent)
     }
 
