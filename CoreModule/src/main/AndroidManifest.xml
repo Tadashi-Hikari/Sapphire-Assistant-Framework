@@ -24,6 +24,8 @@
 			android:label="@string/title_activity_core_central_">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
+				<action android:name="android.intent.action.ASSIST"/>
+				<category android:name="android.intent.category.DEFAULT"/>
 				<category android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>
 		</activity>
@@ -41,6 +43,15 @@
 			android:exported="true">
 			<intent-filter>
 				<action android:name="assistant.framework.module.action.REGISTER" />
+			</intent-filter>
+		</service>
+		<service
+			android:name=".CoreVoiceInteractionService"
+			android:permission="android.permission.BIND_VOICE_INTERACTION">
+			<intent-filter>
+				<action android:name="android.service.voice.VoiceInteractionService"/>
+				<action android:name="android.speech.RecognitionService"/>
+				<category android:name="android.intent.category.DEFAULT"/>
 			</intent-filter>
 		</service>
 	</application>

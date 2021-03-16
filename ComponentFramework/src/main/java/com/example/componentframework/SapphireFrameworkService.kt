@@ -89,6 +89,9 @@ abstract class SapphireFrameworkService: Service() {
 	val ACTION_SAPPHIRE_TRAIN="assistant.framework.processor.action.TRAIN"
 	val ACTION_SAPPHIRE_INITIALIZE="assistant.framework.processor.action.INITIALIZE"
 
+	// Work in progress
+	var ACTION_SAPPHIRE_DATA_TRANSFER = "ACTION_SAPPHIRE_DATA_TRANSFER"
+	var ACTION_SAPPHIRE_SOCKET_READY = "ACTION_SAPPHIRE_SOCKET_READY"
 	val GUI_BROADCAST = "assistant.framework.broadcast.GUI_UPDATE"
 
 	var jsonPostage = JSONObject()
