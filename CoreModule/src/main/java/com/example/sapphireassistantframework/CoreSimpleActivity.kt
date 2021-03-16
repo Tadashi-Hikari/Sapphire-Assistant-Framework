@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.IBinder
+import android.service.voice.VoiceInteractionSession
 import android.util.Log
 import android.view.View
 import android.widget.ScrollView
@@ -22,6 +23,9 @@ import android.os.Bundle as Bundle
 
 class CoreSimpleActivity: Activity()
 {
+    inner class assistantActivity: VoiceInteractionSession(this){
+
+    }
     // This needs to be loaded from a config table
     private var tables = listOf("registration.tbl","defaultmodules.tbl","background.tbl","routetable.tbl","alias.tbl")
     val GUI_BROADCAST = "assistant.framework.broadcast.GUI_UPDATE"

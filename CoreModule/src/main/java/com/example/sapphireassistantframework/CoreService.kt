@@ -104,8 +104,8 @@ class CoreService: SapphireCoreService(){
 			true ->	when(intent.action) {
 				ACTION_SAPPHIRE_CORE_BIND -> onBind(intent)
 				ACTION_SAPPHIRE_CORE_REQUEST_DATA -> handleRoute(intent)
-				ACTION_SAPPHIRE_DATA_TRANSFER -> dataTransfer(intent)
-				ACTION_SAPPHIRE_SOCKET_READY -> startTransfer(intent)
+				//ACTION_SAPPHIRE_DATA_TRANSFER -> dataTransfer(intent)
+				//ACTION_SAPPHIRE_SOCKET_READY -> startTransfer(intent)
 				else -> handleRoute(intent)
 			}
 			false -> when(intent.action){
@@ -121,20 +121,6 @@ class CoreService: SapphireCoreService(){
 			true -> nextModule(intent)
 			false -> handleNewInput(intent)
 		}
-	}
-
-	var ACTION_SAPPHIRE_DATA_TRANSFER = "ACTION_SAPPHIRE_DATA_TRANSFER"
-	lateinit var socket: Socket
-	fun dataTransfer(intent: Intent){
-		var socket = Socket(localSocket.localAddress,9001)
-		var startTransferIntent = Intent()
-		startTransferIntent.setClassName(this.packageName,"com.example.calendarskill.CalendarModuleInstallService")
-		startService(startTransferIntent)
-	}
-
-	var ACTION_SAPPHIRE_SOCKET_READY = "ACTION_SAPPHIRE_SOCKET_READY"
-	fun startTransfer(intent: Intent){
-
 	}
 
 	// Can this be wrapped in to nextModule or handleNewInput

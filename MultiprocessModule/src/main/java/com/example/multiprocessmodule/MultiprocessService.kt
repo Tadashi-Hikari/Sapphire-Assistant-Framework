@@ -19,7 +19,7 @@ import kotlin.random.Random
  * command line example
  */
 
-class MultiprocessService: SAFService(){
+class yesMultiprocessService: SAFService(){
 
     val MULTIPROCESS_ID = "assistant.framework.multiprocess.protocol.ID"
     val SEQUENCE_NUMBER = "assistant.framework.multiprocess.protocol.SEQUENCE_NUMBER"
