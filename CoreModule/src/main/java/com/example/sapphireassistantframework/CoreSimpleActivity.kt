@@ -2,17 +2,20 @@ package com.example.sapphireassistantframework
 
 import android.app.Activity
 import android.app.Service
+import android.app.role.RoleManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.IBinder
 import android.service.voice.VoiceInteractionSession
 import android.util.Log
 import android.view.View
 import android.widget.ScrollView
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import org.json.JSONArray
 import org.json.JSONObject
@@ -40,6 +43,11 @@ class CoreSimpleActivity: Activity()
         var textView = findViewById<TextView>(R.id.textView)
         // For some reason this won't work when set in the XML
         textView.setHorizontallyScrolling(true)
+
+        var assistIntent = Intent()
+        assistIntent.setClassName(this,"com.example.sapphireassistantframework.voiceassistant.CoreVoiceInteractionService")
+        assistIntent.setAction(Intent.ACTION_ASSIST)
+        startService(assistIntent)
     }
 
 

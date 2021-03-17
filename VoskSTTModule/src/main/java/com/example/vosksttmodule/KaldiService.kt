@@ -6,6 +6,7 @@ import android.os.Binder
 import android.os.IBinder
 import android.util.Log
 import com.example.componentframework.SAFService
+import com.example.componentframework.SapphireFrameworkService
 import org.json.JSONObject
 import org.kaldi.*
 import java.io.File
@@ -17,6 +18,7 @@ class KaldiService: RecognitionListener, SAFService(){
     //model should be available internally
     //private val model = ???
     // This is better as a lateinit
+    private lateinit var hotwordRecognizer: KaldiRecognizer
     private lateinit var recognizer: CustomSpeechRecognizer
     private lateinit var startupIntent: Intent
 
@@ -45,8 +47,17 @@ class KaldiService: RecognitionListener, SAFService(){
     // Maybe this should be a broadcast
     fun sendUtterance(utterance: String){
         var json = JSONObject(utterance)
-        if(json.getString("text") != "") {
+        if(json.getString("text") == "sapphire"){
+            var intent = Intent()
+            intent.setClassName(this,"${this.packageName}.voiceassistant.CoreVoiceInteractionService")
+            intent.setAction("android.speech.RecognitionService")
+            Log.i(this.javaClass.name,"Sending to assistant....")
+            //recognizer.cancel()
+            //recognizer.shutdown()
+            startService(intent)
+            //onDestroy()
 
+        }else if(json.getString("text") != "") {
             // This is a input module, it should always be sending to core. How would I wrap it?
             var coreServiceIntent: Intent = Intent()
             coreServiceIntent.putExtra(MESSAGE, utterance)
@@ -72,6 +83,15 @@ class KaldiService: RecognitionListener, SAFService(){
         // See if I need to change this with a kaldi recognizer
         recognizer = CustomSpeechRecognizer(model)
         recognizer.addListener(this)
+        var intent = Intent()
+        var sapphireService = object: SapphireFrameworkService(){
+            override fun onBind(intent: Intent?): IBinder? {
+                TODO("Not yet implemented")
+            }
+        }
+        intent.setClassName(this,"com.example.sapphireassistsantframework.voiceassistant.CoreVoiceInteractionService")
+        intent.setAction(sapphireService.ACTION_SAPPHIRE_INITIALIZE)
+        startService(intent)
         recognizer.startListening()
     }
 
