@@ -47,7 +47,7 @@ class CoreVoiceInteractionService: VoiceInteractionService(){
 	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 		// These won't run, cause it needs the SPECIAL BIND ACTION
 		if(intent?.action == sapphireSerivce.ACTION_SAPPHIRE_INITIALIZE){
-			// THis is
+			// This is
 			Toast.makeText(this,"Speech recognition starting",Toast.LENGTH_SHORT)
 		}else if(intent?.action == "android.speech.RecognitionService"){
 			// I don't think this ever runs, because it's caught up in the same thread
@@ -88,10 +88,6 @@ class CoreVoiceInteractionService: VoiceInteractionService(){
 
 	override fun onReady() {
 		super.onReady()
-	}
-
-	override fun onLaunchVoiceAssistFromKeyguard() {
-		super.onLaunchVoiceAssistFromKeyguard()
 	}
 
 	override fun onShutdown() {

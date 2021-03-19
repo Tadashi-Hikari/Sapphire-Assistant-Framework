@@ -12,6 +12,7 @@ import androidx.core.app.NotificationCompat
 import com.example.componentframework.SapphireCoreService
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.File
 import java.lang.Exception
 import java.net.Socket
 import java.util.*
@@ -69,7 +70,9 @@ class CoreService: SapphireCoreService(){
 			intent?.action == ACTION_SAPPHIRE_INITIALIZE -> return true
 			intent?.action == ACTION_SAPPHIRE_MODULE_REGISTER -> return true
 			intent?.action == ACTION_SAPPHIRE_CORE_REGISTRATION_COMPLETE -> return true
+			intent?.action == "ACTION_SAPPHIRE_REQUEST_FILE" -> return true
 			intent?.hasExtra(FROM)!! -> return true
+			intent?.hasExtra(ROUTE)!! -> return true
 			else -> return false
 		}
 	}
@@ -101,11 +104,12 @@ class CoreService: SapphireCoreService(){
 		// Looking for a better mental abstraction. These actions are more akin to heartbeats, digestion, etc. Autonomous actions, but unchangeable
 		// Handle actions here
 		when(initialized){
-			true ->	when(intent.action) {
+			true ->	when(intent.action){
 				ACTION_SAPPHIRE_CORE_BIND -> onBind(intent)
-				ACTION_SAPPHIRE_CORE_REQUEST_DATA -> handleRoute(intent)
-				//ACTION_SAPPHIRE_DATA_TRANSFER -> dataTransfer(intent)
-				//ACTION_SAPPHIRE_SOCKET_READY -> startTransfer(intent)
+				// This is being replaced w/ REQUEST_FILE
+				//ACTION_SAPPHIRE_CORE_REQUEST_DATA -> handleRoute(intent)
+				"ACTION_SAPPHIRE_REQUEST_FILE" -> serveFile(intent)
+				// Generic action
 				else -> handleRoute(intent)
 			}
 			false -> when(intent.action){
@@ -116,6 +120,24 @@ class CoreService: SapphireCoreService(){
 		}
 	}
 
+	fun serveFile(intent: Intent){
+		if(File(filesDir,"filename").exists()){
+			Log.v(this.javaClass.name,"The file already exists in CoreService")
+		}else{
+			Log.v(this.javaClass.name,"The file does not yet exist. Requesting...")
+			// This would be happening in the background, and I need to wait until it's finished. Multiprocess Module can handle this for me...
+			var fileRequestIntent = Intent()
+			fileRequestIntent.setClassName(this,"${this.packageName}.CalendarModuleInstallServiceRefined")
+			fileRequestIntent.setAction("ACTION_SAPPHIRE_REQUEST_FILE")
+
+			var CALENDAR = "(${this.packageName};${this.packageName}.CalendarModuleInstallServiceRefined)"
+			// This is a placeholder, but this is what it would look like. Maybe ( ) should auto affix MULTIPROCESS
+			fileRequestIntent.putExtra(ROUTE,"${MULTIPROCESS},${CALENDAR},${MULTIPROCESS},${PROCESSOR}")
+			startService(fileRequestIntent)
+		}
+	}
+
+	// Is this when redundant w/ validate?
 	fun handleRoute(intent: Intent){
 		when(intent.hasExtra(ROUTE)){
 			true -> nextModule(intent)

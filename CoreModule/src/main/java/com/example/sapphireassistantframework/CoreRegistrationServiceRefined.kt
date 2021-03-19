@@ -12,14 +12,42 @@ class CoreRegistrationServiceRefined: SapphireCoreService(){
 			ACTION_SAPPHIRE_MODULE_REGISTER -> registerModule()
 			else -> Log.e(this.javaClass.name, "There was an issue with the registration intent. Dispatching remaining intents ")
 		}
+		dispatchRemainingIntents()
 		return super.onStartCommand(intent, flags, startId)
 	}
 
 	fun scanModules(){
+	}
 
+	fun dispatchRemainingIntents(){
 	}
 
 	fun registerModule(){
+		if(newVersion()){
+			registerRoute()
+			registerDefaults()
+			registerFilenames()
+			registerBackgroundService()
+		}
+	}
+
+	fun newVersion(): Boolean{
+		return true
+	}
+
+	fun registerDefaults(){
+
+	}
+
+	fun registerBackgroundService(){
+
+	}
+
+	fun registerRoute(){
+
+	}
+
+	fun registerFilenames(){
 
 	}
 
