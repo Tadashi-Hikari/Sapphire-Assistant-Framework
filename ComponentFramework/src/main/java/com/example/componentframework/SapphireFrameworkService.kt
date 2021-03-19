@@ -139,9 +139,10 @@ abstract class SapphireFrameworkService: Service() {
 		startService(updatedIntent)
 	}
 
-	fun dispatchSapphireServiceToCore(){
-
-
+	// The name is a little overkill, but w/e
+	fun dispatchSapphireServiceToCore(intent:Intent){
+		intent.setClassName(this,"${this.packageName}.CoreService")
+		startService(intent)
 	}
 
 	fun validatePostage(intent: Intent): Intent{
@@ -153,39 +154,6 @@ abstract class SapphireFrameworkService: Service() {
 		intent.putExtra(POSTAGE,jsonPostage!!.toString())
 
 		return intent
-	}
-
-	lateinit var localSocket: Socket
-
-	fun connectSocket(){
-		// It's over 9000!
-		localSocket = Socket(InetAddress.getLocalHost(),9001)
-	}
-
-	fun fileSendSocket(filename: String) {
-		var file = File(filesDir, filename)
-		var fileOutputStreamReader = file.inputStream()
-		var socketInputStreamWriter = localSocket.getOutputStream()
-		var data = fileOutputStreamReader.read()
-		while (data != -1) {
-			socketInputStreamWriter.write(data)
-			data = fileOutputStreamReader.read()
-		}
-		fileOutputStreamReader.close()
-		socketInputStreamWriter.close()
-	}
-
-	fun fileReceiveSocket(filename: String){
-		var file = File(filesDir, filename)
-		var fileInputStreamWriter = file.outputStream()
-		var socketOutputStreamReader = localSocket.getInputStream()
-		var data = socketOutputStreamReader.read()
-		while (data != -1) {
-			fileInputStreamWriter.write(data)
-			data = socketOutputStreamReader.read()
-		}
-		fileInputStreamWriter.close()
-		socketOutputStreamReader.close()
 	}
 
 	// This is for having a SAF compontent pass along the route w/o a callback to core

@@ -47,7 +47,7 @@ class KaldiService: RecognitionListener, SAFService(){
     // Maybe this should be a broadcast
     fun sendUtterance(utterance: String){
         var json = JSONObject(utterance)
-        if(json.getString("text") == "sapphire"){
+        if("mega man" in json.getString("text")){
             var intent = Intent()
             intent.setClassName(this,"${this.packageName}.voiceassistant.CoreVoiceInteractionService")
             intent.setAction("android.speech.RecognitionService")

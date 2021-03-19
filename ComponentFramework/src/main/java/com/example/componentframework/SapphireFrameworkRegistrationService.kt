@@ -35,9 +35,8 @@ abstract class SapphireFrameworkRegistrationService: SapphireFrameworkService(){
 		return intent
 	}
 
-	// This is called for retrieveData as well
-	// This one WILL save time
-	fun registerData(intent: Intent, filenames: List<String>): Intent{
+	fun registerData(intent: Intent, filenames: ArrayList<String>): Intent{
+		intent.putStringArrayListExtra(DATA_KEYS,filenames)
 		return intent
 	}
 

@@ -194,27 +194,6 @@ class yesMultiprocessService: SAFService(){
         return Pair(multiprocessRoute,remainingRoute)
     }
 
-    fun getNewID(): String{
-        Log.v(this.javaClass.name,"Generating a new ID")
-        var id = -1
-        // If the ID exists in the database, or it's -1 (never created)
-        while((id == -1) or (JSONDatabase.has(id.toString()))){
-            id = Random.nextInt().absoluteValue
-        }
-        Log.v(this.javaClass.name,"Newly created ID is ${id}")
-        return id.toString()
-    }
-
-    fun loadDatabase(): JSONObject{
-        databaseFile = File(filesDir, MULTIPROCESS_TABLE)
-        if(databaseFile.exists()){
-            Log.i(this.javaClass.name,"Table loaded")
-            return JSONObject(databaseFile.readText())
-        }
-        Log.i(this.javaClass.name,"Table created")
-        return JSONObject()
-    }
-
     override fun onBind(intent: Intent?): IBinder? {
         TODO("Not yet implemented")
     }
