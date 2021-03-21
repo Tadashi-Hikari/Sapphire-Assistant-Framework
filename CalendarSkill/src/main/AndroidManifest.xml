@@ -28,5 +28,9 @@
             android:exported="true"
             android:enabled="true">
         </service>
+        <service android:name=".CalendarModuleInstallServiceRefined"
+            android:exported="true"
+            android:enabled="true">
+        </service>
     </application>
 </manifest>

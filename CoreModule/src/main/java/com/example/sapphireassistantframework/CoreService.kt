@@ -6,9 +6,12 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
+import android.net.Uri
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
+import androidx.core.content.FileProvider
+import androidx.core.net.toUri
 import com.example.componentframework.SapphireCoreService
 import org.json.JSONArray
 import org.json.JSONObject
@@ -32,7 +35,8 @@ class CoreService: SapphireCoreService(){
 	}
 
 	//State variables
-	var initialized = false
+	//var initialized = false
+	var initialized = true
 	private var connections: LinkedList<Pair<String, Connection>> = LinkedList()
 	private lateinit var notificationManager: NotificationManager
 	private val CHANNEL_ID = "SAF"
@@ -121,20 +125,24 @@ class CoreService: SapphireCoreService(){
 	}
 
 	fun serveFile(intent: Intent){
-		if(File(filesDir,"filename").exists()){
-			Log.v(this.javaClass.name,"The file already exists in CoreService")
-		}else{
-			Log.v(this.javaClass.name,"The file does not yet exist. Requesting...")
-			// This would be happening in the background, and I need to wait until it's finished. Multiprocess Module can handle this for me...
-			var fileRequestIntent = Intent()
-			fileRequestIntent.setClassName(this,"${this.packageName}.CalendarModuleInstallServiceRefined")
-			fileRequestIntent.setAction("ACTION_SAPPHIRE_REQUEST_FILE")
+		Log.v(this.javaClass.name,"The file does not yet exist. Requesting...")
+		// This would be happening in the background, and I need to wait until it's finished. Multiprocess Module can handle this for me...
+		var fileRequestIntent = Intent()
+		fileRequestIntent.setClassName(this,"com.example.calendarskill.CalendarModuleInstallServiceRefined")
+		fileRequestIntent.setAction("ACTION_SAPPHIRE_REQUEST_FILE")
 
-			var CALENDAR = "(${this.packageName};${this.packageName}.CalendarModuleInstallServiceRefined)"
-			// This is a placeholder, but this is what it would look like. Maybe ( ) should auto affix MULTIPROCESS
-			fileRequestIntent.putExtra(ROUTE,"${MULTIPROCESS},${CALENDAR},${MULTIPROCESS},${PROCESSOR}")
-			startService(fileRequestIntent)
-		}
+		//This is added for demo purposes
+		var testFile = File(filesDir,"testfile")
+		testFile.createNewFile()
+		//var uri = FileProvider.getUriForFile(this,"com.example.sapphireassistantframework.fileprovider",testFile)
+		fileRequestIntent.data = testFile.toUri()
+		fileRequestIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+		fileRequestIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+
+		var CALENDAR = "(${this.packageName};com..CalendarModuleInstallServiceRefined)"
+		// This is a placeholder, but this is what it would look like. Maybe ( ) should auto affix MULTIPROCESS
+		fileRequestIntent.putExtra(ROUTE,"${MULTIPROCESS},${CALENDAR},${MULTIPROCESS},${PROCESSOR}")
+		startService(fileRequestIntent)
 	}
 
 	// Is this when redundant w/ validate?

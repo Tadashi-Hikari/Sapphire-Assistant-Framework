@@ -47,7 +47,7 @@ class CoreSimpleActivity: Activity()
         var assistIntent = Intent()
         assistIntent.setClassName(this,"com.example.sapphireassistantframework.voiceassistant.CoreVoiceInteractionService")
         assistIntent.setAction(Intent.ACTION_ASSIST)
-        startService(assistIntent)
+       // startService(assistIntent)
     }
 
 
@@ -113,6 +113,15 @@ class CoreSimpleActivity: Activity()
         // This needs to be formalized and moved over
         val ACTION_SAPPHIRE_INITIALIZE="assistant.framework.processor.action.INITIALIZE"
         intent.setAction(ACTION_SAPPHIRE_INITIALIZE)
+        // This doesn't do anything in particular to indicate that it is starting SF for the first time
+        startService(intent)
+    }
+
+    fun demoStartCoreService(view: View){
+        Log.v(this.localClassName,"starting ${this.packageName}, ${this.packageName}.CoreService")
+        var intent: Intent = Intent().setClassName(this.packageName,"${this.packageName}.CoreService")
+        // This needs to be formalized and moved over
+        intent.setAction("ACTION_SAPPHIRE_REQUEST_FILE")
         // This doesn't do anything in particular to indicate that it is starting SF for the first time
         startService(intent)
     }
