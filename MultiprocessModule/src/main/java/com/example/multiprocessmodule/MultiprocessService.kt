@@ -148,6 +148,14 @@ class yesMultiprocessService: SAFService(){
         }
     }
 
+    fun getNewID(): String{
+        var id = -1
+        do{
+            id = Random.nextInt().absoluteValue
+        }while(id == -1)
+        return id.toString()
+    }
+
     // This creates and starts the multiprocess intent
     fun startMultiprocessIntent(initialIntent: Intent){
         Log.v(this.javaClass.name,"starting a new multiprocess intent...")
@@ -192,6 +200,15 @@ class yesMultiprocessService: SAFService(){
         var multiprocessRoute = route.substring(start,end)
         var remainingRoute = route.substring(end+1,)
         return Pair(multiprocessRoute,remainingRoute)
+    }
+
+    fun loadDatabase(): JSONObject{
+        // This seems... like it may not need to be formatted this way
+        databaseFile = File(filesDir, MULTIPROCESS_TABLE)
+        when(databaseFile.exists()) {
+            true -> return JSONObject(databaseFile.readText())
+            false -> return JSONObject()
+        }
     }
 
     override fun onBind(intent: Intent?): IBinder? {

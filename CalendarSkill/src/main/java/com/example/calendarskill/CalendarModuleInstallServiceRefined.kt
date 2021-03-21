@@ -16,13 +16,27 @@ class CalendarModuleInstallServiceRefined: SapphireFrameworkRegistrationService(
 	val VERSION = "0.0.1"
 	val CONFIG = "calendar.conf"
 	val fileList = arrayListOf<String>("get.intent","set.intent")
+	var REQUEST_FILE = "ACTION_SAPPHIRE_REQUEST_FILE"
 
 	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+		Log.i(this.javaClass.name,"Calendar intent received")
 		when(intent?.action){
 			ACTION_SAPPHIRE_MODULE_REGISTER -> registerModule(intent!!)
 			ACTION_SAPPHIRE_CORE_REQUEST_DATA -> sendRequestedFiles(intent)
+			REQUEST_FILE -> demoRequestFile(intent)
 		}
 		return super.onStartCommand(intent, flags, startId)
+	}
+
+	fun demoRequestFile(intent: Intent){
+		var uri = intent.data!!
+		Log.i(this.javaClass.name,uri.path!!)
+		try {
+			var testFile = File(uri.path)
+			Log.i(this.javaClass.name, "This seems like a vaild way to get the file")
+		}catch (exception: Exception){
+			Log.d(this.javaClass.name, "Looks like you can't get a file this way")
+		}
 	}
 
 	// This is going to have to get moved to FrameworkRegistrationService
