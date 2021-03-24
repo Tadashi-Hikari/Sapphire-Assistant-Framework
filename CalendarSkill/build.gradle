@@ -1,4 +1,6 @@
-if(project.single){
+def standalone = true
+
+if(standalone != true){
     apply plugin: 'com.android.library'
     apply plugin: 'kotlin-android'
 }else{
@@ -16,7 +18,7 @@ android {
     }
 
     defaultConfig {
-        if(project.single != true){
+        if(standalone){
             applicationId "com.example.calendarskill"
         }
         minSdkVersion 25

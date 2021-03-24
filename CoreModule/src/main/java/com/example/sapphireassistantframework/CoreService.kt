@@ -75,8 +75,8 @@ class CoreService: SapphireCoreService(){
 			intent?.action == ACTION_SAPPHIRE_MODULE_REGISTER -> return true
 			intent?.action == ACTION_SAPPHIRE_CORE_REGISTRATION_COMPLETE -> return true
 			intent?.action == "ACTION_SAPPHIRE_REQUEST_FILE" -> return true
-			intent?.hasExtra(FROM)!! -> return true
-			intent?.hasExtra(ROUTE)!! -> return true
+			intent?.hasExtra(FROM) == true -> return true
+			intent?.hasExtra(ROUTE) == true -> return true
 			else -> return false
 		}
 	}
@@ -128,21 +128,22 @@ class CoreService: SapphireCoreService(){
 		Log.v(this.javaClass.name,"The file does not yet exist. Requesting...")
 		// This would be happening in the background, and I need to wait until it's finished. Multiprocess Module can handle this for me...
 		var fileRequestIntent = Intent()
-		fileRequestIntent.setClassName(this,"com.example.calendarskill.CalendarModuleInstallServiceRefined")
+		fileRequestIntent.setClassName("com.example.calendarskill","com.example.calendarskill.CalendarModuleInstallServiceRefined")
 		fileRequestIntent.setAction("ACTION_SAPPHIRE_REQUEST_FILE")
 
 		//This is added for demo purposes
 		var testFile = File(filesDir,"testfile")
 		testFile.createNewFile()
-		//var uri = FileProvider.getUriForFile(this,"com.example.sapphireassistantframework.fileprovider",testFile)
-		fileRequestIntent.data = testFile.toUri()
+		var uri = FileProvider.getUriForFile(this,"com.example.sapphireassistantframework.fileprovider",testFile)
 		fileRequestIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
 		fileRequestIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
 
 		var CALENDAR = "(${this.packageName};com..CalendarModuleInstallServiceRefined)"
 		// This is a placeholder, but this is what it would look like. Maybe ( ) should auto affix MULTIPROCESS
 		fileRequestIntent.putExtra(ROUTE,"${MULTIPROCESS},${CALENDAR},${MULTIPROCESS},${PROCESSOR}")
-		startService(fileRequestIntent)
+		fileRequestIntent.data = uri
+		var connection = Connection()
+		bindService(fileRequestIntent,connection, BIND_AUTO_CREATE)
 	}
 
 	// Is this when redundant w/ validate?
