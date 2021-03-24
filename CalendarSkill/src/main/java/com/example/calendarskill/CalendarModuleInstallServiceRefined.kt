@@ -2,6 +2,7 @@ package com.example.calendarskill
 
 import android.content.ContentProvider
 import android.content.Intent
+import android.os.Binder
 import android.os.IBinder
 import android.provider.OpenableColumns
 import android.renderscript.ScriptGroup
@@ -29,9 +30,9 @@ class CalendarModuleInstallServiceRefined: SapphireFrameworkRegistrationService(
 	}
 
 	fun demoRequestFile(intent: Intent){
-		var uri = intent.data!!
-		Log.i(this.javaClass.name,uri.path!!)
 		try {
+			var uri = intent.data!!
+			Log.i(this.javaClass.name,uri.path!!)
 			var testFile = File(uri.path)
 			Log.i(this.javaClass.name, "This seems like a vaild way to get the file")
 		}catch (exception: Exception){
@@ -90,7 +91,12 @@ class CalendarModuleInstallServiceRefined: SapphireFrameworkRegistrationService(
 		super.registerModule(returnIntent)
 	}
 
+
+
 	override fun onBind(intent: Intent?): IBinder? {
-		TODO("Not yet implemented")
+		Log.v(this.javaClass.name,"It appears, you actually can start me!")
+		var temp = Intent(intent)
+		demoRequestFile(temp)
+		return Binder()
 	}
 }
