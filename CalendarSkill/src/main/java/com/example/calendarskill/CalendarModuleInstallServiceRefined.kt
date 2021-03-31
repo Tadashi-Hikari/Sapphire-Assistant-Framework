@@ -1,12 +1,15 @@
 package com.example.calendarskill
 
+import android.content.ContentProvider
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
+import androidx.core.net.toFile
 import com.example.componentframework.SapphireFrameworkRegistrationService
 import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
+import java.net.URI
 
 class CalendarModuleInstallServiceRefined: SapphireFrameworkRegistrationService(){
 	val VERSION = "0.0.1"
@@ -26,10 +29,10 @@ class CalendarModuleInstallServiceRefined: SapphireFrameworkRegistrationService(
 
 	fun demoRequestFile(intent: Intent){
 		try {
-			var uri = intent.data!!
-			Log.i(this.javaClass.name,uri.path!!)
-			var testFile = File(uri.path)
-			Log.i(this.javaClass.name, "This seems like a vaild way to get the file")
+			var coreResolver = contentResolver.query()
+
+
+
 		}catch (exception: Exception){
 			Log.d(this.javaClass.name, "Looks like you can't get a file this way")
 		}

@@ -71,6 +71,12 @@
 				android:resource="@xml/file_paths">
 			</meta-data>
 		</provider>
+		<provider
+			android:authorities="com.example.sapphireassistantframework.contentprovider"
+			android:name=".CoreContentProvider"
+			android:grantUriPermissions="true"
+			android:exported="true">
+		</provider>
 	</application>
 
 </manifest>

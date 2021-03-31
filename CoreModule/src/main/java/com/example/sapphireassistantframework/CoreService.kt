@@ -137,13 +137,11 @@ class CoreService: SapphireCoreService(){
 		var uri = FileProvider.getUriForFile(this,"com.example.sapphireassistantframework.fileprovider",testFile)
 		fileRequestIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
 		fileRequestIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-
-		var CALENDAR = "(${this.packageName};com..CalendarModuleInstallServiceRefined)"
-		// This is a placeholder, but this is what it would look like. Maybe ( ) should auto affix MULTIPROCESS
-		fileRequestIntent.putExtra(ROUTE,"${MULTIPROCESS},${CALENDAR},${MULTIPROCESS},${PROCESSOR}")
+		Log.i(this.javaClass.name,"This is what is being sent: ${uri.path}")
 		fileRequestIntent.data = uri
 		var connection = Connection()
 		bindService(fileRequestIntent,connection, BIND_AUTO_CREATE)
+		//startSapphireService()
 	}
 
 	// Is this when redundant w/ validate?
