@@ -35,8 +35,15 @@ class CalendarModuleInstallServiceRefined: SapphireFrameworkRegistrationService(
 			var uri = intent.data!!
 			Log.i(this.javaClass.name,uri.toString()!!)
 			//var testFile = uri.toFile()
-			var somethingFD = contentResolver.openFileDescriptor(uri,"r")!!
+			var somethingFD = contentResolver.openFileDescriptor(uri,"wa")!!
 			var fd = somethingFD.fileDescriptor
+			var outputStream = FileOutputStream(fd)
+			outputStream.write(". This is appended".toByteArray())
+			Log.i(this.javaClass.name,"Did it write?")
+
+			// This is the essential part, when it comes to editing a file
+			somethingFD = contentResolver.openFileDescriptor(uri,"rw")!!
+			fd = somethingFD.fileDescriptor
 			var inputStream = FileInputStream(fd)
 
 			var testFile = File(cacheDir,"temp")
@@ -50,7 +57,8 @@ class CalendarModuleInstallServiceRefined: SapphireFrameworkRegistrationService(
 			fileWriter.close()
 
 			Log.i(this.javaClass.name, testFile.readText())
-			Log.i(this.javaClass.name, "This seems like a vaild way to get the file")
+
+			Log.i(this.javaClass.name, "This seems like a valid way to edit the file")
 		}catch (exception: Exception){
 			Log.d(this.javaClass.name, "You cannot access the file this way")
 			Log.i(this.javaClass.name, exception.toString())
@@ -111,7 +119,7 @@ class CalendarModuleInstallServiceRefined: SapphireFrameworkRegistrationService(
 
 
 	override fun onBind(intent: Intent?): IBinder? {
-		Log.v(this.javaClass.name,"onBind can start the service, but it can't access Uris")
+		Log.v(this.javaClass.name,"onBind can start the service, but it can't access Uris. Accessing in onStartCommand()")
 		return Binder()
 	}
 }

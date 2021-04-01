@@ -138,8 +138,9 @@ class CoreService: SapphireCoreService(){
 		extFile.writeText("This is a test. Hopefully it works")
 		var uri = FileProvider.getUriForFile(this.applicationContext,"com.example.sapphireassistantframework.fileprovider",extFile)
 		fileRequestIntent.setDataAndType(uri,contentResolver.getType(uri))
-		//fileRequestIntent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-		fileRequestIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+		// This gives read permissions if it's wr mode
+		fileRequestIntent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+		//fileRequestIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
 		//this.grantUriPermission("com.example.calendarskill",uri,Intent.FLAG_GRANT_READ_URI_PERMISSION)
 		bindService(fileRequestIntent,connection, BIND_AUTO_CREATE)
 		// I just need enough time for the service to init, and be non-background
