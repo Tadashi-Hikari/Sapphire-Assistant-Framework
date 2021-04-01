@@ -7,6 +7,7 @@
 	<uses-permission android:name="android.permission.RECORD_AUDIO" />
 
 	<application
+		android:requestLegacyExternalStorage="true"
 		android:allowBackup="true"
 		android:enabled="true"
 		android:icon="@mipmap/ic_launcher"
@@ -62,20 +63,14 @@
 			tools:ignore="Instantiatable">
 		</service>
 		<provider
-			android:authorities="com.example.sapphireassistantframework.fileprovider"
 			android:name="androidx.core.content.FileProvider"
-			android:exported="false"
-			android:grantUriPermissions="true">
+			android:authorities="com.example.sapphireassistantframework.fileprovider"
+			android:grantUriPermissions="true"
+			android:exported="false">
 			<meta-data
 				android:name="android.support.FILE_PROVIDER_PATHS"
 				android:resource="@xml/file_paths">
 			</meta-data>
-		</provider>
-		<provider
-			android:authorities="com.example.sapphireassistantframework.contentprovider"
-			android:name=".CoreContentProvider"
-			android:grantUriPermissions="true"
-			android:exported="true">
 		</provider>
 	</application>
 

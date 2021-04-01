@@ -2,13 +2,12 @@ package com.example.sapphireassistantframework
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.content.ComponentName
-import android.content.Context
-import android.content.Intent
-import android.content.ServiceConnection
+import android.content.*
 import android.net.Uri
 import android.os.Build
+import android.os.Environment
 import android.os.IBinder
+import android.os.SystemClock
 import androidx.core.app.NotificationCompat
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
@@ -131,17 +130,21 @@ class CoreService: SapphireCoreService(){
 		fileRequestIntent.setClassName("com.example.calendarskill","com.example.calendarskill.CalendarModuleInstallServiceRefined")
 		fileRequestIntent.setAction("ACTION_SAPPHIRE_REQUEST_FILE")
 
-		//This is added for demo purposes
-		var testFile = File(filesDir,"testfile")
-		testFile.createNewFile()
-		var uri = FileProvider.getUriForFile(this,"com.example.sapphireassistantframework.fileprovider",testFile)
-		fileRequestIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-		fileRequestIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-		Log.i(this.javaClass.name,"This is what is being sent: ${uri.path}")
-		fileRequestIntent.data = uri
 		var connection = Connection()
+
+		// damn, I need to create a unique subdirectory to isolate this shit
+		var extFile = File(filesDir,"androidFileManagementSucks.txt")
+		extFile.createNewFile()
+		extFile.writeText("This is a test. Hopefully it works")
+		var uri = FileProvider.getUriForFile(this.applicationContext,"com.example.sapphireassistantframework.fileprovider",extFile)
+		fileRequestIntent.setDataAndType(uri,contentResolver.getType(uri))
+		//fileRequestIntent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+		fileRequestIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+		//this.grantUriPermission("com.example.calendarskill",uri,Intent.FLAG_GRANT_READ_URI_PERMISSION)
 		bindService(fileRequestIntent,connection, BIND_AUTO_CREATE)
-		//startSapphireService()
+		// I just need enough time for the service to init, and be non-background
+		SystemClock.sleep(100)
+		startService(fileRequestIntent)
 	}
 
 	// Is this when redundant w/ validate?

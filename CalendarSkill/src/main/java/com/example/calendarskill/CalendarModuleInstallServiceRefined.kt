@@ -1,14 +1,16 @@
 package com.example.calendarskill
 
 import android.content.ContentProvider
+import android.content.ContentResolver
 import android.content.Intent
+import android.net.Uri
 import android.os.Binder
 import android.os.IBinder
+import android.os.ParcelFileDescriptor
+import androidx.core.content.FileProvider
 import androidx.core.net.toFile
 import com.example.componentframework.SapphireFrameworkRegistrationService
-import java.io.File
-import java.io.InputStream
-import java.io.OutputStream
+import java.io.*
 import java.net.URI
 
 class CalendarModuleInstallServiceRefined: SapphireFrameworkRegistrationService(){
@@ -28,13 +30,30 @@ class CalendarModuleInstallServiceRefined: SapphireFrameworkRegistrationService(
 	}
 
 	fun demoRequestFile(intent: Intent){
+		var uri = intent.data!!
 		try {
-			var coreResolver = contentResolver.query()
+			var uri = intent.data!!
+			Log.i(this.javaClass.name,uri.toString()!!)
+			//var testFile = uri.toFile()
+			var somethingFD = contentResolver.openFileDescriptor(uri,"r")!!
+			var fd = somethingFD.fileDescriptor
+			var inputStream = FileInputStream(fd)
 
+			var testFile = File(cacheDir,"temp")
+			var fileWriter = testFile.outputStream()
 
+			var data = inputStream!!.read()
+			while(data != -1){
+				fileWriter.write(data)
+				data = inputStream.read()
+			}
+			fileWriter.close()
 
+			Log.i(this.javaClass.name, testFile.readText())
+			Log.i(this.javaClass.name, "This seems like a vaild way to get the file")
 		}catch (exception: Exception){
-			Log.d(this.javaClass.name, "Looks like you can't get a file this way")
+			Log.d(this.javaClass.name, "You cannot access the file this way")
+			Log.i(this.javaClass.name, exception.toString())
 		}
 	}
 
@@ -92,9 +111,7 @@ class CalendarModuleInstallServiceRefined: SapphireFrameworkRegistrationService(
 
 
 	override fun onBind(intent: Intent?): IBinder? {
-		Log.v(this.javaClass.name,"It appears, you actually can start me!")
-		var temp = Intent(intent)
-		demoRequestFile(temp)
+		Log.v(this.javaClass.name,"onBind can start the service, but it can't access Uris")
 		return Binder()
 	}
 }
