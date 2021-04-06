@@ -1,7 +1,10 @@
 package com.example.multiprocessmodule
 
+import android.content.ComponentName
 import android.content.Intent
+import android.content.ServiceConnection
 import android.os.IBinder
+import android.os.SystemClock
 import com.example.componentframework.SapphireFrameworkService
 import org.json.JSONObject
 import java.io.File
@@ -10,6 +13,9 @@ import kotlin.random.Random
 
 /*
 This also can be used to wait for a response for a single intent. Perhaps it should have a different name
+
+I believe this may *have* to bind CoreService, now that Uris are the only way to pass around information
+I can't really record it to a JSON file the same way.
  */
 
 class MultiprocessServiceRefined: SapphireFrameworkService(){
@@ -21,10 +27,24 @@ class MultiprocessServiceRefined: SapphireFrameworkService(){
 
 	lateinit var databaseFile: File
 	lateinit var JSONDatabase: JSONObject
+	var connection = Connection()
+
+	// The bound connection. The core attaches to each service as a client, tying them to cores lifecycle
+	inner class Connection() : ServiceConnection {
+		override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+			Log.i(this.javaClass.name, "Service connected")
+		}
+
+		override fun onServiceDisconnected(name: ComponentName?) {
+			Log.i(this.javaClass.name, "Service disconnected")
+		}
+	}
 
 	override fun onCreate(){
 		// This should bind while waiting for a response?
 		JSONDatabase = loadDatabase()
+		var coreIntent = Intent().setClassName(this.packageName,"com.example.sapphireassistantframework.CoreService")
+		bindService(coreIntent,connection,0)
 		super.onCreate()
 	}
 
@@ -58,6 +78,7 @@ class MultiprocessServiceRefined: SapphireFrameworkService(){
 		}
 	}
 
+	// Wow. What the hell do I do here...?
 	fun recordProcessInfoUris(intent: Intent){
 
 	}
@@ -152,6 +173,11 @@ class MultiprocessServiceRefined: SapphireFrameworkService(){
 		// proper
 		outgoingIntent.setClassName(this,"com.example.processormodule.ProcessorTrainingService")
 		startService(outgoingIntent)
+		// This no longer needs to be bound to the coreService
+		unbindService(connection)
+		// could I clean this up a bit?
+		SystemClock.sleep(500)
+		stopSelf()
 	}
 
 	// This could probably be simplified?
