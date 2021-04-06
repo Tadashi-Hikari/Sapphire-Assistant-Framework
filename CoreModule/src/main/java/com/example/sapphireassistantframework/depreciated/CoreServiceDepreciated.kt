@@ -6,7 +6,7 @@ import android.content.*
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
-import com.example.componentframework.SAFService
+import com.example.componentframework.depreciated.SAFService
 import com.example.sapphireassistantframework.R
 import org.json.JSONObject
 import java.util.*

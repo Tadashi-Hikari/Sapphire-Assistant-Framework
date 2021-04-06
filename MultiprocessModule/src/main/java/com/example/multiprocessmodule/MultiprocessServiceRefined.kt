@@ -19,8 +19,11 @@ I can't really record it to a JSON file the same way.
  */
 
 class MultiprocessServiceRefined: SapphireFrameworkService(){
+	// This ID is used to identify when a multiprocess intent is returning
 	val MULTIPROCESS_ID = "assistant.framework.multiprocess.protocol.ID"
+	// This is the count of multiprocess intents that still need to return for a specific ID
 	val SEQUENCE_NUMBER = "assistant.framework.multiprocess.protocol.SEQUENCE_NUMBER"
+	// This is the total amount of multiprocess intents under an ID
 	val SEQUENCE_TOTAL = "assistant.framework.multiprocess.column.SEQUENCE_TOTAL"
 
 	val MULTIPROCESS_TABLE = "multiprocess.tbl"
@@ -28,8 +31,10 @@ class MultiprocessServiceRefined: SapphireFrameworkService(){
 	lateinit var databaseFile: File
 	lateinit var JSONDatabase: JSONObject
 	var connection = Connection()
+	// This will be the temp JSON replacement
+	var intentStorage = mutableListOf<Intent>()
 
-	// The bound connection. The core attaches to each service as a client, tying them to cores lifecycle
+	// This ties the Multiprocess to Core much more than I wanted. Perhaps I should specify 'levels' of modules
 	inner class Connection() : ServiceConnection {
 		override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
 			Log.i(this.javaClass.name, "Service connected")
@@ -41,10 +46,9 @@ class MultiprocessServiceRefined: SapphireFrameworkService(){
 	}
 
 	override fun onCreate(){
-		// This should bind while waiting for a response?
-		JSONDatabase = loadDatabase()
 		var coreIntent = Intent().setClassName(this.packageName,"com.example.sapphireassistantframework.CoreService")
 		bindService(coreIntent,connection,0)
+		JSONDatabase = loadDatabase()
 		super.onCreate()
 	}
 
@@ -62,7 +66,6 @@ class MultiprocessServiceRefined: SapphireFrameworkService(){
 			//value != 1 -> updateAndWait(intent)
 			//value == 1 -> sendFinalData(intent)
 		}
-
 	}
 
 	fun intializeMultiprocessIntent(intent: Intent){
@@ -78,12 +81,27 @@ class MultiprocessServiceRefined: SapphireFrameworkService(){
 		}
 	}
 
-	// Wow. What the hell do I do here...?
-	fun recordProcessInfoUris(intent: Intent){
+	// I think this is recording the information before its first dispatch. Need to double check
+	fun makeIntentRecords(intent: Intent) {
+		var intentId = intent.getIntExtra(SEQUENCE_NUMBER, -1).toString()
+		var activeMultiprocessesTable = loadTable(MULTIPROCESS_TABLE)
 
+		// If the ID doesn't exist, then record it in the table. Why did I record check this?
+		if(activeMultiprocessesTable.isNull(intentId)){
+
+		}
+
+		intentStorage.add(intent)
+		var storageId = intentStorage.size
+
+		var record = JSONDatabase.getJSONArray(intent.getStringExtra(MULTIPROCESS_ID))
+		record.put(storageId)
+		// I don't think I need to write anything, since this will be bound
+		JSONDatabase.put(MULTIPROCESS_ID,record)
 	}
 
-	fun recordProcessInfo(intent: Intent) {
+	// What is the point of this?
+	fun checkDuplicates(intent: Intent) {
 		var sequenceNumber = intent.getIntExtra(SEQUENCE_NUMBER, -1).toString()
 		var JSONMultiprocessRecord = loadTable(MULTIPROCESS_TABLE)
 		if (JSONMultiprocessRecord.isNull(sequenceNumber)) {
@@ -92,13 +110,13 @@ class MultiprocessServiceRefined: SapphireFrameworkService(){
 			// make the intent record
 			JSONIntentRecord.put(DATA_KEYS, intent.getStringArrayListExtra(DATA_KEYS))
 			Log.i(
-				"MultiprocessService",
-				"Getting DATA_KEYS from intent. Keys are ${intent.getStringArrayListExtra(DATA_KEYS)}"
+					"MultiprocessService",
+					"Getting DATA_KEYS from intent. Keys are ${intent.getStringArrayListExtra(DATA_KEYS)}"
 			)
 			for (dataKey in intent.getStringArrayListExtra(DATA_KEYS)!!) {
 				Log.i(
-					"MultiprocessService",
-					"Logging key ${dataKey}, value ${intent.getStringArrayListExtra(dataKey)}"
+						"MultiprocessService",
+						"Logging key ${dataKey}, value ${intent.getStringArrayListExtra(dataKey)}"
 				)
 				//Bold to assume that it will only ever be data keys
 				// I need to do something to account for duplicate names
@@ -112,9 +130,10 @@ class MultiprocessServiceRefined: SapphireFrameworkService(){
 		}
 	}
 
+	// This dispatches ALL intents related to the multiprocess
 	fun dispatchMultiIntent(route: IndexedValue<String>,intent: Intent){
 		// I'd like to move this up a level, if I can
-		recordProcessInfo(intent)
+		makeIntentRecords(intent)
 		var module = route.value.split(";")
 
 		var outgoingIntent = Intent()
@@ -173,11 +192,14 @@ class MultiprocessServiceRefined: SapphireFrameworkService(){
 		// proper
 		outgoingIntent.setClassName(this,"com.example.processormodule.ProcessorTrainingService")
 		startService(outgoingIntent)
-		// This no longer needs to be bound to the coreService
-		unbindService(connection)
-		// could I clean this up a bit?
-		SystemClock.sleep(500)
-		stopSelf()
+		// I don't know if this will work
+		if(JSONDatabase.keys() == null) {
+			// If there are no more multiprocess intents, shut down
+			unbindService(connection)
+			// could I clean this up a bit?
+			SystemClock.sleep(500)
+			stopSelf()
+		}
 	}
 
 	// This could probably be simplified?

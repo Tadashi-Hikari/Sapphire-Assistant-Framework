@@ -1,8 +1,7 @@
 package com.example.termuxmodule
 
 import android.content.Intent
-import android.util.Log
-import com.example.componentframework.SAFInstallService
+import com.example.componentframework.depreciated.SAFInstallService
 
 class TermuxModuleInstallService: SAFInstallService() {
 	val VERSION = "0.0.1"
