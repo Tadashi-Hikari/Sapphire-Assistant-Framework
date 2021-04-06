@@ -130,6 +130,7 @@ class CoreService: SapphireCoreService(){
 			//intent.getStringExtra(FROM)
 			manipulateIntent.setClassName("com.example.calendarskill","com.example.calendarskill.CalendarModuleInstallServiceRefined")
 			manipulateIntent.setAction(ACTION_MANIPULATE_FILE_DATA)
+			var counter = 0
 
 			for(key in intent.getStringArrayListExtra(DATA_KEYS)!!){
 				Log.v(this.javaClass.name,"Generating Core file for ${key} from ${intent.getStringExtra(FROM)}")
@@ -137,8 +138,18 @@ class CoreService: SapphireCoreService(){
 				// I don't know if this is needed...
 				file.createNewFile()
 				var uri = FileProvider.getUriForFile(this.applicationContext,"com.example.sapphireassistantframework.fileprovider",file)
-				manipulateIntent.setDataAndType(uri,contentResolver.getType(uri))
-				manipulateIntent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+				// Add the filedata to the intent
+				if(counter == 0) {
+					manipulateIntent.setDataAndType(uri, contentResolver.getType(uri))
+					manipulateIntent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+				}else {
+					var item = ClipData.Item(uri)
+					when(manipulateIntent.clipData){
+						null -> manipulateIntent.clipData = ClipData.newRawUri(DATA_KEYS,uri)
+						else -> manipulateIntent.clipData!!.addItem(item)
+					}
+				}
+				counter++
 			}
 
 			var connection = Connection()

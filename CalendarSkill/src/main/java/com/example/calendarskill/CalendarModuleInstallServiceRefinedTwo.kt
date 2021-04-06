@@ -7,8 +7,6 @@ import com.example.componentframework.SapphireFrameworkRegistrationService
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
-import java.io.OutputStream
-import java.net.URI
 
 class CalendarModuleInstallServiceRefinedTwo: SapphireFrameworkRegistrationService(){
     val VERSION = "0.0.1"
@@ -37,7 +35,7 @@ class CalendarModuleInstallServiceRefinedTwo: SapphireFrameworkRegistrationServi
     fun coreTransferFile(intent: Intent){
         try{
             when(intent.hasExtra(DATA_KEYS)){
-                true -> processFiles(intent)
+                true -> offloadFiles(intent)
                 false -> Log.d(this.javaClass.name, "There was some kind of DATA_KEY error")
             }
         }catch(exception: Exception){
@@ -46,16 +44,25 @@ class CalendarModuleInstallServiceRefinedTwo: SapphireFrameworkRegistrationServi
         }
     }
 
-    // This seems like unneeded modularity
-    fun processFiles(intent: Intent){
-        var clipData = intent.clipData!!
-        var firstUri = intent.data!!
-
-        writeToCore(firstUri)
-        for(clipIndex in 0..clipData.itemCount){
-            // This is how it has to be done w/ clipData it seems
-            writeToCore(clipData.getItemAt(clipIndex).uri)
+    // This seems like unneeded modularity. Also, it's messy
+    fun offloadFiles(intent: Intent){
+        if(intent.data != null) {
+            writeToCore(intent.data!!)
         }
+
+        if(intent.clipData != null) {
+            var clipData = intent.clipData!!
+            for (clipIndex in 0..clipData.itemCount) {
+                // This is how it has to be done w/ clipData it seems
+                writeToCore(clipData.getItemAt(clipIndex).uri)
+            }
+        }
+
+        var finishedIntent = Intent()
+        finishedIntent.action = "FILE_TRANSFER_FINISHED"
+        // This should not be hardcoded
+        intent.setClassName("com.example.sapphireassistantframework","com.example.sapphireassistantframework.CoreService")
+        startService(finishedIntent)
     }
 
     fun writeToCore(uri: Uri){

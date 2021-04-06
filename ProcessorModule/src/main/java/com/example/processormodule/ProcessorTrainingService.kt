@@ -1,86 +1,89 @@
 package com.example.processormodule
 
-/**
- * This module handles the training of information from other installed modules
- */
-
 import android.content.Intent
+import android.net.Uri
 import android.os.IBinder
-import android.util.Log
-import com.example.componentframework.SAFService
+import com.example.componentframework.SapphireFrameworkService
 import edu.stanford.nlp.classify.ColumnDataClassifier
 import java.io.File
-import java.io.ObjectOutputStream
+import java.io.FileInputStream
+import java.lang.Exception
 import java.util.*
+import kotlin.collections.ArrayList
 
-class ProcessorTrainingService: SAFService(){
-
+class ProcessorTrainingServiceUpdated: SapphireFrameworkService(){
     override fun onBind(intent: Intent?): IBinder? {
         TODO("Not yet implemented")
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.i("ProcessorTrainingService","Training intent received")
-        Log.i("ProcessorTrainingService","Data keys are as follows: ${intent!!.getStringArrayListExtra(DATA_KEYS)}")
-        // This is a terribly named function. It is converting the strings to files, supposedly
-        var processorFiles = getProcessorFilesFromString(intent!!)
-        var intentFiles = mutableListOf<File>()
-
-        // Training is expecting differently formatted information, in the form of
-        // Android intent bundles. Should this be the case?
-        for(name in processorFiles.keys){
-            if(name.endsWith(".intent")){
-                Log.i("ProcessorTrainingService","Key: ${name}, Value: ${processorFiles.get(name)}")
-                intentFiles.add(processorFiles.get(name)!!)
-            }else{
-                // I don't like this way of handling it... Maybe fix it later? More generic?
-                Log.v("Temporary","This processor doesnt use this type of file")
-            }
+        try{
+            train(intent)
+        }catch(exception: Exception){
+            Log.d(CANONICAL_CLASS_NAME, "There was an error with the received intent. It was lacking some stuff, I suspect")
         }
 
-        Log.i("ProcessorTrainingService","All of the relevant files were loaded. Combining")
-        // This is where the combination happens
-        var trainingFile = combineFiles(intentFiles)
-        trainIntentClassifier(trainingFile)
         return super.onStartCommand(intent, flags, startId)
     }
 
-    // Can I adapt this to work w/ non-text files? Or should I use the socket for that
-    // This is actually getting strings
-    fun getProcessorFilesFromString(intent: Intent): Map<String,File>{
-        var files = mutableMapOf<String,File>()
+    fun train(intent: Intent?){
+        var trainingFiles = cacheTrainingFiles(intent)
+        // Currently unused. It's for Mycroft style .intent files to meet Stanford CoreNLP standards
+        var prepared = prepareTrainingData()
+        trainIntentClassifier(trainingFiles)
 
-        try{
-            var fileNames = intent.getStringArrayListExtra(DATA_KEYS)!!
-            Log.i("ProcessorTrainingService","Filenames are as follows: ${fileNames}")
-            for(fileName in fileNames){
-                var lineString = intent.getStringExtra(fileName)!!
-                lineString = lineString.removeSurrounding("[","]")
-                var lines = lineString.split(",")
-                // This is for testing the BracketExpander. Probably not the best spot for long term
-                var bracketIntent = Intent().setClassName(this,"com.example.processormodule.BracketExpander")
-                var bracketSentences = arrayListOf<String>()
-                for(line in lines){
-                    bracketSentences.add(line)
-                }
-                bracketIntent.putStringArrayListExtra("BRACKET_TEST",bracketSentences)
-                startService(bracketIntent)
-                // This seems poorly constructed
-                //files.put(fileName,convertStringsToFile(fileName, lines))
-            }
-        }catch(exception: Exception){
-            Log.e("Temporary","Some kind of error")
-        }
-
-        return files
     }
 
+    // Maybe I should move this to SapphireFrameworkService
+    fun convertUriToFile(uri: Uri): String{
+        try {
+            var parcelFileDescriptor = contentResolver.openFileDescriptor(uri,"rw")!!
+            var fileDescriptor = parcelFileDescriptor.fileDescriptor
+            var inputStream = FileInputStream(fileDescriptor)
 
-    // Currently, this isn't run because of the keys situation
-    fun combineFiles(files: List<File>): File{
+            var cacheFile = File(cacheDir,uri.lastPathSegment)
+            var cacheFileWriter = cacheFile.outputStream()
+
+            var data = inputStream!!.read()
+            while(data != -1){
+                cacheFileWriter.write(data)
+                data = inputStream.read()
+            }
+            cacheFileWriter.close()
+            return cacheFile.name
+
+            Log.i(this.javaClass.name, cacheFile.readText())
+        }catch (exception: Exception){
+            Log.i(this.javaClass.name, exception.toString())
+            return ""
+        }
+    }
+
+    // This is required by the java library, unfortunately
+    fun cacheTrainingFiles(intent: Intent?): List<String>{
+        var trainingFiles = mutableListOf<String>()
+
+        if(intent!!.data != null) {
+            convertUriToFile(intent.data!!)
+        }
+
+        if(intent.clipData != null) {
+            var clipData = intent.clipData!!
+            for (clipIndex in 0..clipData.itemCount) {
+                // This is ugly. i don't like it.
+                trainingFiles.add(convertUriToFile(clipData.getItemAt(clipIndex).uri))
+            }
+        }
+        Log.v(CANONICAL_CLASS_NAME,"Files transferred to ${CLASS_NAME}")
+        return trainingFiles.toList()
+    }
+
+    // This is rough. I may want to touch this up
+    fun combineFiles(files: List<String>): File{
         var combinedFile = File.createTempFile("trainingFile",".tmp", cacheDir)
 
-        for(file in files){
+        for(filename in files){
+            var file = File(cacheDir,filename)
             for(line in file.readLines()){
                 Log.i("ProcessorTrainingService","Line being added: ${line.trim()}")
                 // I need to be careful. I could be adding unneeded white space
@@ -91,30 +94,20 @@ class ProcessorTrainingService: SAFService(){
         return combinedFile
     }
 
-    fun convertStringsToFile(fileName: String, lines: List<String>): File{
-        var tempFile = File.createTempFile(fileName,".tmp", cacheDir)
-        for(line in lines){
-            tempFile.appendText("${line.trim()}\n")
-        }
-        return tempFile
-    }
-
     // This is where saveClassifier is called
-    fun trainIntentClassifier(trainingFile: File){
+    fun trainIntentClassifier(trainingFiles: List<String>){
         var properties = createProperties()
         var classifier = ColumnDataClassifier(properties)
+        var combinedFile = combineFiles(trainingFiles)
 
-        classifier.trainClassifier(trainingFile.canonicalPath)
+        classifier.trainClassifier(combinedFile.canonicalPath)
         Log.i("Parser","Intent classifier training done")
         saveClassifier(classifier)
     }
 
-    fun createEntityProperties(): Properties{
-        var properties = Properties()
-
-        //properties.setProperty()
-
-        return properties
+    fun saveClassifier(classifier: ColumnDataClassifier){
+        val fileName = File(this.filesDir,"Intent.classifier")
+        classifier.serializeClassifier(fileName.canonicalPath)
     }
 
     // This shouldn't be hardcoded, and should be moved to a file
@@ -129,15 +122,10 @@ class ProcessorTrainingService: SAFService(){
         properties.setProperty("1.splitWordsWithPTBTokenizer","true")
         // This is the line that was missing
         properties.setProperty("1.useSplitWords","true")
-
         return properties
     }
 
-    fun saveClassifier(classifier: ColumnDataClassifier){
-        val fileName = File(this.filesDir,"Intent.classifier")
-        classifier.serializeClassifier(fileName.canonicalPath)
-    }
-
+    // Gotta be careful here, cause the spaces fucked me up before
     /**
      * This is for taking a Mycroft style .intent and preparing it for Stanford CoreNLP
      */

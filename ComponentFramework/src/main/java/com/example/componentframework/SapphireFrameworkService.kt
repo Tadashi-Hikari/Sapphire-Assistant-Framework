@@ -2,6 +2,7 @@ package com.example.componentframework
 
 import android.app.Service
 import android.content.Intent
+import android.os.SystemClock
 import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
@@ -94,6 +95,9 @@ abstract class SapphireFrameworkService: Service() {
 	var ACTION_MANIPULATE_FILE_DATA = "action.framework.module.MANIPULATE_FILE_DATA"
 	var ACTION_REQUEST_FILE_DATA = "action.framework.module.REQUEST_FILE_DATA"
 	val GUI_BROADCAST = "assistant.framework.broadcast.GUI_UPDATE"
+	var PACKAGE_NAME = this.packageName
+	var CANONICAL_CLASS_NAME = this.javaClass.canonicalName
+	var CLASS_NAME = this.javaClass.name
 
 	var jsonPostage = JSONObject()
 
@@ -106,7 +110,7 @@ abstract class SapphireFrameworkService: Service() {
 		return moduleJsonDataTable
 	}
 
-	fun convertStreamToFile(filename: String): File {
+	fun converAssetToFile(filename: String): File {
 		var suffix = ".temp"
 		// This file needs to be tab separated columns
 		var asset = assets.open(filename)
@@ -155,6 +159,16 @@ abstract class SapphireFrameworkService: Service() {
 		intent.putExtra(POSTAGE,jsonPostage!!.toString())
 
 		return intent
+	}
+
+	// This is only meant to be used by core
+	fun startSapphireService(intent: Intent){
+		/*
+		bindService(intent,connection, BIND_AUTO_CREATE)
+		// I just need enough time for the service to init, and be non-background
+		SystemClock.sleep(100)
+		startService(manipulateIntent)
+		*/
 	}
 
 	// This is for having a SAF compontent pass along the route w/o a callback to core

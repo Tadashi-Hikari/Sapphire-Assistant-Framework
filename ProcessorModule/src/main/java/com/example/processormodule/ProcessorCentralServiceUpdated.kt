@@ -3,6 +3,8 @@ package com.example.processormodule
 import android.content.Intent
 import android.os.IBinder
 import com.example.componentframework.SapphireFrameworkService
+import edu.stanford.nlp.classify.ColumnDataClassifier
+import java.io.File
 
 class ProcessorCentralServiceUpdated: SapphireFrameworkService(){
 
@@ -13,26 +15,37 @@ class ProcessorCentralServiceUpdated: SapphireFrameworkService(){
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when(intent?.action){
             ACTION_SAPPHIRE_TRAIN -> loadClassifier(intent)
+            "DELETE_CLASSIFIER" -> deleteClassifier()
+            // This should be changed
+            ACTION_REQUEST_FILE_DATA -> trainClassifier(intent)
         }
         return super.onStartCommand(intent, flags, startId)
     }
 
-    fun requestFile(){
-        var fileList = arrayListOf<String>("get.intent","set.intent")
+    fun loadClassifier(intent: Intent?): ColumnDataClassifier{
+        var classifierFile = File(filesDir,"intent.classifier")
+        if(classifierFile.exists() != true){
+            requestFiles()
+        }
+        return ColumnDataClassifier.getClassifier(classifierFile.canonicalPath)
+    }
 
+    fun deleteClassifier(){
+        var file = File(filesDir,"Intent.classifier")
+        file.delete()
+    }
+
+    // I might be able to move this to the SapphireFrameworkService class
+    fun requestFiles(){
         var intent = Intent()
-        intent.putExtra(DATA_KEYS,fileList)
+        var requestedDataKeys = arrayListOf<String>("intent")
+
+        intent.setClassName("com.example.sapphireassistantframework","com.example.sapphireassistantframework.CoreService")
+        // I want the requested files to go to the training service.
+        intent.putExtra(ROUTE,"com.example.sapphireassistantframework;com.example.processormodule.ProcessorTrainingService")
+        intent.action = ACTION_REQUEST_FILE_DATA
+        intent.putExtra(DATA_KEYS, requestedDataKeys)
+        intent.putExtra(FROM,"${PACKAGE_NAME};${CANONICAL_CLASS_NAME}")
         startService(intent)
-    }
-
-    // FileProvider can only send a single file?
-    fun receiveFile(intent: Intent?){
-    }
-
-    fun loadClassifier(intent: Intent?){
-    }
-
-    inner class SapphireFile(){
-
     }
 }
