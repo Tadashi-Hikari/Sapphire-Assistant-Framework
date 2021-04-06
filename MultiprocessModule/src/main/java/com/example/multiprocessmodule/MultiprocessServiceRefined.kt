@@ -58,6 +58,10 @@ class MultiprocessServiceRefined: SapphireFrameworkService(){
 		}
 	}
 
+	fun recordProcessInfoUris(intent: Intent){
+
+	}
+
 	fun recordProcessInfo(intent: Intent) {
 		var sequenceNumber = intent.getIntExtra(SEQUENCE_NUMBER, -1).toString()
 		var JSONMultiprocessRecord = loadTable(MULTIPROCESS_TABLE)

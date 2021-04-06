@@ -63,7 +63,7 @@ abstract class SapphireFrameworkRegistrationService: SapphireFrameworkService(){
 		for(fileName in fileNames){
 			Log.i("SkillInstallService(Calendar)","Loading file: ${fileName}")
 			// Processor cycles are cheap. Worry about optimization later
-			var file = convertStreamToFile(fileName)
+			var file = converAssetToFile(fileName)
 
 			var lines = ArrayList<String>()
 			for(line in file.readLines()){

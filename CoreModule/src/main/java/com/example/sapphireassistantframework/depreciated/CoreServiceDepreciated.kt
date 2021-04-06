@@ -1,4 +1,4 @@
-package com.example.sapphireassistantframework
+package com.example.sapphireassistantframework.depreciated
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -7,6 +7,7 @@ import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.example.componentframework.SAFService
+import com.example.sapphireassistantframework.R
 import org.json.JSONObject
 import java.util.*
 
