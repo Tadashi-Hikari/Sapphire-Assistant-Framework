@@ -1,12 +1,7 @@
-package com.example.componentframework
+package com.example.componentframework.depreciated
 
-import android.app.PendingIntent
 import android.content.Intent
-import android.net.Uri
-import android.os.Build
 import android.os.IBinder
-import android.util.Log
-import org.json.JSONArray
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStreamReader

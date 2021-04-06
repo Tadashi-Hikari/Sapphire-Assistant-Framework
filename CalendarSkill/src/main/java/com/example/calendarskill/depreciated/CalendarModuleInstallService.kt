@@ -1,11 +1,7 @@
-package com.example.calendarskill
+package com.example.calendarskill.depreciated
 
-import android.app.Activity
 import android.content.Intent
-import android.net.Uri
-import android.util.Log
-import com.example.calendarskill.HelperFiles.InstallHelper
-import com.example.componentframework.SAFInstallService
+import com.example.componentframework.depreciated.SAFInstallService
 import java.io.File
 
 /**

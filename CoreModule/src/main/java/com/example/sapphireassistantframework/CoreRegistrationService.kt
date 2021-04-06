@@ -3,7 +3,7 @@ package com.example.sapphireassistantframework
 import android.content.Intent
 import android.content.pm.PackageManager.GET_RESOLVED_FILTER
 import android.os.IBinder
-import com.example.componentframework.SAFService
+import com.example.componentframework.depreciated.SAFService
 import org.json.JSONObject
 import java.io.File
 import java.lang.Exception

@@ -1,10 +1,7 @@
 package com.example.multiprocessmodule
 
 import android.content.Intent
-import android.os.IBinder
-import android.os.Looper
-import android.util.Log
-import com.example.componentframework.SAFInstallService
+import com.example.componentframework.depreciated.SAFInstallService
 
 class MultiprocessModuleInstallService: SAFInstallService(){
 	val VERSION = "0.0.1"

@@ -6,7 +6,7 @@
     <application
         android:requestLegacyExternalStorage="true">
         <service
-            android:name=".CalendarModuleInstallService"
+            android:name=".depreciated.CalendarModuleInstallService"
             android:exported="true"
             android:enabled="true">
             <intent-filter>

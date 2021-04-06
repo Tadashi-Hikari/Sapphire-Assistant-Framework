@@ -2,14 +2,9 @@ package com.example.processormodule
 
 import android.content.Intent
 import android.os.IBinder
-import android.util.Log
-import com.example.componentframework.SAFService
+import com.example.componentframework.depreciated.SAFService
 import edu.stanford.nlp.ie.crf.CRFClassifier
 import edu.stanford.nlp.ling.CoreLabel
-import edu.stanford.nlp.ling.tokensregex.SequenceMatchRules
-import edu.stanford.nlp.sequences.DocumentReaderAndWriter
-import edu.stanford.nlp.util.ArrayCoreMap
-import edu.stanford.nlp.util.CoreMap
 import org.json.JSONObject
 import java.util.*
 

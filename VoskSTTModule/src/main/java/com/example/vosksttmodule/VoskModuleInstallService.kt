@@ -1,8 +1,7 @@
 package com.example.vosksttmodule
 
 import android.content.Intent
-import android.util.Log
-import com.example.componentframework.SAFInstallService
+import com.example.componentframework.depreciated.SAFInstallService
 import org.json.JSONObject
 import java.lang.Exception
 

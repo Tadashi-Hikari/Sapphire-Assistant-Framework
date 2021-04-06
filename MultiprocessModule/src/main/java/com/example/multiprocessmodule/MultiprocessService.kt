@@ -2,11 +2,9 @@ package com.example.multiprocessmodule
 
 import android.content.Intent
 import android.os.IBinder
-import android.util.Log
-import com.example.componentframework.SAFService
+import com.example.componentframework.depreciated.SAFService
 import org.json.JSONObject
 import java.io.File
-import java.util.*
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 

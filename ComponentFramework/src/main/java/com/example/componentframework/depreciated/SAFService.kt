@@ -1,8 +1,7 @@
-package com.example.componentframework
+package com.example.componentframework.depreciated
 
 import android.app.Service
 import android.content.Intent
-import android.util.Log
 import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream

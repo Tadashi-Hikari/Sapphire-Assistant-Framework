@@ -1,10 +1,7 @@
 package com.example.processormodule
 
 import android.content.Intent
-import android.os.IBinder
-import android.util.Log
-import com.example.componentframework.SAFInstallService
-import com.example.componentframework.SAFService
+import com.example.componentframework.depreciated.SAFInstallService
 import java.lang.Exception
 
 class ProcessorModuleInstallService: SAFInstallService(){

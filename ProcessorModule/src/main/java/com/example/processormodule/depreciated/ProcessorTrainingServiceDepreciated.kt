@@ -6,11 +6,9 @@ package com.example.processormodule
 
 import android.content.Intent
 import android.os.IBinder
-import android.util.Log
-import com.example.componentframework.SAFService
+import com.example.componentframework.depreciated.SAFService
 import edu.stanford.nlp.classify.ColumnDataClassifier
 import java.io.File
-import java.io.ObjectOutputStream
 import java.util.*
 
 class ProcessorTrainingService: SAFService(){
