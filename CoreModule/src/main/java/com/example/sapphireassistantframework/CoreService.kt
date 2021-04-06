@@ -74,6 +74,8 @@ class CoreService: SapphireCoreService(){
 			intent?.action == ACTION_SAPPHIRE_MODULE_REGISTER -> return true
 			intent?.action == ACTION_SAPPHIRE_CORE_REGISTRATION_COMPLETE -> return true
 			intent?.action == "ACTION_SAPPHIRE_REQUEST_FILE" -> return true
+			// I think this might now work easy for requesting modules vs installing modules
+			intent?.action == ACTION_MANIPULATE_FILE_DATA -> return true
 			intent?.hasExtra(FROM) == true -> return true
 			intent?.hasExtra(ROUTE) == true -> return true
 			else -> return false
@@ -109,9 +111,8 @@ class CoreService: SapphireCoreService(){
 		when(initialized){
 			true ->	when(intent.action){
 				ACTION_SAPPHIRE_CORE_BIND -> onBind(intent)
-				// This is being replaced w/ REQUEST_FILE
-				//ACTION_SAPPHIRE_CORE_REQUEST_DATA -> handleRoute(intent)
-				"ACTION_SAPPHIRE_REQUEST_FILE" -> serveFile(intent)
+				ACTION_REQUEST_FILE_DATA -> handleRoute(intent)
+				ACTION_MANIPULATE_FILE_DATA -> serveFile(intent)
 				// Generic action
 				else -> handleRoute(intent)
 			}
@@ -124,28 +125,30 @@ class CoreService: SapphireCoreService(){
 	}
 
 	fun serveFile(intent: Intent){
-		Log.v(this.javaClass.name,"The file does not yet exist. Requesting...")
-		// This would be happening in the background, and I need to wait until it's finished. Multiprocess Module can handle this for me...
-		var fileRequestIntent = Intent()
-		fileRequestIntent.setClassName("com.example.calendarskill","com.example.calendarskill.CalendarModuleInstallServiceRefined")
-		fileRequestIntent.setAction("ACTION_SAPPHIRE_REQUEST_FILE")
+		try{
+			var manipulateIntent = Intent()
+			//intent.getStringExtra(FROM)
+			manipulateIntent.setClassName("com.example.calendarskill","com.example.calendarskill.CalendarModuleInstallServiceRefined")
+			manipulateIntent.setAction(ACTION_MANIPULATE_FILE_DATA)
 
-		var connection = Connection()
+			for(key in intent.getStringArrayListExtra(DATA_KEYS)!!){
+				Log.v(this.javaClass.name,"Generating Core file for ${key} from ${intent.getStringExtra(FROM)}")
+				var file = File(filesDir,key)
+				// I don't know if this is needed...
+				file.createNewFile()
+				var uri = FileProvider.getUriForFile(this.applicationContext,"com.example.sapphireassistantframework.fileprovider",file)
+				manipulateIntent.setDataAndType(uri,contentResolver.getType(uri))
+				manipulateIntent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+			}
 
-		// damn, I need to create a unique subdirectory to isolate this shit
-		var extFile = File(filesDir,"androidFileManagementSucks.txt")
-		extFile.createNewFile()
-		extFile.writeText("This is a test. Hopefully it works")
-		var uri = FileProvider.getUriForFile(this.applicationContext,"com.example.sapphireassistantframework.fileprovider",extFile)
-		fileRequestIntent.setDataAndType(uri,contentResolver.getType(uri))
-		// This gives read permissions if it's wr mode
-		fileRequestIntent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-		//fileRequestIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-		//this.grantUriPermission("com.example.calendarskill",uri,Intent.FLAG_GRANT_READ_URI_PERMISSION)
-		bindService(fileRequestIntent,connection, BIND_AUTO_CREATE)
-		// I just need enough time for the service to init, and be non-background
-		SystemClock.sleep(100)
-		startService(fileRequestIntent)
+			var connection = Connection()
+			bindService(manipulateIntent,connection, BIND_AUTO_CREATE)
+			// I just need enough time for the service to init, and be non-background
+			SystemClock.sleep(100)
+			startService(manipulateIntent)
+		}catch(exception: Exception){
+			Log.d(this.javaClass.name,"There was an error generating the coreFiles and sending the URIs")
+		}
 	}
 
 	// Is this when redundant w/ validate?

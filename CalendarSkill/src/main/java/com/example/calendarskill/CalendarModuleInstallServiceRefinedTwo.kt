@@ -14,21 +14,24 @@ class CalendarModuleInstallServiceRefinedTwo: SapphireFrameworkRegistrationServi
     val VERSION = "0.0.1"
     val CONFIG = "calendar.conf"
     val fileList = arrayListOf<String>("get.intent","set.intent")
-    var ACTION_MANIPULATE_FILEDATA = "action.framework.module.MANIPULATE_FILE_DATA"
-    var ACTION_REQUEST_FILEDATA = "action.framework.module.REQUEST_FILE_DATA" +
-            "DATA"
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.i(this.javaClass.name,"Calendar intent received")
         when(intent?.action){
             ACTION_SAPPHIRE_MODULE_REGISTER -> registerModule(intent)
-            ACTION_MANIPULATE_FILEDATA -> coreTransferFile(intent)
+            ACTION_REQUEST_FILE_DATA -> sendFileNames(intent)
+            ACTION_MANIPULATE_FILE_DATA -> coreTransferFile(intent)
         }
         return super.onStartCommand(intent, flags, startId)
     }
 
-    override fun registerModule(intent: Intent) {
-        super.registerModule(intent)
+    fun sendFileNames(intent: Intent){
+        var filenameIntent = Intent(intent)
+        // I believe this returns the proper from
+        filenameIntent.putExtra(FROM,"${this.packageName};${this.javaClass.canonicalName}")
+        Log.v(this.javaClass.name,filenameIntent.getStringExtra(FROM)!!)
+        filenameIntent.putExtra(DATA_KEYS,fileList)
+        returnToCore(intent)
     }
 
     fun coreTransferFile(intent: Intent){
@@ -123,6 +126,18 @@ class CalendarModuleInstallServiceRefinedTwo: SapphireFrameworkRegistrationServi
             Log.d(this.javaClass.name, "You cannot access the file this way")
             Log.i(this.javaClass.name, exception.toString())
         }
+    }
+
+    // I think I can touch this up a lot
+    override fun registerModule(intent: Intent){
+        var returnIntent = Intent(intent)
+        returnIntent.putExtra(MODULE_PACKAGE,this.packageName)
+        returnIntent.putExtra(MODULE_CLASS,"com.example.calendarskill.CalendarService")
+        returnIntent = registerVersion(returnIntent, VERSION)
+        // This is just the filenames the core keeps as a stub until requested for the first time
+        registerData(returnIntent, fileList)
+
+        super.registerModule(returnIntent)
     }
 
     fun p2pFile(): Uri?{
