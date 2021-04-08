@@ -75,9 +75,10 @@ class MultiprocessService: SapphireFrameworkService(){
 			var packageClass = route.split(";")
 			// Make a placeholder record using the route as the key, and a zero which will be filled by an index from a returned intent with matching FROM
 			intentRecord.put(route,0)
+			// does this work with returnSapphireService? No, it'll override the starting information
+			// I don't think this was set up right for the new 'bounding' form
 			multiprocessIntent.setClassName(packageClass[0],packageClass[1])
-			// This should actually append the core, and send to the core for the starting of the service
-			startSapphireService(multiprocessIntent)
+			returnSapphireService(multiprocessIntent)
 		}
 		// Store the record for this MULTIPROCESS_ID
 		intentLedger.put(multiprocessIntent.getStringExtra(MULTIPROCESS_ID),intentRecord)

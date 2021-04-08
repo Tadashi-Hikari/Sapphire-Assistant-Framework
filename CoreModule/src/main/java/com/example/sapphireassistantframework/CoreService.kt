@@ -3,20 +3,15 @@ package com.example.sapphireassistantframework
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.*
-import android.net.Uri
 import android.os.Build
-import android.os.Environment
 import android.os.IBinder
-import android.os.SystemClock
+import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.content.FileProvider
-import androidx.core.net.toUri
 import com.example.componentframework.SapphireCoreService
-import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 import java.lang.Exception
-import java.net.Socket
 import java.util.*
 
 class CoreService: SapphireCoreService(){
@@ -26,6 +21,10 @@ class CoreService: SapphireCoreService(){
 	inner class Connection() : ServiceConnection {
 		override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
 			Log.i(this.javaClass.name, "Service connected")
+			if(service != null){
+				// This will be moved to a permission style check, to increase user control and prevent rouge background services
+				Toast.makeText(applicationContext,"This service: ${name?.shortClassName} didn't return a null binder, is that ok?",Toast.LENGTH_LONG)
+			}
 		}
 
 		override fun onServiceDisconnected(name: ComponentName?) {
@@ -121,6 +120,61 @@ class CoreService: SapphireCoreService(){
 				ACTION_SAPPHIRE_MODULE_REGISTER -> forwardRegistration(intent)
 			}
 		}
+	}
+
+	// This is meant to bridge, or serve internal. This is not at all
+	fun serveFileProper(intent: Intent) {
+		TODO("This whole thing needs to be implemented")
+		// I'm just going to assume a chatty protocol
+		// get file list from the module, in DATA_KEYS? <- yes
+		when (intent.extras != null) {
+			// a flag for acting as a bridge
+			intent.hasExtra("FILE_PROVIDER") -> requestBridge(intent)
+			// a flag for transferring, based on the config. Needs renaming, but the base logic is there
+			intent.hasExtra("TRANSFER") -> serveFile(intent)
+			// Send out the Uris if they exist
+			else -> checkForLocal(intent)
+		}
+	}
+
+	fun checkForLocal(intent: Intent){
+		// Not sure I need this, but why not
+		var outgoingIntent = Intent(intent)
+		if(outgoingIntent.clipData == null){
+		}
+		// Get them filenames...
+		var filenames = intent.getStringArrayListExtra(DATA_KEYS)!!
+		for(filename in filenames){
+			var file = File(filesDir,filename)
+			var uri = FileProvider.getUriForFile(this.applicationContext,"com.example.sapphireassistantframework.fileprovider",file)
+			// This is an easy enough shortcut. Just put the *last* one in the data slot. The order *really* matters here though, pay attention!
+			when(file.exists()){
+				// There was some kind of error
+				filenames.size <= 0 -> Log.d(CLASS_NAME,"There was a checkForLocal error")
+				// if there is only one or it's the last one, make it the uri
+				filenames.size == 1 -> outgoingIntent.setData(uri)
+				// No clipData exists, and it will need one
+				outgoingIntent.clipData == null -> outgoingIntent.clipData = ClipData.newRawUri("FILEDATA",uri)
+				// Clip data exists, and there is more to add on!
+				filenames.size > 1 -> outgoingIntent.clipData!!.addItem(ClipData.Item(uri))
+				// This should be shorthand for requesting transfer OR bridge. doesn't need to be serveFile
+				false -> serveFile(intent)
+			}
+			// Throw it out. Each loop the count should update though, so it should still be good
+			filenames.removeFirst()
+		}
+		// give permission to access these URIS. The should be readable, not editable
+		outgoingIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+		startSapphireService(connection,outgoingIntent)
+	}
+
+	fun requestTransfer(intent: Intent){
+		TODO("This request to make a copy of a file in the core FileProvider")
+	}
+
+	fun requestBridge(intent: Intent){
+		// Only reason I am not doing a socket, is because of network permissions
+		TODO("This will create a temp file, to pass the uri along. the temp file acts as a pipe")
 	}
 
 	fun serveFile(intent: Intent){
