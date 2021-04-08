@@ -19,6 +19,8 @@ in parallel, and as such has a different kind of complexity.
 
 I believe this may *have* to bind CoreService, now that Uris are the only way to pass around information
 I can't really record it to a JSON file the same way.
+
+I need to set a variable that is user adjustable, so that this doesn't accidentally eat up system resources
  */
 
 class MultiprocessServiceRefined: SapphireFrameworkService(){
@@ -82,15 +84,48 @@ class MultiprocessServiceRefined: SapphireFrameworkService(){
 	}
 
 	// This likely *only* works if the data is coming from the core, as that is the only time the permission applies to ALL uris
+	// This should be expected at *ALL* times. Core can be a bridge/pipe/socket between other FileProviders, to ease permission issues
+	// I might want to keep DATA_KEYS in case the original has its own use for clipData, so I don't overwrite it.
 	fun sendUltimateResult(intentRecord: JSONObject){
-		var resultIntent = Intent()
+		// Load the original intent data
+		var resultIntent = Intent(storedIntents.get(intentRecord.getInt("ORIGINAL")))
+		// Does this overwrite stuff? I should be careful with this
 		var clipData = resultIntent.clipData
-
-		for(value in intentRecord.keys()){
-			when(value){
-				"ORIGINAL" -> continue
+		try {
+			for (key in intentRecord.keys()) {
+				if (key == "ORIGINAL") {
+					// Skip this, because we want to handle it at the end. This will ensure the primary data passes through
+					continue
+				} else {
+					// This will retrieve all of the intents for a specific record
+					var storedIntent = storedIntents.get(intentRecord.getInt(key))
+					// Iterate through all the items in the clipData, and pass them along
+					for (index in 0..storedIntent.clipData!!.itemCount) {
+						// Append the clipData to the resultIntent
+						resultIntent.clipData!!.addItem(storedIntent.clipData!!.getItemAt(index))
+					}
+				}
 			}
+
+			// Scrub the action, since that is now taken care of
+			resultIntent.action = ""
+			// This is hard coded, but should be moved to the SapphireFrameworkService()
+			resultIntent.setClassName("com.example.sapphireassistantframework","com.example.sapphireassistantframework.CoreService")
+			// Send it to the core, so that it can continue along the pipeline
+			startService(resultIntent)
+			// If there is nothing left in the ledger, shut down the service.
+			if(intentLedger.length() == 0){
+				shutdownIfFinished()
+			}
+		}catch(exception: Exception){
+			Log.d(CLASS_NAME,exception.toString())
 		}
+	}
+
+	// Make sure it's clean
+	fun shutdownIfFinished(){
+		unbindService(connection)
+		stopSelf()
 	}
 
 	fun evaluateReturningIntent(intent: Intent?){
@@ -109,7 +144,9 @@ class MultiprocessServiceRefined: SapphireFrameworkService(){
 					return
 				}
 			}
-			// Ah! This multiprocess has finished. Time to ship it out
+			//This multiprocess has finished. remove it from the ledger
+			intentLedger.remove(intent!!.getStringExtra(MULTIPROCESS_ID))
+			// and ship it out
 			sendUltimateResult(intentRecord)
 
 		}catch(exception: Exception){

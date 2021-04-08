@@ -110,7 +110,7 @@ abstract class SapphireFrameworkService: Service() {
 		return moduleJsonDataTable
 	}
 
-	fun converAssetToFile(filename: String): File {
+	fun convertAssetToFile(filename: String): File {
 		var suffix = ".temp"
 		// This file needs to be tab separated columns
 		var asset = assets.open(filename)
