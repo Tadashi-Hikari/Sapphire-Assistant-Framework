@@ -1,6 +1,8 @@
 package com.example.componentframework
 
 import android.content.Intent
+import android.content.ServiceConnection
+import android.os.SystemClock
 import org.json.JSONObject
 import java.lang.Exception
 
@@ -41,7 +43,14 @@ abstract class SapphireCoreService: SapphireFrameworkService(){
 				routeList.set(module.index,variables.getString(module.value))
 			}
 		}
-
 		return routeList.joinToString { String -> String }
+	}
+
+	// This is only meant to be used by core
+	fun startSapphireService(connection: ServiceConnection, intent: Intent){
+		bindService(intent,connection, BIND_AUTO_CREATE)
+		// I just need enough time for the service to init, and be non-background
+		SystemClock.sleep(100)
+		startService(intent)
 	}
 }

@@ -18,7 +18,7 @@
             android:exported="true"
             android:enabled="true">
         </service>
-        <service android:name=".CalendarModuleInstallServiceRefined"
+        <service android:name=".depreciated.CalendarModuleInstallServiceRefined"
             android:exported="true"
             android:enabled="true">
         </service>

@@ -36,7 +36,10 @@ class CoreService: SapphireCoreService(){
 	//State variables
 	//var initialized = false
 	var initialized = true
+	// This should probably be looked at more
 	private var connections: LinkedList<Pair<String, Connection>> = LinkedList()
+	// and this. Though this is kind of a 'fake' connection
+	var connection = Connection()
 	private lateinit var notificationManager: NotificationManager
 	private val CHANNEL_ID = "SAF"
 	private val NAME = "Sapphire Assistant Framework"
@@ -48,10 +51,6 @@ class CoreService: SapphireCoreService(){
 	val BACKGROUND_TABLE = "background.tbl"
 	val ROUTE_TABLE = "routetable.tbl"
 	val ALIAS_TABLE = "alias.tbl"
-
-	override fun onBind(intent: Intent?): IBinder? {
-		TODO("Not yet implemented")
-	}
 
 	override fun onCreate() {
 		super.onCreate()
@@ -152,11 +151,8 @@ class CoreService: SapphireCoreService(){
 				counter++
 			}
 
-			var connection = Connection()
-			bindService(manipulateIntent,connection, BIND_AUTO_CREATE)
-			// I just need enough time for the service to init, and be non-background
-			SystemClock.sleep(100)
-			startService(manipulateIntent)
+			// I have to figre out what to do with this intent
+			startSapphireService(connection,manipulateIntent)
 		}catch(exception: Exception){
 			Log.d(this.javaClass.name,"There was an error generating the coreFiles and sending the URIs")
 		}

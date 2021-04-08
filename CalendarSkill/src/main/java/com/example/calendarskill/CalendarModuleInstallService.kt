@@ -8,7 +8,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 
-class CalendarModuleInstallServiceRefinedTwo: SapphireFrameworkRegistrationService(){
+class CalendarModuleInstallService: SapphireFrameworkRegistrationService(){
     val VERSION = "0.0.1"
     val CONFIG = "calendar.conf"
     val fileList = arrayListOf<String>("get.intent","set.intent")
@@ -147,6 +147,8 @@ class CalendarModuleInstallServiceRefinedTwo: SapphireFrameworkRegistrationServi
         super.registerModule(returnIntent)
     }
 
+    // Both of these will do the same thing, use Core to bridge content to a module
+
     fun p2pFile(): Uri?{
         var uri = null
         return uri
@@ -154,9 +156,5 @@ class CalendarModuleInstallServiceRefinedTwo: SapphireFrameworkRegistrationServi
 
     fun contentProvider(){
         // Implemented by developer
-    }
-
-    override fun onBind(intent: Intent?): IBinder? {
-        return super.onBind(intent)
     }
 }

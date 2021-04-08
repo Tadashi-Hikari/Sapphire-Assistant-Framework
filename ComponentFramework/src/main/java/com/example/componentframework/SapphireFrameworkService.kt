@@ -2,6 +2,9 @@ package com.example.componentframework
 
 import android.app.Service
 import android.content.Intent
+import android.content.ServiceConnection
+import android.os.Binder
+import android.os.IBinder
 import android.os.SystemClock
 import org.json.JSONObject
 import java.io.File
@@ -161,19 +164,25 @@ abstract class SapphireFrameworkService: Service() {
 		return intent
 	}
 
-	// This is only meant to be used by core
-	fun startSapphireService(intent: Intent){
-		/*
-		bindService(intent,connection, BIND_AUTO_CREATE)
-		// I just need enough time for the service to init, and be non-background
-		SystemClock.sleep(100)
-		startService(manipulateIntent)
-		*/
-	}
-
 	// This is for having a SAF compontent pass along the route w/o a callback to core
 	fun parseRoute(string: String): List<String>{
 		var route = string.split(",")
 		return route
+	}
+
+	// This needs to be made generic. It returns an intent to Core for processing
+	fun returnSapphireService(intent: Intent){
+		var returnIntent = Intent(intent)
+		// This should read from postage
+		returnIntent.setClassName(this,"com.example.sapphireassistantframework.CoreService")
+		returnIntent.putExtra(FROM,"${this.packageName};${this.javaClass.name}")
+		startService(returnIntent)
+	}
+
+	override fun onBind(intent: Intent?): IBinder? {
+		if(intent!!.hasExtra("ACTUALLY_BIND")){
+			TODO("Let someone else implement this logic. It should be overwritten")
+		}
+		return null
 	}
 }
