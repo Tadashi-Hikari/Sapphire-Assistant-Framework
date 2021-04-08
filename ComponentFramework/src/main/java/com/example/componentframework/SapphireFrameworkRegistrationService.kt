@@ -63,7 +63,7 @@ abstract class SapphireFrameworkRegistrationService: SapphireFrameworkService(){
 		for(fileName in fileNames){
 			Log.i("SkillInstallService(Calendar)","Loading file: ${fileName}")
 			// Processor cycles are cheap. Worry about optimization later
-			var file = converAssetToFile(fileName)
+			var file = convertAssetToFile(fileName)
 
 			var lines = ArrayList<String>()
 			for(line in file.readLines()){
@@ -110,7 +110,9 @@ abstract class SapphireFrameworkRegistrationService: SapphireFrameworkService(){
 		return assetArray
 	}
 
-	fun convertAssetToFile(filename: String){
+	// Triple check everything before deleting this
+	/*
+	override fun convertAssetToFile(filename: String){
 		// This file needs to be tab separated columns
 		var asset = assets.open(filename)
 		var fileReader = InputStreamReader(asset)
@@ -127,15 +129,12 @@ abstract class SapphireFrameworkRegistrationService: SapphireFrameworkService(){
 		asset.close()
 		fileWriter.close()
 	}
+	*/
 
 	fun exportConfigFile(filename: String): String {
 		val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
 		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 		startActivity(intent)
 		return "halt"
-	}
-
-	override fun onBind(intent: Intent?): IBinder? {
-		TODO("Not yet implemented")
 	}
 }

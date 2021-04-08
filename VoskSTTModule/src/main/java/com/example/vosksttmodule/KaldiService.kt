@@ -12,7 +12,7 @@ import java.io.File
 import java.lang.Exception
 
 // This is an extension of service, but it could use a MycroftSkill interface which my help developers
-class KaldiService: RecognitionListener, SAFService(){
+class KaldiService: RecognitionListener, SapphireFrameworkService(){
 
     //model should be available internally
     //private val model = ???
@@ -36,8 +36,8 @@ class KaldiService: RecognitionListener, SAFService(){
         return super.onStartCommand(intent, flags, startId)
     }
 
-    override fun onBind(intent: Intent): IBinder {
-        Log.i("KaldiService","kaldi service started")
+    override fun onBind(intent: Intent?): IBinder {
+        Log.i(CLASS_NAME,"kaldi service started")
         var binder: IBinder = Binder()
 
         return binder
@@ -61,7 +61,7 @@ class KaldiService: RecognitionListener, SAFService(){
             var coreServiceIntent: Intent = Intent()
             coreServiceIntent.putExtra(MESSAGE, utterance)
             Log.i("KaldiService", "Utterance hypothesis dispatched")
-            startSAFService(coreServiceIntent)
+            returnSapphireService(coreServiceIntent)
         }
     }
 

@@ -1,17 +1,10 @@
-package com.example.calendarskill
+package com.example.calendarskill.depreciated
 
-import android.content.ContentProvider
-import android.content.ContentResolver
 import android.content.Intent
-import android.net.Uri
 import android.os.Binder
 import android.os.IBinder
-import android.os.ParcelFileDescriptor
-import androidx.core.content.FileProvider
-import androidx.core.net.toFile
 import com.example.componentframework.SapphireFrameworkRegistrationService
 import java.io.*
-import java.net.URI
 
 class CalendarModuleInstallServiceRefined: SapphireFrameworkRegistrationService(){
 	val VERSION = "0.0.1"
