@@ -4,11 +4,9 @@ import android.content.ComponentName
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
-import android.os.SystemClock
 import com.example.componentframework.SapphireFrameworkService
-import org.json.JSONArray
 import org.json.JSONObject
-import java.io.File
+import java.lang.Exception
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 
@@ -41,7 +39,8 @@ class MultiprocessServiceRefined: SapphireFrameworkService(){
 	// This holds the value while waiting for all returns
 	var storedIntents = mutableListOf<Intent>()
 	// This holds the relavent indexes for each ID
-	var activeIntents = JSONObject()
+	var intentLedger = JSONObject()
+	// This holds specific information about each multiprocess intent
 	var connection = Connection()
 
 	override fun onCreate(){
@@ -52,41 +51,80 @@ class MultiprocessServiceRefined: SapphireFrameworkService(){
 
 	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 		when(intent?.hasExtra(MULTIPROCESS_ID)){
-			true -> evaluateMultiprocessIntent(intent)
-			false -> intializeMultiprocessIntent(intent)
+			true -> evaluateReturningIntent(intent)
+			false -> handleNewMultiprocessIntent(intent)
 			else -> Log.d(this.javaClass.name, "There was an intent error. Stopping Multiprocess Module...")
 		}
 		return super.onStartCommand(intent, flags, startId)
 	}
 
 	// Do what must be done
-	fun intializeMultiprocessIntent(intent: Intent?){
-		var multiprocessIntent = Intent(intent)
-		// Give it an ID for tracking
-		multiprocessIntent = generateId(intent)
-		// Add the initial intent and its data to storage, to await all results
-		activeIntents.put(multiprocessIntent.getStringExtra(MULTIPROCESS_ID),multiprocessIntent)
-		var independentRoutes = loadMultipleRoutes
+	fun handleNewMultiprocessIntent(intent: Intent?){
+		// The record information for MULTIPROCESS_ID
+		var intentRecord = JSONObject()
+		var multiprocessIntent = prepareIntent(intent!!)
 
+		// Add the initial intent and its data to storage, to await all results
+		storedIntents.add(multiprocessIntent)
+		// The size is the index of the related intent, so it can be pulled from StoredIntent
+		intentRecord.put("ORIGINAL",storedIntents.size)
+		// get the list of routes from the prepared intent
+		for(route in multiprocessIntent.getStringArrayExtra("MULTIPROCESS_ROUTE_LIST")!!){
+			var packageClass = route.split(";")
+			// Make a placeholder record using the route as the key, and a zero which will be filled by an index from a returned intent with matching FROM
+			intentRecord.put(route,0)
+			multiprocessIntent.setClassName(packageClass[0],packageClass[1])
+			// This is going to bind the service, and I need to be consious of that. I can probably tie the connection to the packageClass/FROM
+			startSapphireService(multiprocessIntent)
+		}
+		// Store the record for this MULTIPROCESS_ID
+		intentLedger.put(multiprocessIntent.getStringExtra(MULTIPROCESS_ID),intentRecord)
 	}
 
-	fun loadMultipleRoutes(intent: Intent?){
-		var preparedIntent = prepareIntent(intent!!)
-		for(route in preparedIntent.getStringArrayListExtra("MULTIPROCESS_ROUTE_LIST")!!){
-			var packageClass = route.split(";")
-			preparedIntent.setClassName(packageClass[0],packageClass[1])
+	// This likely *only* works if the data is coming from the core, as that is the only time the permission applies to ALL uris
+	fun sendUltimateResult(intentRecord: JSONObject){
+		var resultIntent = Intent()
+		var clipData = resultIntent.clipData
+
+		for(value in intentRecord.keys()){
+			when(value){
+				"ORIGINAL" -> continue
+			}
+		}
+	}
+
+	fun evaluateReturningIntent(intent: Intent?){
+		try{
+			// Load the intent recod
+			var intentRecord = intentLedger.getJSONObject(intent!!.getStringExtra(MULTIPROCESS_ID))
+			storedIntents.add(intent)
+			// the FROM is the unqiue ID for an intent from this MULTIPROCESS_ID. The size is the index, conveniently
+			intentRecord.put(intent.getStringExtra(FROM),storedIntents.size)
+			// Save the new information
+			intentLedger.put(intent.getStringExtra(MULTIPROCESS_ID),intentRecord)
+			// Check all the values for a zero. If there is one, keep waiting for inputs. Else, all subprocesses received
+			for(key in intentRecord.keys()){
+				if(intentRecord.getInt(key) == 0){
+					// All finished. Wait fore more intents
+					return
+				}
+			}
+			// Ah! This multiprocess has finished. Time to ship it out
+			sendUltimateResult(intentRecord)
+
+		}catch(exception: Exception){
+			Log.d(CLASS_NAME,exception.toString())
 		}
 	}
 
 	// This is just a convenience method to help make things more readable
 	fun prepareIntent(intent: Intent): Intent{
-		var preparedIntent = Intent(intent)
+		// Give it an ID for tracking, and generate a mutable Intent
+		var preparedIntent = generateId(intent)
 		preparedIntent = regexRouteString(preparedIntent)
 		preparedIntent = makeMultiprocessList(preparedIntent)
 		// Make sure that every module knows what's going on
 		preparedIntent.setAction(ACTION_REQUEST_FILE_DATA)
-		// Know where to send it back when its done
-		preparedIntent.putExtra(ROUTE,)
 		return preparedIntent
 	}
 
@@ -103,7 +141,9 @@ class MultiprocessServiceRefined: SapphireFrameworkService(){
 
 		// I think it's just easier to pass around the intent right now
 		intent.putExtra("MULTIPROCESS_ROUTE",multiprocessRoute)
-		intent.putExtra(ROUTE, remainingRoute)
+		var returnModule = "${this.packageName};${this.javaClass.canonicalName},"
+		// This is to have it return. I could probably move this to preparedIntent()
+		intent.putExtra(ROUTE, returnModule+remainingRoute)
 		return intent
 	}
 
@@ -115,18 +155,15 @@ class MultiprocessServiceRefined: SapphireFrameworkService(){
 		return preparedIntent
 	}
 
+	// This should do some
 	fun generateId(intent: Intent?): Intent{
 		var id = -1
 		do{
 			id = Random.nextInt().absoluteValue
-		}while(id == -1)
+		}while((id == -1) and (intentLedger.isNull(id.toString()) == false))
 
 		intent!!.putExtra(MULTIPROCESS_ID,id)
 		return intent
-	}
-
-	fun evaluateMultiprocessIntent(intent: Intent?){
-
 	}
 
 	override fun onBind(intent: Intent?): IBinder? {
