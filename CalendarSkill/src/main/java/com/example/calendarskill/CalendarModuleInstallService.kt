@@ -137,6 +137,7 @@ class CalendarModuleInstallService: SapphireFrameworkRegistrationService(){
 
     // I think I can touch this up a lot
     override fun registerModule(intent: Intent){
+        Log.i(CLASS_NAME,"Registering calendar skill")
         var returnIntent = Intent(intent)
         returnIntent.putExtra(MODULE_PACKAGE,this.packageName)
         returnIntent.putExtra(MODULE_CLASS,"com.example.calendarskill.CalendarService")

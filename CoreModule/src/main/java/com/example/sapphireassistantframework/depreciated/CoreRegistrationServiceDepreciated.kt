@@ -13,7 +13,7 @@ import java.util.*
 I still need to implement the write to file mechanism
  */
 
-class CoreRegistrationService: SAFService(){
+class CoreRegistrationServiceDepreciated: SAFService(){
 	private val CONFIG = "sample-core-config.conf"
 	//Why does this exist?
 	private val DATABASE = "core.db"

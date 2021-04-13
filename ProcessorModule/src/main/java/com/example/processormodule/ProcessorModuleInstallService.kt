@@ -1,10 +1,11 @@
 package com.example.processormodule
 
 import android.content.Intent
+import com.example.componentframework.SapphireFrameworkRegistrationService
 import com.example.componentframework.depreciated.SAFInstallService
 import java.lang.Exception
 
-class ProcessorModuleInstallService: SAFInstallService(){
+class ProcessorModuleInstallService: SapphireFrameworkRegistrationService(){
 	val VERSION = "0.0.1"
 
 	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

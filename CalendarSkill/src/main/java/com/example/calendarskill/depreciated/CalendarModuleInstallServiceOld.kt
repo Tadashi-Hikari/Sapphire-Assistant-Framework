@@ -13,7 +13,7 @@ import java.io.File
  * to a different parser module?
  */
 
-class CalendarModuleInstallService: SAFInstallService(){
+class CalendarModuleInstallServiceOld: SAFInstallService(){
     val VERSION = "0.0.1"
     val CONFIG = "calendar.conf"
 

@@ -1,12 +1,13 @@
 package com.example.vosksttmodule
 
 import android.content.Intent
+import com.example.componentframework.SapphireFrameworkRegistrationService
 import com.example.componentframework.depreciated.SAFInstallService
 import org.json.JSONObject
 import java.lang.Exception
 
 // This could be a SAFInstallService
-class VoskModuleInstallService: SAFInstallService(){
+class VoskModuleInstallService: SapphireFrameworkRegistrationService(){
 	val VERSION = "0.0.1"
 
 	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

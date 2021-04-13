@@ -3,17 +3,6 @@
     xmlns:dist="http://schemas.android.com/apk/distribution"
     package="com.example.processormodule">
 
-    <!--
-    <dist:module
-        dist:instant="false"
-        dist:title="@string/title_parsermodule">
-        <dist:delivery>
-            <dist:install-time />
-        </dist:delivery>
-        <dist:fusing dist:include="true" />
-    </dist:module>
--->
-
     <application>
         <service
             android:name="com.example.processormodule.ProcessorCentralService"
