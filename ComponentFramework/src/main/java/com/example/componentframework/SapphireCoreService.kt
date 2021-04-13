@@ -50,7 +50,7 @@ abstract class SapphireCoreService: SapphireFrameworkService(){
 	fun startSapphireService(connection: ServiceConnection, intent: Intent){
 		bindService(intent,connection, BIND_AUTO_CREATE)
 		// I just need enough time for the service to init, and be non-background
-		SystemClock.sleep(100)
+		SystemClock.sleep(500)
 		startService(intent)
 	}
 }

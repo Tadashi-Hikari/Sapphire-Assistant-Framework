@@ -71,7 +71,6 @@ class CoreRegistrationService: SapphireCoreService(){
 			registerFilenames()
 			registerBackgroundService()
 		}
-		dispatchRemainingIntents()
 	}
 
 	fun newVersion(): Boolean{
