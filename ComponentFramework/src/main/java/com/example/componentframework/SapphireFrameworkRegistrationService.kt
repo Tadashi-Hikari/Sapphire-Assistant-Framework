@@ -48,7 +48,7 @@ abstract class SapphireFrameworkRegistrationService: SapphireFrameworkService(){
 
 	open fun registerModule(intent: Intent){
 		// This needs to not be hardcoded. I can get the info from POSTAGE
-		intent.setClassName(this,"com.example.sapphireassistantframework.CoreService")
+		intent.setClassName("com.example.sapphireassistantframework","com.example.sapphireassistantframework.CoreService")
 		intent.removeExtra(FROM)
 		intent.setAction(ACTION_SAPPHIRE_MODULE_REGISTER)
 		startService(intent)
