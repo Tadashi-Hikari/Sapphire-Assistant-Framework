@@ -8,18 +8,6 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
-    <!--
-    <dist:module
-        dist:instant="false"
-        dist:title="@string/title_vosk_stt_module">
-        <dist:delivery>
-            <dist:install-time />
-        </dist:delivery>
-
-        <dist:fusing dist:include="true" />
-    </dist:module>
-    -->
-
     <application>
         <service
             android:name=".KaldiService"

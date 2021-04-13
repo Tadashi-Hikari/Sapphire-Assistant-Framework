@@ -33,8 +33,7 @@ class CoreService: SapphireCoreService(){
 	}
 
 	//State variables
-	//var initialized = false
-	var initialized = true
+	var initialized = false
 	// This should probably be looked at more
 	private var connections: LinkedList<Pair<String, Connection>> = LinkedList()
 	// and this. Though this is kind of a 'fake' connection
@@ -67,7 +66,7 @@ class CoreService: SapphireCoreService(){
 	}
 	// Check if it exists, and has the minimum information needed to go further
 	fun validateIntent(intent: Intent?): Boolean{
-		Log.i(CLASS_NAME,"Valdiating intent")
+		Log.i(CLASS_NAME,"Validating intent")
 		when{
 			intent?.action == ACTION_SAPPHIRE_INITIALIZE -> return true
 			intent?.action == ACTION_SAPPHIRE_MODULE_REGISTER -> return true
@@ -231,7 +230,7 @@ class CoreService: SapphireCoreService(){
 			"${this.packageName};${this.packageName}.CoreRegistrationService" -> {
 				outgoingIntent.setAction(ACTION_SAPPHIRE_MODULE_REGISTER)
 				outgoingIntent.setClassName(intent.getStringExtra(MODULE_PACKAGE)!!,intent.getStringExtra(MODULE_CLASS)!!)
-				startService(outgoingIntent)
+				startSapphireService(connection,outgoingIntent)
 			}
 			else -> {
 				outgoingIntent.setClassName("${this.packageName}","${this.packageName}.CoreRegistrationService")
@@ -270,10 +269,6 @@ class CoreService: SapphireCoreService(){
 		Log.e(this.javaClass.name, "There is no default path")
 	}
 
-	/*
-	 a state between non-consiousness and consciousness. I think this will change when I introduce
-	 sleep-based data processing (when charging)
-	 */
 	fun initialize(){
 		startBackgroundServices()
 		initialized = true

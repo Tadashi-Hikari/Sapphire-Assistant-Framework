@@ -1,9 +1,10 @@
 package com.example.sapphireassistantframework
 
 import android.content.Intent
+import com.example.componentframework.SapphireFrameworkRegistrationService
 import com.example.componentframework.depreciated.SAFInstallService
 
-class CoreModuleInstallService: SAFInstallService(){
+class CoreModuleInstallService: SapphireFrameworkRegistrationService(){
     val VERSION = "0.0.1"
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

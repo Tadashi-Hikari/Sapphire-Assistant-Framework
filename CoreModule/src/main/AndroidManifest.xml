@@ -7,7 +7,6 @@
 	<uses-permission android:name="android.permission.RECORD_AUDIO" />
 
 	<application
-		android:requestLegacyExternalStorage="true"
 		android:allowBackup="true"
 		android:enabled="true"
 		android:icon="@mipmap/ic_launcher"
@@ -38,7 +37,8 @@
 			android:name=".CoreRegistrationService"
 			android:enabled="true"
 			android:exported="true"
-			android:process=".com.example.sapphireassistantframework.CoreRegistrationService"></service>
+			android:process=".com.example.sapphireassistantframework.CoreRegistrationService">
+		</service>
 		<service
 			android:name=".CoreModuleInstallService"
 			android:exported="true">

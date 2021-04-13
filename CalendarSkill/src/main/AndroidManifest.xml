@@ -3,10 +3,9 @@
     xmlns:dist="http://schemas.android.com/apk/distribution"
     package="com.example.calendarskill">
 
-    <application
-        android:requestLegacyExternalStorage="true">
+    <application>
         <service
-            android:name=".depreciated.CalendarModuleInstallService"
+            android:name=".CalendarModuleInstallService"
             android:exported="true"
             android:enabled="true">
             <intent-filter>
@@ -15,10 +14,6 @@
             </intent-filter>
         </service>
         <service android:name=".CalendarService"
-            android:exported="true"
-            android:enabled="true">
-        </service>
-        <service android:name=".depreciated.CalendarModuleInstallServiceRefined"
             android:exported="true"
             android:enabled="true">
         </service>
