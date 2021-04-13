@@ -67,6 +67,7 @@ class CoreService: SapphireCoreService(){
 	}
 	// Check if it exists, and has the minimum information needed to go further
 	fun validateIntent(intent: Intent?): Boolean{
+		Log.i(CLASS_NAME,"Valdiating intent")
 		when{
 			intent?.action == ACTION_SAPPHIRE_INITIALIZE -> return true
 			intent?.action == ACTION_SAPPHIRE_MODULE_REGISTER -> return true
@@ -104,6 +105,7 @@ class CoreService: SapphireCoreService(){
 
 	// What is the nervous systems function called
 	fun sortMail(intent: Intent){
+		Log.i(CLASS_NAME,"Sorting intent")
 		// Looking for a better mental abstraction. These actions are more akin to heartbeats, digestion, etc. Autonomous actions, but unchangeable
 		// Handle actions here
 		when(initialized){
@@ -124,6 +126,7 @@ class CoreService: SapphireCoreService(){
 
 	// This is meant to bridge, or serve internal. This is not at all
 	fun serveFileProper(intent: Intent) {
+		Log.i(CLASS_NAME,"Serving a file")
 		TODO("This whole thing needs to be implemented")
 		// I'm just going to assume a chatty protocol
 		// get file list from the module, in DATA_KEYS? <- yes
@@ -277,6 +280,7 @@ class CoreService: SapphireCoreService(){
 	}
 
 	fun startBackgroundServices(){
+		Log.i(CLASS_NAME,"Starting background services")
 		var jsonBackgroundTable = loadTable(BACKGROUND_TABLE)
 		Log.i(this.javaClass.name, jsonBackgroundTable.toString())
 		for(recordName in jsonBackgroundTable.keys()){
@@ -310,6 +314,7 @@ class CoreService: SapphireCoreService(){
 
 	// Run through the registration process
 	fun startRegistrationService(){
+		Log.i(CLASS_NAME,"Starting registration service")
 		var registrationIntent = Intent().setClassName(this.packageName,"${this.packageName}.CoreRegistrationService")
 		registrationIntent.setAction(ACTION_SAPPHIRE_INITIALIZE)
 		Log.v(this.javaClass.name,"starting service ${"${this.packageName}.CoreRegistrationService"}")
