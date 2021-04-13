@@ -98,9 +98,15 @@ abstract class SapphireFrameworkService: Service() {
 	var ACTION_MANIPULATE_FILE_DATA = "action.framework.module.MANIPULATE_FILE_DATA"
 	var ACTION_REQUEST_FILE_DATA = "action.framework.module.REQUEST_FILE_DATA"
 	val GUI_BROADCAST = "assistant.framework.broadcast.GUI_UPDATE"
-	var PACKAGE_NAME = this.packageName
 	var CANONICAL_CLASS_NAME = this.javaClass.canonicalName
 	var CLASS_NAME = this.javaClass.name
+	lateinit var PACKAGE_NAME: String
+
+	open override fun onCreate() {
+		super.onCreate()
+		// This needs a created context to work
+		PACKAGE_NAME = this.packageName
+	}
 
 	var jsonPostage = JSONObject()
 
@@ -108,8 +114,10 @@ abstract class SapphireFrameworkService: Service() {
 		var moduleJsonDataTable = JSONObject()
 
 		var file = File(filesDir,tablename)
-		moduleJsonDataTable = JSONObject(file.readText())
-
+		when(file.exists()){
+			true -> moduleJsonDataTable = JSONObject(file.readText())
+			false -> moduleJsonDataTable = JSONObject()
+		}
 		return moduleJsonDataTable
 	}
 
