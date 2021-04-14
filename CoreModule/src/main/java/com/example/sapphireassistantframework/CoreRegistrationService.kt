@@ -2,9 +2,9 @@ package com.example.sapphireassistantframework
 
 import android.content.Intent
 import android.content.pm.PackageManager.GET_RESOLVED_FILTER
-import android.content.pm.ResolveInfo
-import android.os.IBinder
 import com.example.componentframework.SapphireCoreService
+import org.json.JSONObject
+import java.io.File
 import java.lang.Exception
 
 class CoreRegistrationService: SapphireCoreService(){
@@ -13,6 +13,24 @@ class CoreRegistrationService: SapphireCoreService(){
 	val DEFAULT_MODULES = listOf(CORE,PROCESSOR,MULTIPROCESS)
 
 	var sapphireModuleStack = mutableListOf<Intent>()
+
+	/*
+	These lists should be loaded/generated on the fly, and in a stack/list
+	 */
+	// These are table names
+	private var REGISTRATION_TABLE = "registration.tbl"
+	private val DEFAULT_MODULES_TABLE = "defaultmodules.tbl"
+	private val STARTUP_TABLE = "background.tbl"
+	private val ROUTE_TABLE = "routetable.tbl"
+	private val ALIAS_TABLE = "alias.tbl"
+	val CONFIG_VAL_DATA_TABLES = "datatables.tbl"
+
+	// The tables in use. May be trimmed later
+	var registrationTable = JSONObject()
+	var defaultModulesTable = JSONObject()
+	var backgroundStartupTable = JSONObject()
+	var aliasTable = JSONObject()
+	var routeTable = JSONObject()
 
 	override fun onCreate() {
 		super.onCreate()
@@ -63,14 +81,48 @@ class CoreRegistrationService: SapphireCoreService(){
 		}
 	}
 
+	fun readConfigJSON(jsonConfig: JSONObject){
+		// These should be global vars, so I really just need to load them.
+		// I need to account for just directly loading these, not having them in a separate config
+		registrationTable = loadJSONTable(REGISTRATION_TABLE)
+		defaultModulesTable = loadJSONTable(DEFAULT_MODULES_TABLE)
+		backgroundStartupTable = loadJSONTable(STARTUP_TABLE)
+		routeTable = loadJSONTable(ROUTE_TABLE)
+		aliasTable = loadJSONTable(ALIAS_TABLE)
+	}
+
+	fun loadJSONTable(filename: String): JSONObject{
+		if(File(filesDir,filename).exists() == false){
+			return JSONObject()
+		}
+		var databaseFile = File(filesDir,filename)
+		var jsonDatabase = JSONObject(databaseFile.readText())
+		return jsonDatabase
+	}
+
 	fun registerModule(intent: Intent?){
 		Log.i(CLASS_NAME,"Registering intent")
 		if(newVersion()){
-			registerRoute()
-			registerDefaults(null)
+			registerRoute(intent!!)
+			registerDefaults(intent!!)
 			registerFilenames()
-			registerBackgroundService()
+			registerBackgroundService(intent!!)
+			saveTables()
 		}
+	}
+
+	// This is temporary
+	fun saveTables(){
+		saveJSONTable(REGISTRATION_TABLE,registrationTable)
+		saveJSONTable(DEFAULT_MODULES_TABLE,defaultModulesTable)
+		saveJSONTable(STARTUP_TABLE,backgroundStartupTable)
+		saveJSONTable(ROUTE_TABLE,routeTable)
+		saveJSONTable(ALIAS_TABLE,aliasTable)
+	}
+
+	fun saveJSONTable(filename: String, jsonDatabase: JSONObject){
+		var databaseFile = File(filesDir, filename)
+		databaseFile.writeText(jsonDatabase.toString())
 	}
 
 	fun newVersion(): Boolean{
@@ -78,17 +130,54 @@ class CoreRegistrationService: SapphireCoreService(){
 	}
 
 	fun registerDefaults(intent: Intent?){
+		Log.v(this.javaClass.name,"Checking defaults...")
+		var installPackageName = intent!!.getStringExtra(MODULE_PACKAGE)
+		var installClassName = intent!!.getStringExtra(MODULE_CLASS)
+
+		var changed = false
+		for(key in DEFAULT_MODULES) {
+			if(intent!!.hasExtra(MODULE_TYPE)) {
+				var type = intent.getStringExtra(MODULE_TYPE)
+				Log.v(this.javaClass.name,"testing default data for ${key}: ${installPackageName};${installClassName}...")
+				if ((type == key) and (defaultModulesTable.optString(key).isNullOrBlank())
+				) {
+					Log.i(this.javaClass.name,"Match found for ${key}. Saving default data...")
+					defaultModulesTable.put(key, "${installPackageName};${installClassName}")
+					changed = true
+				}
+			}
+		}
+
+		if(changed == true){
+			var defaultsFile = File(filesDir,DEFAULT_MODULES_TABLE)
+			defaultsFile.writeText(defaultModulesTable.toString())
+		}
 	}
 
-	fun registerBackgroundService(){
-
+	fun registerBackgroundService(intent: Intent) {
+		if (intent.hasExtra("BACKGROUND")) {
+			var backgroundInfo = JSONObject(intent.getStringExtra("BACKGROUND"))
+			Log.v(this.javaClass.name, "Registering background service...")
+			// I suppose I am just outright copying the data here
+			backgroundStartupTable.put(
+				backgroundInfo.getString("registration_id"),
+				backgroundInfo.toString()
+			)
+		}
 	}
 
-	fun registerRoute(){
-
+	fun registerRoute(intent: Intent){
+		// This is telling it to call itself, due to ROUTE being used for background service
+		var routeData = intent.getStringExtra(ROUTE)
+		// This is being used for the ROUTE id, so it can be looked up.
+		var routeName = intent.getStringExtra("ROUTE_NAME")
+		Log.v(this.javaClass.name,"Registering ${routeName} as going to route ${routeData}")
+		routeTable.put(routeName,routeData)
+		var file = File(filesDir,ROUTE_TABLE)
+		file.writeText(routeTable.toString())
 	}
 
 	fun registerFilenames(){
-
+		//This...? I think gets the filenames for the core...
 	}
 }
