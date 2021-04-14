@@ -27,15 +27,16 @@ class ProcessorTrainingServiceUpdated: SapphireFrameworkService(){
     }
 
     fun train(intent: Intent?){
+        Log.i(CLASS_NAME,"Commencing training...")
         var trainingFiles = cacheTrainingFiles(intent)
         // Currently unused. It's for Mycroft style .intent files to meet Stanford CoreNLP standards
         var prepared = prepareTrainingData()
         trainIntentClassifier(trainingFiles)
-
     }
 
-    // Maybe I should move this to SapphireFrameworkService
+    // Maybe I should move this to SapphireFrameworkService. It is optimized for Uris
     fun convertUriToFile(uri: Uri): String{
+        Log.i(CLASS_NAME,"Converting ${uri.lastPathSegment} to cache file...")
         try {
             var parcelFileDescriptor = contentResolver.openFileDescriptor(uri,"rw")!!
             var fileDescriptor = parcelFileDescriptor.fileDescriptor
@@ -51,8 +52,6 @@ class ProcessorTrainingServiceUpdated: SapphireFrameworkService(){
             }
             cacheFileWriter.close()
             return cacheFile.name
-
-            Log.i(this.javaClass.name, cacheFile.readText())
         }catch (exception: Exception){
             Log.i(this.javaClass.name, exception.toString())
             return ""
@@ -129,7 +128,7 @@ class ProcessorTrainingServiceUpdated: SapphireFrameworkService(){
     /**
      * This is for taking a Mycroft style .intent and preparing it for Stanford CoreNLP
      */
-    fun prepareTrainingData(){
+    fun prepareTrainingData(intent: Intent){
         var moduleName = "com.example.calendarmodule"
         var filename = "get.intent"
         var trainingData = listOf<String>()

@@ -110,7 +110,8 @@ class CoreService: SapphireCoreService(){
 		when(initialized){
 			true ->	when(intent.action){
 				ACTION_SAPPHIRE_CORE_BIND -> onBind(intent)
-				ACTION_REQUEST_FILE_DATA -> handleRoute(intent)
+				// This is a change, since it doesn't make sense for Handle Route
+				ACTION_REQUEST_FILE_DATA -> serveFile(intent)
 				ACTION_MANIPULATE_FILE_DATA -> serveFile(intent)
 				// Generic action
 				else -> handleRoute(intent)
