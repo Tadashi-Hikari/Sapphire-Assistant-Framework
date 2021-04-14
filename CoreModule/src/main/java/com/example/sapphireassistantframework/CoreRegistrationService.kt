@@ -41,7 +41,7 @@ class CoreRegistrationService: SapphireCoreService(){
 		when(intent?.action){
 			ACTION_SAPPHIRE_INITIALIZE -> scanModules()
 			ACTION_SAPPHIRE_MODULE_REGISTER -> registerModule(intent)
-			else -> Log.e(this.javaClass.name, "There was an issue with the registration intent. Dispatching remaining intents ")
+			else -> Log.e(this.javaClass.name, "There was an issue with the registration intent. Dispatching remaining intents")
 		}
 		dispatchRemainingIntents()
 		return super.onStartCommand(intent, flags, startId)
@@ -55,6 +55,10 @@ class CoreRegistrationService: SapphireCoreService(){
 			returnSapphireService(sapphireModuleStack.removeLast())
 		}else{
 			Log.i(CLASS_NAME,"All modules registered")
+			var finalIntent = Intent()
+			finalIntent.action = ACTION_SAPPHIRE_CORE_REGISTRATION_COMPLETE
+			finalIntent.setClassName(this,"com.example.sapphireassistantframework.CoreService")
+			startService(finalIntent)
 		}
 	}
 
