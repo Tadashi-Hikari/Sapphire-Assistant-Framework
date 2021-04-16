@@ -3,6 +3,7 @@ package com.example.sapphireassistantframework
 import android.content.Intent
 import android.content.pm.PackageManager.GET_RESOLVED_FILTER
 import com.example.componentframework.SapphireCoreService
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 import java.lang.Exception
@@ -23,7 +24,8 @@ class CoreRegistrationService: SapphireCoreService(){
 	private val STARTUP_TABLE = "background.tbl"
 	private val ROUTE_TABLE = "routetable.tbl"
 	private val ALIAS_TABLE = "alias.tbl"
-	val CONFIG_VAL_DATA_TABLES = "datatables.tbl"
+	private val FILENAME_TABLE = "filenames.tbl"
+	//val CONFIG_VAL_DATA_TABLES = "datatables.tbl"
 
 	// The tables in use. May be trimmed later
 	var registrationTable = JSONObject()
@@ -31,10 +33,13 @@ class CoreRegistrationService: SapphireCoreService(){
 	var backgroundStartupTable = JSONObject()
 	var aliasTable = JSONObject()
 	var routeTable = JSONObject()
+	// This is just temporary
+	var filenameTable = JSONObject()
 
 	override fun onCreate() {
 		super.onCreate()
 		Log.i(CLASS_NAME,"Starting registration service")
+		loadAllTables()
 	}
 
 	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -52,7 +57,8 @@ class CoreRegistrationService: SapphireCoreService(){
 			// Pop it from the stack, and dispatch it.
 			// Do I need to redirect this to core? ugh, I think I do
 			Log.i(CLASS_NAME,"Dispatching ${sapphireModuleStack.last().getStringExtra(MODULE_CLASS)!!}")
-			returnSapphireService(sapphireModuleStack.removeLast())
+			// Remove the last one in the list
+			returnSapphireService(sapphireModuleStack.removeAt(sapphireModuleStack.size))
 		}else{
 			Log.i(CLASS_NAME,"All modules registered")
 			var finalIntent = Intent()
@@ -85,7 +91,7 @@ class CoreRegistrationService: SapphireCoreService(){
 		}
 	}
 
-	fun readConfigJSON(jsonConfig: JSONObject){
+	fun loadAllTables(){
 		// These should be global vars, so I really just need to load them.
 		// I need to account for just directly loading these, not having them in a separate config
 		registrationTable = loadJSONTable(REGISTRATION_TABLE)
@@ -93,6 +99,7 @@ class CoreRegistrationService: SapphireCoreService(){
 		backgroundStartupTable = loadJSONTable(STARTUP_TABLE)
 		routeTable = loadJSONTable(ROUTE_TABLE)
 		aliasTable = loadJSONTable(ALIAS_TABLE)
+		filenameTable = loadJSONTable(FILENAME_TABLE)
 	}
 
 	fun loadJSONTable(filename: String): JSONObject{
@@ -109,7 +116,7 @@ class CoreRegistrationService: SapphireCoreService(){
 		if(newVersion()){
 			registerRoute(intent!!)
 			registerDefaults(intent!!)
-			registerFilenames()
+			registerFilenames(intent!!)
 			registerBackgroundService(intent!!)
 			saveTables()
 		}
@@ -122,6 +129,8 @@ class CoreRegistrationService: SapphireCoreService(){
 		saveJSONTable(STARTUP_TABLE,backgroundStartupTable)
 		saveJSONTable(ROUTE_TABLE,routeTable)
 		saveJSONTable(ALIAS_TABLE,aliasTable)
+		// This is temporary, I think
+		saveJSONTable(FILENAME_TABLE,filenameTable)
 	}
 
 	fun saveJSONTable(filename: String, jsonDatabase: JSONObject){
@@ -129,10 +138,29 @@ class CoreRegistrationService: SapphireCoreService(){
 		databaseFile.writeText(jsonDatabase.toString())
 	}
 
+	// This is specific to the current module
 	fun newVersion(): Boolean{
 		return true
 	}
 
+	// This is for keeping track of what module has what files. It acts as a CENTRAL REGISTRY *shudder*
+	fun registerFilenames(intent: Intent){
+		if(intent.hasExtra(DATA_KEYS)) {
+			Log.i(CLASS_NAME,"This module has DATA_KEYS")
+			var module = "${intent.getStringExtra(MODULE_PACKAGE)};${intent.getStringExtra(MODULE_CLASS)}"
+			var filenames = JSONArray()
+			var data_keys = intent.getStringArrayListExtra(DATA_KEYS)!!
+			for(key in data_keys){
+				filenames.put(key)
+			}
+			// This saves the filelist in the table
+			filenameTable.put(module,data_keys)
+		}else{
+			Log.i(CLASS_NAME,"This module has no files to share")
+		}
+	}
+
+	// This is generic to the whole core
 	fun registerDefaults(intent: Intent?){
 		Log.v(this.javaClass.name,"Checking defaults...")
 		var installPackageName = intent!!.getStringExtra(MODULE_PACKAGE)
@@ -158,6 +186,7 @@ class CoreRegistrationService: SapphireCoreService(){
 		}
 	}
 
+	// This is generic to the whole core
 	fun registerBackgroundService(intent: Intent) {
 		if (intent.hasExtra("BACKGROUND")) {
 			var backgroundInfo = JSONObject(intent.getStringExtra("BACKGROUND"))
@@ -170,6 +199,7 @@ class CoreRegistrationService: SapphireCoreService(){
 		}
 	}
 
+	// This is generic to the whole core
 	fun registerRoute(intent: Intent){
 		// This is telling it to call itself, due to ROUTE being used for background service
 		var routeData = intent.getStringExtra(ROUTE)
@@ -179,9 +209,5 @@ class CoreRegistrationService: SapphireCoreService(){
 		routeTable.put(routeName,routeData)
 		var file = File(filesDir,ROUTE_TABLE)
 		file.writeText(routeTable.toString())
-	}
-
-	fun registerFilenames(){
-		//This...? I think gets the filenames for the core...
 	}
 }

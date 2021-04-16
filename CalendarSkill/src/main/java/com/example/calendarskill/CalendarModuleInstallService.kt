@@ -23,6 +23,7 @@ class CalendarModuleInstallService: SapphireFrameworkRegistrationService(){
         return super.onStartCommand(intent, flags, startId)
     }
 
+    // This sends a list of filenames that this module wishes to put in the core FileServer
     fun sendFileNames(intent: Intent){
         var filenameIntent = Intent(intent)
         // I believe this returns the proper from
@@ -32,6 +33,7 @@ class CalendarModuleInstallService: SapphireFrameworkRegistrationService(){
         returnToCore(intent)
     }
 
+    // This actually transfers the files
     fun coreTransferFile(intent: Intent){
         try{
             when(intent.hasExtra(DATA_KEYS)){
@@ -99,42 +101,6 @@ class CalendarModuleInstallService: SapphireFrameworkRegistrationService(){
         }
     }
 
-    fun demoRequestFile(intent: Intent){
-        var uri = intent.data!!
-        try {
-            var uri = intent.data!!
-            Log.i(this.javaClass.name,uri.toString()!!)
-            //var testFile = uri.toFile()
-            var somethingFD = contentResolver.openFileDescriptor(uri,"wa")!!
-            var fd = somethingFD.fileDescriptor
-            var outputStream = FileOutputStream(fd)
-            outputStream.write(". This is appended".toByteArray())
-            Log.i(this.javaClass.name,"Did it write?")
-
-            // This is the essential part, when it comes to editing a file
-            somethingFD = contentResolver.openFileDescriptor(uri,"rw")!!
-            fd = somethingFD.fileDescriptor
-            var inputStream = FileInputStream(fd)
-
-            var testFile = File(cacheDir,"temp")
-            var fileWriter = testFile.outputStream()
-
-            var data = inputStream!!.read()
-            while(data != -1){
-                fileWriter.write(data)
-                data = inputStream.read()
-            }
-            fileWriter.close()
-
-            Log.i(this.javaClass.name, testFile.readText())
-
-            Log.i(this.javaClass.name, "This seems like a valid way to edit the file")
-        }catch (exception: Exception){
-            Log.d(this.javaClass.name, "You cannot access the file this way")
-            Log.i(this.javaClass.name, exception.toString())
-        }
-    }
-
     // I think I can touch this up a lot
     override fun registerModule(intent: Intent){
         Log.i(CLASS_NAME,"Registering calendar skill")
@@ -148,8 +114,7 @@ class CalendarModuleInstallService: SapphireFrameworkRegistrationService(){
         super.registerModule(returnIntent)
     }
 
-    // Both of these will do the same thing, use Core to bridge content to a module
-
+    // use Core to bridge content to a module
     fun p2pFile(): Uri?{
         var uri = null
         return uri

@@ -1,5 +1,6 @@
 package com.example.multiprocessmodule
 
+import android.content.ClipData
 import android.content.ComponentName
 import android.content.Intent
 import android.content.ServiceConnection
@@ -62,26 +63,91 @@ class MultiprocessService: SapphireFrameworkService(){
 
 	// Do what must be done
 	fun handleNewMultiprocessIntent(intent: Intent?){
-		// The record information for MULTIPROCESS_ID
-		var intentRecord = JSONObject()
-		var multiprocessIntent = prepareIntent(intent!!)
+		// I need another nested if to handle w/ a multiprocess may have no modification
+		if(intent!!.hasExtra("CUSTOM_MULTIPROCESS")){
+			var multiprocessIntent = prepareIntent(intent!!)
+			var customJSON = JSONObject(intent.getStringExtra("CUSTOM_MULTIPROCESS"))
+			// I need blank to REMOVE things from here, so that I can retain the URI permissions
+			var customIntent = prepareIntent(intent!!)
+			// I somehow doubt this will let the permissions pass over
+			customIntent.flags = intent.flags
 
-		// Add the initial intent and its data to storage, to await all results
-		storedIntents.add(multiprocessIntent)
-		// The size is the index of the related intent, so it can be pulled from StoredIntent
-		intentRecord.put("ORIGINAL",storedIntents.size)
-		// get the list of routes from the prepared intent
-		for(route in multiprocessIntent.getStringArrayExtra("MULTIPROCESS_ROUTE_LIST")!!){
-			var packageClass = route.split(";")
-			// Make a placeholder record using the route as the key, and a zero which will be filled by an index from a returned intent with matching FROM
-			intentRecord.put(route,0)
-			// does this work with returnSapphireService? No, it'll override the starting information
-			// I don't think this was set up right for the new 'bounding' form
-			multiprocessIntent.setClassName(packageClass[0],packageClass[1])
-			returnSapphireService(multiprocessIntent)
+			for(process in multiprocessIntent.getStringArrayListExtra("MULTIPROCESS_ROUTE_LIST")!!){
+				// If there is a custom setting for this module/intent
+				if(customJSON.has(process)){
+					// Blank out the intent, or nah
+					when(customJSON.has("BLANK")) {
+						true -> {
+							customIntent = Intent()
+						}
+						false -> {
+							customIntent = multiprocessIntent
+						}
+					}
+					// Handle special flags, and just copy unk extras
+					for(key in customJSON.keys()){
+						// When the key is a special key, do something, else default
+						when(key){
+							"ROUTE" -> customIntent.putExtra(ROUTE,customJSON.getString(ROUTE))
+							// Convert the keys to something useable by the next intent
+							DATA_KEYS -> {
+								// This is the format needed for Android
+								var data_keys = mutableListOf<String>()
+								// These area all of the filenames
+								var jsonDataKeys = customJSON.getJSONArray(DATA_KEYS)
+								// This is the index of the corrisponding uri in ClipData, or Data
+								var jsonDataClipIndex = customJSON.getJSONObject("DATA_CLIP")
+								for(index in 0..jsonDataKeys.length()){
+									// This should be the filename
+									data_keys.add(jsonDataKeys.getString(index))
+									// When JSONDataKeys has
+									when(jsonDataKeys.getString(index)){
+										"-1" -> customIntent.data = intent.data
+										// This may throw an error. Gotta be super careful
+										"0" -> customIntent.clipData = ClipData.newRawUri("Copied",intent.clipData!!.getItemAt(0).uri)
+										// This copies the string index value, and converts it to an int to extract and attach said URI
+										else -> customIntent.clipData!!.addItem(intent.clipData!!.getItemAt(jsonDataKeys.getString(index).toInt()))
+									}
+								}
+							}
+							// this probably throws an error. I just need to copy over an extra from one to the other
+							// Maybe I should have blank remove all unk keys, instead. It'd make the cop easier
+							else -> customIntent.getBundleExtra(key)
+						}
+					}
+                // If there is a custom setting for this module/intent
+				}else{
+					// Blank out the intent or nah
+					when(customJSON.has("BLANK")){
+						true -> returnSapphireService(Intent())
+						false -> returnSapphireService()
+					}
+				}
+				startService(customIntent)
+			}
+
+		}else {
+			// The record information for MULTIPROCESS_ID
+			var intentRecord = JSONObject()
+			var multiprocessIntent = prepareIntent(intent!!)
+
+			// Add the initial intent and its data to storage, to await all results
+			storedIntents.add(multiprocessIntent)
+			// The size is the index of the related intent, so it can be pulled from StoredIntent
+			intentRecord.put("ORIGINAL", storedIntents.size)
+			// get the list of routes from the prepared intent
+			for (route in multiprocessIntent.getStringArrayExtra("MULTIPROCESS_ROUTE_LIST")!!) {
+				var packageClass = route.split(";")
+				// Make a placeholder record using the route as the key, and a zero which will be filled by an index from a returned intent with matching FROM
+				intentRecord.put(route, 0)
+				// does this work with returnSapphireService? No, it'll override the starting information
+				// I don't think this was set up right for the new 'bounding' form
+				multiprocessIntent.setClassName(packageClass[0], packageClass[1])
+				returnSapphireService(multiprocessIntent)
+			}
+			// Store the record for this MULTIPROCESS_ID
+			intentLedger.put(multiprocessIntent.getStringExtra(MULTIPROCESS_ID), intentRecord)
 		}
-		// Store the record for this MULTIPROCESS_ID
-		intentLedger.put(multiprocessIntent.getStringExtra(MULTIPROCESS_ID),intentRecord)
 	}
 
 	// This likely *only* works if the data is coming from the core, as that is the only time the permission applies to ALL uris
@@ -162,11 +228,13 @@ class MultiprocessService: SapphireFrameworkService(){
 		preparedIntent = regexRouteString(preparedIntent)
 		preparedIntent = makeMultiprocessList(preparedIntent)
 		// Make sure that every module knows what's going on
+		// Should this be hardcoded?
 		preparedIntent.setAction(ACTION_REQUEST_FILE_DATA)
 		return preparedIntent
 	}
 
 	// This is unique to the Multiprocess Module. I need it to look for the unique () syntax
+	// This is *not* recursive, and could be easy to mess up
 	fun regexRouteString(intent: Intent): Intent{
 		var route = intent.getStringExtra(ROUTE)!!
 		// Break out the multiprocess syntax
