@@ -30,7 +30,7 @@ class ProcessorTrainingServiceUpdated: SapphireFrameworkService(){
         Log.i(CLASS_NAME,"Commencing training...")
         var trainingFiles = cacheTrainingFiles(intent)
         // Currently unused. It's for Mycroft style .intent files to meet Stanford CoreNLP standards
-        var prepared = prepareTrainingData()
+        var prepared = prepareTrainingData(intent!!)
         trainIntentClassifier(trainingFiles)
     }
 

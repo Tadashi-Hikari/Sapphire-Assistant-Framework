@@ -6,7 +6,7 @@ import com.example.componentframework.SapphireFrameworkService
 import edu.stanford.nlp.classify.ColumnDataClassifier
 import java.io.File
 
-class ProcessorCentralServiceUpdated: SapphireFrameworkService(){
+class ProcessorCentralService: SapphireFrameworkService(){
 
     override fun onBind(intent: Intent?): IBinder? {
         TODO("Not yet implemented")

@@ -6,7 +6,7 @@ import com.example.componentframework.depreciated.SAFService
 import edu.stanford.nlp.classify.ColumnDataClassifier
 import java.io.File
 
-class ProcessorCentralService: SAFService(){
+class ProcessorCentralServiceDepreciated: SAFService(){
 
     override fun onBind(intent: Intent?): IBinder? {
         TODO("Not yet implemented")
