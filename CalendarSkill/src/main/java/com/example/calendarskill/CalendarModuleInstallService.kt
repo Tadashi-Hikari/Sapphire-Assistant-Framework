@@ -48,6 +48,7 @@ class CalendarModuleInstallService: SapphireFrameworkRegistrationService(){
 
     // This seems like unneeded modularity. Also, it's messy
     fun offloadFiles(intent: Intent){
+        Log.d(CLASS_NAME,"Requesting a file offload")
         if(intent.data != null) {
             writeToCore(intent.data!!)
         }

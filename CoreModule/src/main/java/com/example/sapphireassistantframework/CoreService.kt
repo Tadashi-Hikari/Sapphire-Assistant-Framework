@@ -132,7 +132,7 @@ class CoreService: SapphireCoreService() {
 		when (intent!!.action) {
 			// How to tell if this is install, or request
 			ACTION_REQUEST_FILE_DATA -> newCheckForLocal(intent)
-			ACTION_MANIPULATE_FILE_DATA -> Log.i(CLASS_NAME, "NOT YET IMPLEMENTED")
+			ACTION_MANIPULATE_FILE_DATA -> requestTransfer(intent)
 			"ACTION_BRIDGE_URI" -> Log.i(CLASS_NAME, "NOT YET IMPLEMENTED")
 		}
 	}
@@ -227,6 +227,7 @@ class CoreService: SapphireCoreService() {
 					// JSON makes it easy to send around arbitrary data. I can deal with optimization later
 					// It goes at this level, because I need one customRecord per Module, not per file type
 					intentCustomRecord = customMultiprocessTemp(clipDataIndex)
+					intentCustomRecord.put("MODULE",moduleId)
 					customLedger.put(moduleId,intentCustomRecord)
 				}
 			}
@@ -311,8 +312,17 @@ class CoreService: SapphireCoreService() {
 		startSapphireService(connection,outgoingIntent)
 	}
 
+	// I already did all of the prepping in request for local, so just redirect it?
 	fun requestTransfer(intent: Intent){
-		TODO("This request to make a copy of a file in the core FileProvider")
+		var outgoingIntent = Intent(intent)
+		Log.v(this.javaClass.name,"Generating Core file for ${DATA_KEYS}")
+		// This is temporary
+		var module = outgoingIntent.getStringExtra("TO")!!
+		var packageClass = module.split(";")
+		outgoingIntent.setClassName(packageClass[0],packageClass[1])
+
+		// I have to figre out what to do with this intent
+		startSapphireService(connection,outgoingIntent)
 	}
 
 	fun requestBridge(intent: Intent){
