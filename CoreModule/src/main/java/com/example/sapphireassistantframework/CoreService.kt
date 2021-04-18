@@ -3,7 +3,6 @@ package com.example.sapphireassistantframework
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.*
-import android.icu.text.RelativeDateTimeFormatter
 import android.os.Build
 import android.os.IBinder
 import android.widget.Toast
@@ -76,7 +75,7 @@ class CoreService: SapphireCoreService() {
 			intent?.action == ACTION_SAPPHIRE_INITIALIZE -> return true
 			intent?.action == ACTION_SAPPHIRE_MODULE_REGISTER -> return true
 			intent?.action == ACTION_SAPPHIRE_CORE_REGISTRATION_COMPLETE -> return true
-			intent?.action == "ACTION_SAPPHIRE_REQUEST_FILE" -> return true
+			intent?.action == ACTION_REQUEST_FILE_DATA -> return true
 			// I think this might now work easy for requesting modules vs installing modules
 			intent?.action == ACTION_MANIPULATE_FILE_DATA -> return true
 			intent?.hasExtra(FROM) == true -> return true
@@ -116,8 +115,8 @@ class CoreService: SapphireCoreService() {
 			true -> when (intent.action) {
 				ACTION_SAPPHIRE_CORE_BIND -> onBind(intent)
 				// This is a change, since it doesn't make sense for Handle Route
-				ACTION_REQUEST_FILE_DATA -> serveFile(intent)
-				ACTION_MANIPULATE_FILE_DATA -> serveFile(intent)
+				ACTION_REQUEST_FILE_DATA -> fileService(intent)
+				ACTION_MANIPULATE_FILE_DATA -> fileService(intent)
 				// Generic action
 				else -> handleRoute(intent)
 			}
@@ -143,93 +142,140 @@ class CoreService: SapphireCoreService() {
 		// Request update from new modules. Core only needs to do the initail install one by one, because it can't start w/o everything installed
 		//UpdateNewModuleData -> multiprocessModule
 		val FILENAME_TABLE = "filenames.tbl"
+		Log.i(CLASS_NAME,"Checking for local files")
 		try{
 			// I don't like this naming scheme, but I am hacking this together
 			var filetypes = intent.getStringArrayListExtra(DATA_KEYS)!!
 			var fileRegistry = loadTable(FILENAME_TABLE)
-			var toRequest = mutableListOf<String>()
-			var outgoingIntent = Intent()
+			Log.v(CLASS_NAME,"These are the files in the registry that we are checking for: ${fileRegistry.toString()}")
+			// This is for the custom multiprocess
+			var multiprocessRoute = mutableListOf<String>()
+			// Is there a reason I am making this blank?
+			var outgoingIntent = intent
+			// Oh wait. Where is this in the process?
+			outgoingIntent.setClassName(this,"com.example.multiprocessmodule.MultiprocessService")
 			outgoingIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-			var customJSON = JSONObject()
+			var customLedger = JSONObject()
+			var intentCustomRecord = JSONObject()
 
 			// OOOOOOH NESTED FOR LOOPS. Bad
 			// For each modules data record...
-			for(recordID in fileRegistry.keys()){
+			for(moduleId in fileRegistry.keys()){
 				// load the record....
-				var moduleFileRecord = fileRegistry.getJSONArray(recordID)
-				// and search through its file listing....
-				for(index in 0..moduleFileRecord.length()){
+				var moduleFileList = fileRegistry.getJSONArray(moduleId)
+				/*
+					This is special for when the file doesn't exist. I capture its index in the clipData (or data)
+					and save that index in the customJSON. This allows multiprocess intent to retrieve it. I don't
+					like how reliant these modules are, so I will have to separate them in the future
+				*/
+				var clipDataIndex = JSONObject()
+
+				// and search through its file listing.... (-1 for proper index
+				for(index in 0..moduleFileList.length()-1){
 					// To see if it matches the type of data we are looking for...
 					for(fileTypeName in filetypes) {
-						if(moduleFileRecord.getString(index).endsWith(fileTypeName)){
-							var file = File(filesDir,moduleFileRecord.getString(index))
-							// try to open it
-							when(file.exists()){
-								// if there is only one or it's the last one, make it the uri
-								outgoingIntent.data == null -> outgoingIntent.setData(FileProvider.getUriForFile(this.applicationContext,"com.example.sapphireassistantframework.fileprovider",file))
-								// No clipData exists, and it will need one
-								outgoingIntent.clipData == null -> outgoingIntent.clipData = ClipData.newRawUri("FILEDATA",FileProvider.getUriForFile(this.applicationContext,"com.example.sapphireassistantframework.fileprovider",file))
-								// Clip data exists, and there is more to add on!
-								outgoingIntent.clipData != null -> outgoingIntent.clipData!!.addItem(ClipData.Item(FileProvider.getUriForFile(this.applicationContext,"com.example.sapphireassistantframework.fileprovider",file)))
-								// This should be shorthand for requesting transfer OR bridge. doesn't need to be serveFile
+						Log.i(CLASS_NAME,"Checking for filetype ${fileTypeName}")
+						if(moduleFileList.getString(index).endsWith(fileTypeName)){
+							Log.i(CLASS_NAME,"Checking for locality file ${moduleFileList.getString(index)}")
+							// Hacky, but should work
+							var bool = File(filesDir,moduleFileList.getString(index)).exists()
+							Log.i(CLASS_NAME,"Does ${moduleFileList.getString(index)} exist? ${bool}")
+							var file = File(filesDir,moduleFileList.getString(index))
+							// If it exists, just add it on. If it doesn't exist, make it and do all the rest
+							when(bool) {
+								true -> {
+									when {
+										// if there is only one or it's the last one, make it the uri
+										outgoingIntent.data == null -> outgoingIntent.setData(FileProvider.getUriForFile(this.applicationContext, "com.example.sapphireassistantframework.fileprovider", file))
+										// No clipData exists, and it will need one
+										outgoingIntent.clipData == null -> outgoingIntent.clipData = ClipData.newRawUri("FILEDATA", FileProvider.getUriForFile(this.applicationContext, "com.example.sapphireassistantframework.fileprovider", file))
+										// Clip data exists, and there is more to add on!
+										// I don't... see what is happening here....
+										outgoingIntent.clipData != null -> outgoingIntent.clipData?.addItem(ClipData.Item(FileProvider.getUriForFile(this.applicationContext, "com.example.sapphireassistantframework.fileprovider", file)))
+										// This should be shorthand for requesting transfer OR bridge. doesn't need to be serveFile
+									}
+								}
 								false -> {
-									/*
-									This is special for when the file doesn't exist. I capture its index in the clipData (or data)
-									and save that index in the customJSON. This allows multiprocess intent to retrieve it. I don't
-									like how reliant these modules are, so I will have to separate them in the future
-									 */
-									var clipDataIndex = JSONObject()
+									Log.v(CLASS_NAME,"${moduleFileList.getString(index)} is not yet local, it seems")
+									if((multiprocessRoute.isNullOrEmpty()) or (multiprocessRoute.contains(moduleId) == false)){
+										Log.d(CLASS_NAME,"Adding ${moduleId} to multiprocessRoute list")
+										multiprocessRoute.add(moduleId)
+									}
 									when{
 										outgoingIntent.data == null -> {
 											outgoingIntent.setData(FileProvider.getUriForFile(this.applicationContext,"com.example.sapphireassistantframework.fileprovider",file))
 											// the filename is the key, and the index is the size of clipdata, stored as the value
-											clipDataIndex.put(-1,file.name)
+											clipDataIndex.put("-1",file.name)
 										}
 										// No clipData exists, and it will need one
 										outgoingIntent.clipData == null -> {
 											outgoingIntent.clipData = ClipData.newRawUri("FILEDATA",FileProvider.getUriForFile(this.applicationContext,"com.example.sapphireassistantframework.fileprovider",file))
-											// the filename is the key, and the index is the size of clipdata, stored as the value
-											clipDataIndex.put(outgoingIntent.clipData!!.itemCount,file.name)
+											// the filename is the key, and the index is the size-1 of clipdata, stored as the value
+											clipDataIndex.put((outgoingIntent.clipData!!.itemCount-1).toString(),file.name)
 										}
 										// Clip data exists, and there is more to add on!
 										outgoingIntent.clipData != null -> {
 											outgoingIntent.clipData!!.addItem(ClipData.Item(FileProvider.getUriForFile(this.applicationContext,"com.example.sapphireassistantframework.fileprovider",file)))
-											// the filename is the key, and the index is the size of clipdata, stored as the value
-											clipDataIndex.put(outgoingIntent.clipData!!.itemCount,file.name)
+											// the filename is the key, and the index is the size-1 of clipdata, stored as the value
+											clipDataIndex.put((outgoingIntent.clipData!!.itemCount-1).toString(),file.name)
 										}
 									}
-									// JSON makes it easy to send around arbitrary data. I can deal with optimization later
-									customJSON.put(recordID,customMultiprocessTemp(clipDataIndex))
 								}
 							}
 						}
 					}
+					// JSON makes it easy to send around arbitrary data. I can deal with optimization later
+					// It goes at this level, because I need one customRecord per Module, not per file type
+					intentCustomRecord = customMultiprocessTemp(clipDataIndex)
+					customLedger.put(moduleId,intentCustomRecord)
 				}
 			}
-			outgoingIntent.putExtra("CUSTOM_MULTIPROCESS",customJSON.toString())
+			Log.d(CLASS_NAME,"Final customJSON: ${customLedger}")
+			// If there are no files needed from other modules, we're good to go. Otherwise, we gotta do all this
+			if(customLedger.length() != 0) {
+				outgoingIntent.putExtra("CUSTOM_MULTIPROCESS", customLedger.toString())
+				var newRoute = ""
+				for (valueIndex in multiprocessRoute.withIndex()) {
+					when (valueIndex.index) {
+						0 -> newRoute += "(${valueIndex.value}"
+						multiprocessRoute.size - 1 -> newRoute += ",${valueIndex.value})"
+						else -> newRoute += ",${valueIndex.value}"
+					}
+					if(multiprocessRoute.size == 1){
+						newRoute += ")"
+					}
+				}
+				// This is hacky. It's here to add a route for multiprocess intent. I don't like how much the core is tied in to it
+				outgoingIntent.putExtra(ROUTE,"${newRoute},${outgoingIntent.getStringExtra(ROUTE)}")
+				Log.i(CLASS_NAME,"New route: ${outgoingIntent.getStringExtra(ROUTE)}")
+			}
 			// I need to send this info w/ the multiprocess, or have it waiting. Like a dual multiprocess
-			//startSapphireService(connection,outgoingIntent)
+			startSapphireService(connection,outgoingIntent)
 		}catch(exception: Exception){
 			Log.e(CLASS_NAME,"Check the way you are removing items from the list. Seems like it will cause bugs")
+			exception.printStackTrace()
 		}
 	}
 
-	// I need to be able to send the file URIs w/ this
-	fun customMultiprocessTemp(clipDataIndexs: JSONObject): String{
-		var customJSON = JSONObject()
+	// This creates the custom settings for a single intent
+	// These aren't extras, because that would require multiple intents.
+	fun customMultiprocessTemp(clipDataIndexs: JSONObject): JSONObject{
+		// This is the custom record for a single modules intents
+		var customIntentRecord = JSONObject()
+		// Contains the file names. JsonArray. Level 3
 		var data_keys = JSONArray()
-		customJSON.put("ACTION",ACTION_MANIPULATE_FILE_DATA)
+		customIntentRecord.put("ACTION", ACTION_MANIPULATE_FILE_DATA)
 
-		for(key in clipDataIndexs.keys()){
+		// I need to be able to send the file URIs w/ this
+		for (key in clipDataIndexs.keys()) {
 			// DATA_KEYS holds the filenames
 			data_keys.put(key)
 		}
-		// Populate the data keys for the skill w/ needs to write the files
-		customJSON.put(DATA_KEYS,data_keys)
+		// Populate the data keys for the skill modules to know w/ files to write
+		customIntentRecord.put(DATA_KEYS, data_keys)
 		// This is for retrieval w/ data_Keys, in the processor
-		customJSON.put("DATA_CLIP",clipDataIndexs.toString())
-
-		return customJSON.toString()
+		customIntentRecord.put("DATA_CLIP", clipDataIndexs)
+		return customIntentRecord
 	}
 
 	// This checks for a local copy and serves it if it exists. It needs renaming

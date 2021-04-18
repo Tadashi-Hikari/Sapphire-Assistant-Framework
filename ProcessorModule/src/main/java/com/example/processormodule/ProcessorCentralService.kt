@@ -63,7 +63,7 @@ class ProcessorCentralService: SapphireFrameworkService(){
 
     fun loadClassifier(): ColumnDataClassifier{
         var classifierFile = File(filesDir,"intent.classifier")
-        if(classifierFile.exists() != true){
+        if(classifierFile.exists() != true) {
             requestFiles()
         }
         return ColumnDataClassifier.getClassifier(classifierFile.canonicalPath)
@@ -85,6 +85,9 @@ class ProcessorCentralService: SapphireFrameworkService(){
         intent.action = ACTION_REQUEST_FILE_DATA
         intent.putExtra(DATA_KEYS, requestedDataKeys)
         intent.putExtra(FROM,"${PACKAGE_NAME};${CANONICAL_CLASS_NAME}")
+        Log.i(CLASS_NAME,"Requesting ${requestedDataKeys} files")
         startService(intent)
+        // This is temporary
+        stopSelf()
     }
 }

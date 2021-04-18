@@ -53,10 +53,14 @@ class MultiprocessService: SapphireFrameworkService(){
 	}
 
 	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-		when(intent?.hasExtra(MULTIPROCESS_ID)){
-			true -> evaluateReturningIntent(intent)
-			false -> handleNewMultiprocessIntent(intent)
-			else -> Log.d(this.javaClass.name, "There was an intent error. Stopping Multiprocess Module...")
+		try{
+			when (intent?.hasExtra(MULTIPROCESS_ID)){
+				true -> evaluateReturningIntent(intent)
+				false -> handleNewMultiprocessIntent(intent)
+				else -> Log.d(this.javaClass.name, "There was an intent error. Stopping Multiprocess Module...")
+			}
+		}catch(exception: Exception){
+			exception.printStackTrace()
 		}
 		return super.onStartCommand(intent, flags, startId)
 	}
@@ -66,42 +70,62 @@ class MultiprocessService: SapphireFrameworkService(){
 		// I need another nested if to handle w/ a multiprocess may have no modification
 		if(intent!!.hasExtra("CUSTOM_MULTIPROCESS")){
 			var multiprocessIntent = prepareIntent(intent!!)
-			var customJSON = JSONObject(intent.getStringExtra("CUSTOM_MULTIPROCESS"))
+			var customIntent = Intent()
+			// This holds a subJSON for each intent
+			var customLedger = JSONObject(intent.getStringExtra("CUSTOM_MULTIPROCESS"))
+			Log.d(CLASS_NAME,"customJSON = ${customLedger}")
 			// I need blank to REMOVE things from here, so that I can retain the URI permissions
-			var customIntent = prepareIntent(intent!!)
 			// I somehow doubt this will let the permissions pass over
 			customIntent.flags = intent.flags
 
+			// Copied from below
+			storedIntents.add(multiprocessIntent)
+			var intentRecord = JSONObject()
+			intentRecord.put("ORIGINAL", storedIntents.size)
+
+			// This was added in the processing
 			for(process in multiprocessIntent.getStringArrayListExtra("MULTIPROCESS_ROUTE_LIST")!!){
 				// If there is a custom setting for this module/intent
-				if(customJSON.has(process)){
-					// Blank out the intent, or nah
-					when(customJSON.has("BLANK")) {
+				if(customLedger.has(process)){
+					var processSettingsJSON = customLedger.getJSONObject(process)
+					// Blank out the intent, or nah. I can leave this here, cause it can be set globally
+					when(customLedger.has("BLANK")) {
+						// Blank it out before proceeding
 						true -> {
+							// I don't think this should literally be blank
 							customIntent = Intent()
 						}
+						// Use the std intent
 						false -> {
 							customIntent = multiprocessIntent
 						}
 					}
 					// Handle special flags, and just copy unk extras
-					for(key in customJSON.keys()){
+					for(key in processSettingsJSON.keys()){
 						// When the key is a special key, do something, else default
+						Log.d(CLASS_NAME, "Checking key ${key}")
 						when(key){
-							"ROUTE" -> customIntent.putExtra(ROUTE,customJSON.getString(ROUTE))
+							// Set the action for the intent
+							"ACTION" -> {customIntent.action = processSettingsJSON.getString(key)
+								Log.d(CLASS_NAME, customIntent.action!!)}
+							// This inject the route in before returning to multiprocess.
+							"ROUTE" -> customIntent.putExtra(ROUTE,processSettingsJSON.getString(ROUTE))
 							// Convert the keys to something useable by the next intent
 							DATA_KEYS -> {
 								// This is the format needed for Android
 								var data_keys = mutableListOf<String>()
 								// These area all of the filenames
-								var jsonDataKeys = customJSON.getJSONArray(DATA_KEYS)
+								var jsonDataKeys = processSettingsJSON.getJSONArray(DATA_KEYS)
+								Log.d(CLASS_NAME, "DATA_KEYS: ${jsonDataKeys}")
 								// This is the index of the corrisponding uri in ClipData, or Data
-								var jsonDataClipIndex = customJSON.getJSONObject("DATA_CLIP")
-								for(index in 0..jsonDataKeys.length()){
+								var jsonDataClipIndex = processSettingsJSON.getJSONObject("DATA_CLIP")
+								// Can't forget to convert length to index
+								for(index in 0..jsonDataKeys.length()-1){
 									// This should be the filename
 									data_keys.add(jsonDataKeys.getString(index))
 									// When JSONDataKeys has
 									when(jsonDataKeys.getString(index)){
+										// Why did I pick negative one?...
 										"-1" -> customIntent.data = intent.data
 										// This may throw an error. Gotta be super careful
 										"0" -> customIntent.clipData = ClipData.newRawUri("Copied",intent.clipData!!.getItemAt(0).uri)
@@ -110,23 +134,26 @@ class MultiprocessService: SapphireFrameworkService(){
 									}
 								}
 							}
-							// this probably throws an error. I just need to copy over an extra from one to the other
-							// Maybe I should have blank remove all unk keys, instead. It'd make the cop easier
-							else -> customIntent.getBundleExtra(key)
+							// Textual AF
+							else -> customIntent.putExtra(key,processSettingsJSON.getString(key))
 						}
 					}
                 // If there is a custom setting for this module/intent
 				}else{
 					// Blank out the intent or nah
-					when(customJSON.has("BLANK")){
+					when(customLedger.has("BLANK")){
+						// I don't think this should *literally* be blank...
 						true -> returnSapphireService(Intent())
-						false -> returnSapphireService()
+						// Send it off, as is.
+						false -> returnSapphireService(customIntent)
 					}
 				}
-				startService(customIntent)
+				Log.d(CLASS_NAME,"Sending out a customIntent, action ${customIntent.action}")
+				returnSapphireService(customIntent)
+				intentLedger.put(multiprocessIntent.getIntExtra(MULTIPROCESS_ID,-1).toString(), intentRecord)
 			}
-
-		}else {
+		// This is just the unchanged old code
+		}else{
 			// The record information for MULTIPROCESS_ID
 			var intentRecord = JSONObject()
 			var multiprocessIntent = prepareIntent(intent!!)
@@ -146,7 +173,7 @@ class MultiprocessService: SapphireFrameworkService(){
 				returnSapphireService(multiprocessIntent)
 			}
 			// Store the record for this MULTIPROCESS_ID
-			intentLedger.put(multiprocessIntent.getStringExtra(MULTIPROCESS_ID), intentRecord)
+			intentLedger.put(multiprocessIntent.getIntExtra(MULTIPROCESS_ID,-1).toString(), intentRecord)
 		}
 	}
 
@@ -198,12 +225,12 @@ class MultiprocessService: SapphireFrameworkService(){
 	fun evaluateReturningIntent(intent: Intent?){
 		try{
 			// Load the intent recod
-			var intentRecord = intentLedger.getJSONObject(intent!!.getStringExtra(MULTIPROCESS_ID))
+			var intentRecord = intentLedger.getJSONObject(intent!!.getIntExtra(MULTIPROCESS_ID,-1)!!.toString())
 			storedIntents.add(intent)
 			// the FROM is the unqiue ID for an intent from this MULTIPROCESS_ID. The size is the index, conveniently
 			intentRecord.put(intent.getStringExtra(FROM),storedIntents.size)
 			// Save the new information
-			intentLedger.put(intent.getStringExtra(MULTIPROCESS_ID),intentRecord)
+			intentLedger.put(intent.getIntExtra(MULTIPROCESS_ID,-1).toString(),intentRecord)
 			// Check all the values for a zero. If there is one, keep waiting for inputs. Else, all subprocesses received
 			for(key in intentRecord.keys()){
 				if(intentRecord.getInt(key) == 0){
@@ -227,9 +254,6 @@ class MultiprocessService: SapphireFrameworkService(){
 		var preparedIntent = generateId(intent)
 		preparedIntent = regexRouteString(preparedIntent)
 		preparedIntent = makeMultiprocessList(preparedIntent)
-		// Make sure that every module knows what's going on
-		// Should this be hardcoded?
-		preparedIntent.setAction(ACTION_REQUEST_FILE_DATA)
 		return preparedIntent
 	}
 
@@ -237,6 +261,7 @@ class MultiprocessService: SapphireFrameworkService(){
 	// This is *not* recursive, and could be easy to mess up
 	fun regexRouteString(intent: Intent): Intent{
 		var route = intent.getStringExtra(ROUTE)!!
+		Log.d(CLASS_NAME,route)
 		// Break out the multiprocess syntax
 		var start = route.indexOf("(")+1
 		var end = route.indexOf(")",start)
@@ -256,8 +281,9 @@ class MultiprocessService: SapphireFrameworkService(){
 	// This simply takes the multiprocess route string and turns it in to a list
 	fun makeMultiprocessList(intent: Intent): Intent{
 		var preparedIntent = Intent(intent)
-		var routeList: ArrayList<String> = preparedIntent.getStringExtra("MULTIPROCESS_ROUTE")!!.split(",") as ArrayList<String>
-		preparedIntent.putExtra("MULTIPROCESS_ROUTE_LIST", routeList)
+		var routeList = preparedIntent.getStringExtra("MULTIPROCESS_ROUTE")!!.split(",")
+		// This is ugly, and I don't like it
+		preparedIntent.putStringArrayListExtra("MULTIPROCESS_ROUTE_LIST", ArrayList(routeList))
 		return preparedIntent
 	}
 
@@ -270,9 +296,5 @@ class MultiprocessService: SapphireFrameworkService(){
 
 		intent!!.putExtra(MULTIPROCESS_ID,id)
 		return intent
-	}
-
-	override fun onBind(intent: Intent?): IBinder? {
-		TODO("Not yet implemented")
 	}
 }
