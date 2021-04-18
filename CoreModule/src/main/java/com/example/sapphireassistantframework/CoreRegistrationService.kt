@@ -58,7 +58,7 @@ class CoreRegistrationService: SapphireCoreService(){
 			// Do I need to redirect this to core? ugh, I think I do
 			Log.i(CLASS_NAME,"Dispatching ${sapphireModuleStack.last().getStringExtra(MODULE_CLASS)!!}")
 			// Remove the last one in the list
-			returnSapphireService(sapphireModuleStack.removeAt(sapphireModuleStack.size))
+			returnSapphireService(sapphireModuleStack.removeAt(sapphireModuleStack.size-1))
 		}else{
 			Log.i(CLASS_NAME,"All modules registered")
 			var finalIntent = Intent()
@@ -154,7 +154,7 @@ class CoreRegistrationService: SapphireCoreService(){
 				filenames.put(key)
 			}
 			// This saves the filelist in the table
-			filenameTable.put(module,data_keys)
+			filenameTable.put(module,filenames)
 		}else{
 			Log.i(CLASS_NAME,"This module has no files to share")
 		}
