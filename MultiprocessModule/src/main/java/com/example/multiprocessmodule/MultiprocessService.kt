@@ -111,6 +111,7 @@ class MultiprocessService: SapphireFrameworkService(){
 							// This inject the route in before returning to multiprocess.
 							"ROUTE" -> customIntent.putExtra(ROUTE,processSettingsJSON.getString(ROUTE))
 							// Convert the keys to something useable by the next intent
+							"MODULE" -> customIntent.putExtra("TO",processSettingsJSON.getString("MODULE"))
 							DATA_KEYS -> {
 								// This is the format needed for Android
 								var data_keys = mutableListOf<String>()

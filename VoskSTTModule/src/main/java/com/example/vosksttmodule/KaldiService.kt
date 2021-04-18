@@ -92,7 +92,7 @@ class KaldiService: RecognitionListener, SapphireFrameworkService(){
         intent.setAction(sapphireService.ACTION_SAPPHIRE_INITIALIZE)
         startService(intent)
         recognizer.startListening()
-        Log.i(CLASS_NAME,"Listening started")
+        Log.i(CLASS_NAME,"Listening Started")
     }
 
     override fun onError(p0: Exception?) {
