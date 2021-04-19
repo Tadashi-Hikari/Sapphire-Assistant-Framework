@@ -10,7 +10,7 @@
             android:permission="com.termux.permission.RUN_COMMAND">
         </service>
         <service
-            android:name=".TermuxModuleInstallService"
+            android:name=".TermuxPostOfficeService"
             android:exported="true">
             <intent-filter>
                 <action android:name="assistant.framework.module.action.REGISTER"/>

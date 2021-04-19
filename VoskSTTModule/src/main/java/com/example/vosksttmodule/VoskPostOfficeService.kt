@@ -7,13 +7,14 @@ import org.json.JSONObject
 import java.lang.Exception
 
 // This could be a SAFInstallService
-class VoskModuleInstallService: SapphireFrameworkRegistrationService(){
+class VoskPostOfficeService: SapphireFrameworkRegistrationService(){
 	val VERSION = "0.0.1"
 
 	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 		try {
-			if (intent!!.action == ACTION_SAPPHIRE_MODULE_REGISTER) {
-				registerModule(intent!!)
+			when(intent!!.action){
+				ACTION_SAPPHIRE_MODULE_REGISTER -> registerModule(intent!!)
+				else -> Log.i(CLASS_NAME,"There was some kind of error with the PostOfficeService")
 			}
 		}catch(exception: Exception){
 			Log.e(this.javaClass.name,"There was some kind of error with the install intent")
@@ -22,6 +23,7 @@ class VoskModuleInstallService: SapphireFrameworkRegistrationService(){
 	}
 
 	override fun registerModule(intent: Intent){
+		// This will need to be changed....
 		var startupRoute = "${this.packageName};com.example.vosksttmodule.KaldiService"
 		// I don't like this, It seems clunky.
 		var backgroundData = JSONObject()
@@ -34,10 +36,6 @@ class VoskModuleInstallService: SapphireFrameworkRegistrationService(){
 
 		var returnIntent = Intent(intent)
 		returnIntent = registerBackgroundServices(returnIntent,backgroundData.toString())
-
-		returnIntent.putExtra(MODULE_PACKAGE,this.packageName)
-		// Not needed, cause it's set in the CoreRegistrationService. This will be an issue w/ multiple entries though
-		returnIntent.putExtra(MODULE_CLASS,"com.example.vosksttmodule.KaldiService")
 		returnIntent = registerVersion(returnIntent, VERSION)
 
 		// This is the unique ROUTE_NAME, so that it can be looked up

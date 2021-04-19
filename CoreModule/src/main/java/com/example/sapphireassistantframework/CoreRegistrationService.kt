@@ -15,6 +15,8 @@ class CoreRegistrationService: SapphireCoreService(){
 	val DEFAULT_MODULES = listOf(CORE,PROCESSOR,MULTIPROCESS)
 
 	var sapphireModuleStack = mutableListOf<Intent>()
+	var dataKey = mutableListOf<String>()
+	var pendingIntentLedger = Intent()
 
 	/*
 	These lists should be loaded/generated on the fly, and in a stack/list
@@ -65,6 +67,11 @@ class CoreRegistrationService: SapphireCoreService(){
 			var finalIntent = Intent()
 			finalIntent.action = ACTION_SAPPHIRE_CORE_REGISTRATION_COMPLETE
 			finalIntent.setClassName(this,"com.example.sapphireassistantframework.CoreService")
+			// Does this cast it ok?
+			var dataKeyArrayList = dataKey.toCollection(ArrayList<String>())
+			finalIntent.putExtra(DATA_KEYS,dataKeyArrayList)
+			// Hopefull this works fine
+			finalIntent.fillIn(pendingIntentLedger,0)
 			startService(finalIntent)
 		}
 	}
@@ -119,7 +126,21 @@ class CoreRegistrationService: SapphireCoreService(){
 			registerDefaults(intent!!)
 			registerFilenames(intent!!)
 			registerBackgroundService(intent!!)
+			registerPendingIntent(intent!!)
 			saveTables()
+		}
+	}
+
+	// Save the PostOfficeService PendingIntent for CoreService
+	fun registerPendingIntent(intent: Intent){
+		try{
+			var pendingIntent = intent.getParcelableExtra<PendingIntent>("PENDING")
+			// The move to PendingIntent renders the MODULE_PACKAGE and MODULE_CLASS separation pointless
+			var moduleInfo = "${intent.getStringExtra(MODULE_PACKAGE)};${intent.getStringExtra(MODULE_CLASS)}"
+			pendingIntentLedger.putExtra(moduleInfo,pendingIntent)
+		}catch(exception: Exception){
+			Log.d(CLASS_NAME,"There was an error registering the PendingIntent")
+			exception.printStackTrace()
 		}
 	}
 

@@ -53,6 +53,8 @@ class CoreService: SapphireCoreService() {
 	val BACKGROUND_TABLE = "background.tbl"
 	val ROUTE_TABLE = "routetable.tbl"
 	val ALIAS_TABLE = "alias.tbl"
+	// This holds the available modules. It's close to a registry, and I hate everything about it
+	var pendingIntentLedger = mutableMapOf<String,PendingIntent>()
 
 	override fun onCreate() {
 		super.onCreate()
@@ -125,7 +127,7 @@ class CoreService: SapphireCoreService() {
 			}
 			false -> when (intent.action) {
 				ACTION_SAPPHIRE_INITIALIZE -> startRegistrationService()
-				ACTION_SAPPHIRE_CORE_REGISTRATION_COMPLETE -> initialize()
+				ACTION_SAPPHIRE_CORE_REGISTRATION_COMPLETE -> initialize(intent)
 				ACTION_SAPPHIRE_MODULE_REGISTER -> forwardRegistration(intent)
 				"ACTION_SAPPHIRE_TESTING" -> pendingRetrieve(intent)
 				"ACTION_SAPPHIRE_TESTING_RESPONSE" -> pendingRetrieve(intent)
@@ -141,12 +143,12 @@ class CoreService: SapphireCoreService() {
 			var additionalIntent = Intent().setAction("ACTION_SAPPHIRE_DEMO")
 			var pendingIntent = intent.getParcelableExtra<PendingIntent>("PENDING")!!
 			// Will this work?
-			pendingIntent.send(this, 1, additionalIntent)
+			pendingIntent.send(this, 1, additionalIntent,)
 		}else if(intent.action == "ACTION_SAPPHIRE_TESTING"){
 			Log.d(CLASS_NAME,"Requesting PendingIntent")
 			var calendarIntent = Intent(intent)
-			calendarIntent.setClassName("com.example.calendarskill","com.example.calendarskill.CalendarModuleInstallService")
-			startSapphireService(connection,calendarIntent)
+			calendarIntent.setClassName("com.example.calendarskill","com.example.calendarskill.CalendarPostOfficeService")
+			startRegistrationService(connection,calendarIntent)
 		}
 	}
 
@@ -273,7 +275,7 @@ class CoreService: SapphireCoreService() {
 				Log.i(CLASS_NAME,"New route: ${outgoingIntent.getStringExtra(ROUTE)}")
 			}
 			// I need to send this info w/ the multiprocess, or have it waiting. Like a dual multiprocess
-			startSapphireService(connection,outgoingIntent)
+			startRegistrationService(connection,outgoingIntent)
 		}catch(exception: Exception){
 			Log.e(CLASS_NAME,"Check the way you are removing items from the list. Seems like it will cause bugs")
 			exception.printStackTrace()
@@ -331,7 +333,7 @@ class CoreService: SapphireCoreService() {
 		}
 		// give permission to access these URIS. The should be readable, not editable
 		outgoingIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-		startSapphireService(connection,outgoingIntent)
+		startRegistrationService(connection,outgoingIntent)
 	}
 
 	// I already did all of the prepping in request for local, so just redirect it?
@@ -344,7 +346,7 @@ class CoreService: SapphireCoreService() {
 		outgoingIntent.setClassName(packageClass[0],packageClass[1])
 
 		// I have to figre out what to do with this intent
-		startSapphireService(connection,outgoingIntent)
+		startRegistrationService(connection,outgoingIntent)
 	}
 
 	fun requestBridge(intent: Intent){
@@ -396,7 +398,7 @@ class CoreService: SapphireCoreService() {
 			}
 
 			// I have to figre out what to do with this intent
-			startSapphireService(connection,manipulateIntent)
+			startRegistrationService(connection,manipulateIntent)
 		}catch(exception: Exception){
 			Log.d(this.javaClass.name,"There was an error generating the coreFiles and sending the URIs")
 		}
@@ -418,7 +420,7 @@ class CoreService: SapphireCoreService() {
 			"${this.packageName};${this.packageName}.CoreRegistrationService" -> {
 				outgoingIntent.setAction(ACTION_SAPPHIRE_MODULE_REGISTER)
 				outgoingIntent.setClassName(intent.getStringExtra(MODULE_PACKAGE)!!,intent.getStringExtra(MODULE_CLASS)!!)
-				startSapphireService(connection,outgoingIntent)
+				startRegistrationService(connection,outgoingIntent)
 			}
 			else -> {
 				outgoingIntent.setClassName("${this.packageName}","${this.packageName}.CoreRegistrationService")
@@ -457,7 +459,13 @@ class CoreService: SapphireCoreService() {
 		Log.e(this.javaClass.name, "There is no default path")
 	}
 
-	fun initialize(){
+	fun initialize(intent: Intent){
+		// Might want to try/catch this
+		for(key in intent.getStringArrayListExtra(DATA_KEYS)!!){
+			Log.d(CLASS_NAME,"Offloading PendingIntent for ${key}")
+			// Whelp, just load it up...
+			pendingIntentLedger.put(key,intent.getParcelableExtra<PendingIntent>(key)!!)
+		}
 		startBackgroundServices()
 		initialized = true
 	}

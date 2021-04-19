@@ -20,7 +20,7 @@
             </intent-filter>
         </service>
         <service
-            android:name=".VoskModuleInstallService"
+            android:name=".VoskPostOfficeService"
             android:exported="true">
             <intent-filter>
                 <action android:name="assistant.framework.module.action.REGISTER"/>

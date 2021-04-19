@@ -5,7 +5,7 @@
 
     <application>
         <service
-            android:name=".CalendarModuleInstallService"
+            android:name=".CalendarPostOfficeService"
             android:exported="true"
             android:enabled="true">
             <intent-filter>
