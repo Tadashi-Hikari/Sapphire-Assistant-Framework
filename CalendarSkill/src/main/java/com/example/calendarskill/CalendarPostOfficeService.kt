@@ -11,37 +11,20 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 
-class CalendarModuleInstallService: SapphireFrameworkRegistrationService(){
+class CalendarPostOfficeService: SapphireFrameworkRegistrationService(){
     val VERSION = "0.0.1"
     val CONFIG = "calendar.conf"
     val fileList = arrayListOf<String>("get.intent","set.intent")
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.i(this.javaClass.name,"Calendar intent received")
+        // This is, already kind of a post office. I just need to move it from CalendarModuleInstallService to CalendarPostOffice
         when(intent?.action){
             ACTION_SAPPHIRE_MODULE_REGISTER -> registerModule(intent)
             ACTION_REQUEST_FILE_DATA -> sendFileNames(intent)
             ACTION_MANIPULATE_FILE_DATA -> coreTransferFile(intent)
-            "ACTION_SAPPHIRE_TESTING" -> landingFunction()
-            "ACTION_SAPPHIRE_DEMO" -> demoFunction()
         }
         return super.onStartCommand(intent, flags, startId)
-    }
-
-    fun demoFunction(){
-        Log.d(CLASS_NAME,"Demo function works fine")
-    }
-
-    fun landingFunction(){
-        Log.d(CLASS_NAME,"Testing intent received")
-        var outgoingIntent = Intent().setClassName("com.example.sapphireassistantframework","com.example.sapphireassistantframework.CoreService")
-        var localIntent = Intent().setClassName(this,"com.example.calendarskill.CalendarModuleInstallService")
-        var pendingIntent = PendingIntent.getService(this,1,localIntent, 0)
-
-        outgoingIntent.putExtra("PENDING",pendingIntent)
-        outgoingIntent.action = "ACTION_SAPPHIRE_TESTING_RESPONSE"
-        Log.d(CLASS_NAME, "Sending PendingIntent")
-        startService(outgoingIntent)
     }
 
     // This sends a list of filenames that this module wishes to put in the core FileServer
@@ -127,12 +110,9 @@ class CalendarModuleInstallService: SapphireFrameworkRegistrationService(){
     override fun registerModule(intent: Intent){
         Log.i(CLASS_NAME,"Registering calendar skill")
         var returnIntent = Intent(intent)
-        returnIntent.putExtra(MODULE_PACKAGE,this.packageName)
-        returnIntent.putExtra(MODULE_CLASS,"com.example.calendarskill.CalendarService")
         returnIntent = registerVersion(returnIntent, VERSION)
         // This is just the filenames the core keeps as a stub until requested for the first time
         registerData(returnIntent, fileList)
-
         super.registerModule(returnIntent)
     }
 

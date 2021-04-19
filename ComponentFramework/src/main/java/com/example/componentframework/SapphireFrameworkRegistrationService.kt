@@ -1,5 +1,6 @@
 package com.example.componentframework
 
+import android.app.PendingIntent
 import android.content.Intent
 import android.os.IBinder
 import java.io.File
@@ -50,8 +51,28 @@ abstract class SapphireFrameworkRegistrationService: SapphireFrameworkService(){
 		// This needs to not be hardcoded. I can get the info from POSTAGE
 		intent.setClassName("com.example.sapphireassistantframework","com.example.sapphireassistantframework.CoreService")
 		intent.removeExtra(FROM)
-		intent.setAction(ACTION_SAPPHIRE_MODULE_REGISTER)
+		intent.fillIn(landingFunction(),0)
+		//intent.setAction(ACTION_SAPPHIRE_MODULE_REGISTER)
 		startService(intent)
+	}
+
+	open fun passthrough(intent: Intent, className: String){
+		// This allows certain information to be passed through
+		var passthroughIntent = Intent(intent)
+		passthroughIntent.setClassName(PACKAGE_NAME,"${PACKAGE_NAME}.${className}")
+		startService(passthroughIntent)
+	}
+
+	// This is a temporary name/function
+	fun landingFunction(): Intent{
+		Log.d(CLASS_NAME,"Testing intent received")
+		var outgoingIntent = Intent().setClassName("com.example.sapphireassistantframework","com.example.sapphireassistantframework.CoreService")
+		var localIntent = Intent().setClassName(PACKAGE_NAME,CLASS_NAME)
+		var pendingIntent = PendingIntent.getService(this,1,localIntent, 0)
+
+		outgoingIntent.putExtra("PENDING",pendingIntent)
+		Log.d(CLASS_NAME, "Sending PendingIntent")
+		return outgoingIntent
 	}
 
 	// This is where MultiprocessService is calling to. I should add the data keys
@@ -110,31 +131,12 @@ abstract class SapphireFrameworkRegistrationService: SapphireFrameworkService(){
 		return assetArray
 	}
 
-	// Triple check everything before deleting this
 	/*
-	override fun convertAssetToFile(filename: String){
-		// This file needs to be tab separated columns
-		var asset = assets.open(filename)
-		var fileReader = InputStreamReader(asset)
-
-		var file = File(filesDir,filename)
-		var fileWriter = FileOutputStream(file)
-		// This is ugly AF
-		var data = fileReader.read()
-		while (data != -1) {
-			fileWriter.write(data)
-			data = fileReader.read()
-		}
-		// Do a little clean up
-		asset.close()
-		fileWriter.close()
-	}
-	*/
-
 	fun exportConfigFile(filename: String): String {
 		val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
 		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 		startActivity(intent)
 		return "halt"
 	}
+	 */
 }

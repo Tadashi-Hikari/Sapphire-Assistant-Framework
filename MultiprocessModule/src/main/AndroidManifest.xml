@@ -9,7 +9,7 @@
             android:exported="true">
         </service>
         <service
-            android:name=".MultiprocessModuleInstallService"
+            android:name=".MultiprocessPostOfficeService"
             android:exported="true">
             <intent-filter>
                 <action android:name="assistant.framework.module.action.REGISTER"/>
