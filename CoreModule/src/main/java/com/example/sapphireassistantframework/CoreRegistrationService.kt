@@ -1,5 +1,6 @@
 package com.example.sapphireassistantframework
 
+import android.app.PendingIntent
 import android.content.Intent
 import android.content.pm.PackageManager.GET_RESOLVED_FILTER
 import com.example.componentframework.SapphireCoreService
