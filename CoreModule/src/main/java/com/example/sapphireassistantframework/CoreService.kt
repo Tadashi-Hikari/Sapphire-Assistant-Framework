@@ -2,6 +2,7 @@ package com.example.sapphireassistantframework
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.*
 import android.os.Build
 import android.os.IBinder
@@ -78,6 +79,8 @@ class CoreService: SapphireCoreService() {
 			intent?.action == ACTION_REQUEST_FILE_DATA -> return true
 			// I think this might now work easy for requesting modules vs installing modules
 			intent?.action == ACTION_MANIPULATE_FILE_DATA -> return true
+			intent?.action == "ACTION_SAPPHIRE_TESTING" -> return true
+			intent?.action == "ACTION_SAPPHIRE_TESTING_RESPONSE" -> return true
 			intent?.hasExtra(FROM) == true -> return true
 			intent?.hasExtra(ROUTE) == true -> return true
 			else -> return false
@@ -124,7 +127,26 @@ class CoreService: SapphireCoreService() {
 				ACTION_SAPPHIRE_INITIALIZE -> startRegistrationService()
 				ACTION_SAPPHIRE_CORE_REGISTRATION_COMPLETE -> initialize()
 				ACTION_SAPPHIRE_MODULE_REGISTER -> forwardRegistration(intent)
+				"ACTION_SAPPHIRE_TESTING" -> pendingRetrieve(intent)
+				"ACTION_SAPPHIRE_TESTING_RESPONSE" -> pendingRetrieve(intent)
 			}
+		}
+	}
+
+	// This is just to see how PendingIntent works...
+	fun pendingRetrieve(intent: Intent){
+		if(intent.action == "ACTION_SAPPHIRE_TESTING_RESPONSE") {
+			unbindService(connection)
+			Log.d(CLASS_NAME, "Retrieving PendingIntent")
+			var additionalIntent = Intent().setAction("ACTION_SAPPHIRE_DEMO")
+			var pendingIntent = intent.getParcelableExtra<PendingIntent>("PENDING")!!
+			// Will this work?
+			pendingIntent.send(this, 1, additionalIntent)
+		}else if(intent.action == "ACTION_SAPPHIRE_TESTING"){
+			Log.d(CLASS_NAME,"Requesting PendingIntent")
+			var calendarIntent = Intent(intent)
+			calendarIntent.setClassName("com.example.calendarskill","com.example.calendarskill.CalendarModuleInstallService")
+			startSapphireService(connection,calendarIntent)
 		}
 	}
 
