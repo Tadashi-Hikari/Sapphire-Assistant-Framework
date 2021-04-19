@@ -50,6 +50,12 @@ class CoreSimpleActivity: Activity()
        // startService(assistIntent)
     }
 
+    fun performTestingAction(view: View){
+        var testingIntent = Intent().setClassName(this,"com.example.sapphireassistantframework.CoreService")
+        testingIntent.action = "ACTION_SAPPHIRE_TESTING"
+        startService(testingIntent)
+    }
+
 
     override fun onResume() {
         super.onResume()

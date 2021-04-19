@@ -1,8 +1,11 @@
 package com.example.calendarskill
 
+import android.app.PendingIntent
 import android.content.Intent
+import android.net.ParseException
 import android.net.Uri
 import android.os.IBinder
+import android.widget.Toast
 import com.example.componentframework.SapphireFrameworkRegistrationService
 import java.io.File
 import java.io.FileInputStream
@@ -19,8 +22,26 @@ class CalendarModuleInstallService: SapphireFrameworkRegistrationService(){
             ACTION_SAPPHIRE_MODULE_REGISTER -> registerModule(intent)
             ACTION_REQUEST_FILE_DATA -> sendFileNames(intent)
             ACTION_MANIPULATE_FILE_DATA -> coreTransferFile(intent)
+            "ACTION_SAPPHIRE_TESTING" -> landingFunction()
+            "ACTION_SAPPHIRE_DEMO" -> demoFunction()
         }
         return super.onStartCommand(intent, flags, startId)
+    }
+
+    fun demoFunction(){
+        Log.d(CLASS_NAME,"Demo function works fine")
+    }
+
+    fun landingFunction(){
+        Log.d(CLASS_NAME,"Testing intent received")
+        var outgoingIntent = Intent().setClassName("com.example.sapphireassistantframework","com.example.sapphireassistantframework.CoreService")
+        var localIntent = Intent().setClassName(this,"com.example.calendarskill.CalendarModuleInstallService")
+        var pendingIntent = PendingIntent.getService(this,1,localIntent, 0)
+
+        outgoingIntent.putExtra("PENDING",pendingIntent)
+        outgoingIntent.action = "ACTION_SAPPHIRE_TESTING_RESPONSE"
+        Log.d(CLASS_NAME, "Sending PendingIntent")
+        startService(outgoingIntent)
     }
 
     // This sends a list of filenames that this module wishes to put in the core FileServer
