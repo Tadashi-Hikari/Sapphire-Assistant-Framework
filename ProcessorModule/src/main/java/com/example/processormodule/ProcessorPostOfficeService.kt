@@ -10,11 +10,12 @@ class ProcessorPostOfficeService: SapphireFrameworkRegistrationService(){
 
 	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 		try {
-			when(intent!!.action) {
-				ACTION_SAPPHIRE_MODULE_REGISTER -> registerModule(intent)
-				"ACTION_PROCESSOR_TRAIN" -> passthrough(intent,"ProcessorTrainingService")
-				"ACTION_PROCESSOR_CLASSIFY" -> passthrough(intent,"ProcessorCentralService")
-				else -> Log.i(CLASS_NAME,"There was some kind of error with the PostOfficeService")
+			when {
+				intent!!.action == ACTION_SAPPHIRE_MODULE_REGISTER -> registerModule(intent)
+				// Pass it right on through to the extra (temporary
+				intent.hasExtra("PROCESSOR_EXTRA") -> passthrough(intent,intent.getStringExtra("PROCESSOR_EXTRA")!!)
+				// This is temporary, just an example
+				else -> passthrough(intent, "ProcessorCentralService")
 			}
 		}catch(exception: Exception){
 			Log.i(CLASS_NAME,"There was some kind of error with the install intent")

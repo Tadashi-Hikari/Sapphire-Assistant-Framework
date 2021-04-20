@@ -13,10 +13,17 @@ class ProcessorCentralService: SapphireFrameworkService(){
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        when(intent?.action){
-            ACTION_SAPPHIRE_TRAIN -> loadClassifier()
-            "DELETE_CLASSIFIER" -> deleteClassifier()
-            else -> process(intent)
+        try{
+            when {
+                // This is just a quick action for me, will be changed
+                intent!!.action == "DELETE_CLASSIFIER" -> deleteClassifier()
+                // This is just temporary
+                else -> process(intent)
+            }
+            return super.onStartCommand(intent, flags, startId)
+        }catch (exception: Exception){
+            Log.d(CLASS_NAME,"There was an intent error w/ the processor")
+           exception.printStackTrace()
         }
         return super.onStartCommand(intent, flags, startId)
     }
@@ -80,10 +87,11 @@ class ProcessorCentralService: SapphireFrameworkService(){
         var requestedDataKeys = arrayListOf<String>("intent")
 
         intent.setClassName("com.example.sapphireassistantframework","com.example.sapphireassistantframework.CoreService")
-        // I want the requested files to go to the training service. I am just injecting this in to the ROUTE
-        intent.putExtra(ROUTE,"com.example.sapphireassistantframework;com.example.processormodule.ProcessorTrainingService")
+        // I want the requested files to go to the training service. I am just injecting this in to the ROUTE. It's injected here...
+        intent.putExtra("PROCESSOR_EXTRA","ProcessorTrainingService")
         intent.action = ACTION_REQUEST_FILE_DATA
         intent.putExtra(DATA_KEYS, requestedDataKeys)
+        // This is where it is off to next, yeah?
         intent.putExtra(FROM,"${PACKAGE_NAME};${CANONICAL_CLASS_NAME}")
         Log.i(CLASS_NAME,"Requesting ${requestedDataKeys} files")
         startService(intent)

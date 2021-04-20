@@ -52,7 +52,7 @@ abstract class SapphireFrameworkRegistrationService: SapphireFrameworkService(){
 		intent.setClassName("com.example.sapphireassistantframework","com.example.sapphireassistantframework.CoreService")
 		intent.removeExtra(FROM)
 		intent.fillIn(landingFunction(),0)
-		//intent.setAction(ACTION_SAPPHIRE_MODULE_REGISTER)
+		intent.setAction(ACTION_SAPPHIRE_MODULE_REGISTER)
 		startService(intent)
 	}
 
@@ -63,7 +63,7 @@ abstract class SapphireFrameworkRegistrationService: SapphireFrameworkService(){
 		startService(passthroughIntent)
 	}
 
-	// This is a temporary name/function
+	// This is a temporary name/function. It is for converting to PendingIntent model
 	fun landingFunction(): Intent{
 		Log.d(CLASS_NAME,"Testing intent received")
 		var outgoingIntent = Intent().setClassName("com.example.sapphireassistantframework","com.example.sapphireassistantframework.CoreService")
@@ -82,7 +82,7 @@ abstract class SapphireFrameworkRegistrationService: SapphireFrameworkService(){
 		//var something = convertFilesToSomething()
 
 		for(fileName in fileNames){
-			Log.i("SkillInstallService(Calendar)","Loading file: ${fileName}")
+			Log.i(CLASS_NAME,"Loading file: ${fileName}")
 			// Processor cycles are cheap. Worry about optimization later
 			var file = convertAssetToFile(fileName)
 
@@ -91,13 +91,14 @@ abstract class SapphireFrameworkRegistrationService: SapphireFrameworkService(){
 				// I account for the line termination in ProcessorTrainingService. I shouldn't cause, who knows what data will be sent
 				lines.add("${line}")
 			}
-			Log.v("SkillInstallService(Calendar)","Added lines: ${lines}")
+			Log.v(CLASS_NAME,"Added lines: ${lines}")
 			processorData.put(fileName,lines)
 		}
 		return processorData
 	}
 
 
+	/*
 	fun createConfigFile(filename: String){
 		try {
 			convertAssetToFile(filename)
@@ -106,7 +107,9 @@ abstract class SapphireFrameworkRegistrationService: SapphireFrameworkService(){
 			Log.v(this.javaClass.name, "Error creating configFile")
 		}
 	}
+	*/
 
+	/*
 	fun expandInternalData(directory: String){
 		var filenames = loadAssetNames(directory)
 		for(filename in filenames){
@@ -115,6 +118,7 @@ abstract class SapphireFrameworkRegistrationService: SapphireFrameworkService(){
 		}
 		Log.v(this.javaClass.name, "All assets expanded")
 	}
+	*/
 
 	// This is for getting asset filenames
 	fun loadAssetNames(directory: String): Array<String>{
