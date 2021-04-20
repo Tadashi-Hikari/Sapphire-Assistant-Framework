@@ -14,6 +14,7 @@ class ProcessorCentralService: SapphireFrameworkService(){
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         try{
+            Log.v(CLASS_NAME,"ProcessorCentralService started")
             when {
                 // This is just a quick action for me, will be changed
                 intent!!.action == "DELETE_CLASSIFIER" -> deleteClassifier()

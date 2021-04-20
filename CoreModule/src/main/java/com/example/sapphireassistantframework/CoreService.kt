@@ -410,6 +410,7 @@ class CoreService: SapphireCoreService() {
 
 	// Is this when redundant w/ validate?
 	fun handleRoute(intent: Intent){
+		Log.v(CLASS_NAME,"Handling a route. Next module or new route?")
 		when(intent.hasExtra(ROUTE)){
 			true -> nextModule(intent)
 			false -> handleNewInput(intent)
@@ -427,7 +428,7 @@ class CoreService: SapphireCoreService() {
 				startRegistrationService(connection,outgoingIntent)
 			}
 			else -> {
-				outgoingIntent.setClassName("${this.packageName}","${this.packageName}.CoreRegistrationService")
+				outgoingIntent.setClassName(PACKAGE_NAME,"${this.packageName}.CoreRegistrationService")
 				startService(outgoingIntent)
 			}
 		}
@@ -436,6 +437,7 @@ class CoreService: SapphireCoreService() {
 	fun nextModule(intent: Intent){
 		// This gets the next module in line
 		var route = intent.getStringExtra(ROUTE)!!
+		// This needs to be expanding the route variable to an actual place
 		var cleanedRoute = expandRoute(route).split(",")
 		Log.d("MODULE", intent.getStringExtra(ROUTE)!!)
 		var module = cleanedRoute.get(0).split(";")
@@ -444,15 +446,24 @@ class CoreService: SapphireCoreService() {
 		intent.putExtra(ROUTE,route.toString())
 
 		intent.setClassName(module.component1(),module.component2())
-		dispatchSapphireServiceFromCore(intent)
+		var validatedIntent = validatePostage(intent)
+		// This should be the go to for whatever is next in the route
+		var pendingIntent = pendingIntentLedger.get(cleanedRoute.get(0))!!
+		Log.d(CLASS_NAME,"PendingIntent creator package: ${pendingIntent.creatorPackage}")
+		pendingIntent.send(this,0,validatedIntent)
 	}
 
 	fun handleNewInput(intent: Intent){
 		// Does this load from the proper place (such as a local file)?
+		Log.v(CLASS_NAME,"Handling new input")
 		var routeTable = loadTable(ROUTE_TABLE)
+		Log.v(CLASS_NAME,"Loaded route table: ${routeTable}")
 		when{
+			// This isn't doing a conversion for default? Maybe it is in nextModule
 			routeTable.has(intent.getStringExtra(FROM)) -> {
-				intent.putExtra(ROUTE,routeTable.getString(intent.getStringExtra(FROM)))
+				intent.putExtra(ROUTE,routeTable.getString(intent.getStringExtra(FROM)!!))
+				Log.v(CLASS_NAME, "Hit for ${intent.getStringExtra(FROM)}")
+				Log.v(CLASS_NAME,"Heading along route ${intent.getStringExtra(ROUTE)}")
 				nextModule(intent)
 			}
 			else -> defaultPath(intent)
@@ -464,6 +475,7 @@ class CoreService: SapphireCoreService() {
 	}
 
 	fun initialize(intent: Intent){
+		Log.v(CLASS_NAME,"Initializing")
 		// Might want to try/catch this
 		for(key in intent.getStringArrayListExtra(DATA_KEYS)!!){
 			Log.d(CLASS_NAME,"Offloading PendingIntent for ${key}")

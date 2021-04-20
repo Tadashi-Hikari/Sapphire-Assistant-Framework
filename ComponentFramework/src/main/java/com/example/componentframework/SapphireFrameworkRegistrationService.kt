@@ -6,6 +6,7 @@ import android.os.IBinder
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStreamReader
+import kotlin.random.Random
 
 abstract class SapphireFrameworkRegistrationService: SapphireFrameworkService(){
 
@@ -63,7 +64,7 @@ abstract class SapphireFrameworkRegistrationService: SapphireFrameworkService(){
 	open fun passthrough(intent: Intent, className: String){
 		// This allows certain information to be passed through
 		var passthroughIntent = Intent(intent)
-		passthroughIntent.setClassName(PACKAGE_NAME,"${PACKAGE_NAME}.${className}")
+		passthroughIntent.setClassName(PACKAGE_NAME,className)
 		startService(passthroughIntent)
 	}
 
@@ -72,7 +73,8 @@ abstract class SapphireFrameworkRegistrationService: SapphireFrameworkService(){
 		Log.d(CLASS_NAME,"Testing intent received")
 		var outgoingIntent = Intent().setClassName("com.example.sapphireassistantframework","com.example.sapphireassistantframework.CoreService")
 		var localIntent = Intent().setClassName(PACKAGE_NAME,CLASS_NAME)
-		var pendingIntent = PendingIntent.getService(this,1,localIntent, 0)
+		// This is a temporary way of giving it a system unique ID
+		var pendingIntent = PendingIntent.getService(this, Random.nextInt(),localIntent, 0)
 
 		outgoingIntent.putExtra("PENDING",pendingIntent)
 		Log.d(CLASS_NAME, "Sending PendingIntent")
