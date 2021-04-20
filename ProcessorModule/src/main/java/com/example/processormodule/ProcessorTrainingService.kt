@@ -18,6 +18,7 @@ class ProcessorTrainingServiceUpdated: SapphireFrameworkService(){
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         try{
+            Log.v(CLASS_NAME,"ProcessorTrainingService started")
             train(intent)
         }catch(exception: Exception){
             Log.d(CANONICAL_CLASS_NAME, "There was an error with the received intent. It was lacking some stuff, I suspect")

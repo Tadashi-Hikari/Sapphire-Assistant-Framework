@@ -68,10 +68,14 @@ class CoreRegistrationService: SapphireCoreService(){
 			finalIntent.action = ACTION_SAPPHIRE_CORE_REGISTRATION_COMPLETE
 			finalIntent.setClassName(this,"com.example.sapphireassistantframework.CoreService")
 			// Does this cast it ok?
-			var dataKeyArrayList = dataKey.toCollection(ArrayList<String>())
+			Log.v(CLASS_NAME,"Casting ${dataKey}")
+			var dataKeyArrayList = dataKey.toCollection(ArrayList())
+			Log.v(CLASS_NAME,"Cast result: ${dataKeyArrayList}")
 			finalIntent.putExtra(DATA_KEYS,dataKeyArrayList)
 			// Hopefull this works fine
 			finalIntent.fillIn(pendingIntentLedger,0)
+			Log.v(CLASS_NAME,"The defaults table is this: ${defaultModulesTable}")
+			Log.v(CLASS_NAME,"Returning PendingIntent names ${finalIntent.getStringArrayListExtra(DATA_KEYS)}")
 			startService(finalIntent)
 		}
 	}
@@ -134,10 +138,15 @@ class CoreRegistrationService: SapphireCoreService(){
 	// Save the PostOfficeService PendingIntent for CoreService
 	fun registerPendingIntent(intent: Intent){
 		try{
-			var pendingIntent = intent.getParcelableExtra<PendingIntent>("PENDING")
+			Log.v(CLASS_NAME,"Registering pending intent")
+			var pendingIntent = intent.getParcelableExtra<PendingIntent>("PENDING")!!
 			// The move to PendingIntent renders the MODULE_PACKAGE and MODULE_CLASS separation pointless
 			var moduleInfo = "${intent.getStringExtra(MODULE_PACKAGE)};${intent.getStringExtra(MODULE_CLASS)}"
+			dataKey.add(moduleInfo)
+			Log.v(CLASS_NAME,"Module info for pending intent: ${moduleInfo}")
+			Log.v(CLASS_NAME,"Pending intent info: ${pendingIntent}")
 			pendingIntentLedger.putExtra(moduleInfo,pendingIntent)
+			Log.v(CLASS_NAME,"Ledger has ${moduleInfo}?: ${pendingIntentLedger.hasExtra(moduleInfo)}")
 		}catch(exception: Exception){
 			Log.d(CLASS_NAME,"There was an error registering the PendingIntent")
 			exception.printStackTrace()
