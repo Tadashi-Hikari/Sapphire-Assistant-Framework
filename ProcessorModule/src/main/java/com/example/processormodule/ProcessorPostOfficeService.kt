@@ -30,7 +30,7 @@ class ProcessorPostOfficeService: SapphireFrameworkRegistrationService(){
 		returnIntent.putExtra("ROUTE_NAME",route)
 		returnIntent = registerRouteInformation(returnIntent, route)
 		returnIntent = registerVersion(returnIntent, VERSION)
-		registerModuleType(returnIntent,PROCESSOR)
+		returnIntent = registerModuleType(returnIntent,PROCESSOR)
 		super.registerModule(returnIntent)
 	}
 }

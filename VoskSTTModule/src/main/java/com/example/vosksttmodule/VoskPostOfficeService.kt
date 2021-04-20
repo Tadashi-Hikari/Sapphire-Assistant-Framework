@@ -41,7 +41,7 @@ class VoskPostOfficeService: SapphireFrameworkRegistrationService(){
 		// This is the unique ROUTE_NAME, so that it can be looked up
 		// Currently, this is the default. This is not currently used..., and it needs to be paired w/ route data
 		returnIntent.putExtra("ROUTE_NAME","${this.packageName};com.example.vosksttmodule.KaldiService")
-		// This is supposed to be a variable
+		// This is supposed to be a variable, will be converted by core
 		var routeData = PROCESSOR
 		returnIntent = registerRouteInformation(returnIntent, routeData)
 		returnIntent = registerModuleType(returnIntent,INPUT)

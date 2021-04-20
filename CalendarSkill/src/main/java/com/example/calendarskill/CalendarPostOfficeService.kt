@@ -69,6 +69,7 @@ class CalendarPostOfficeService: SapphireFrameworkRegistrationService(){
         finishedIntent.action = "FILE_TRANSFER_FINISHED"
         // This should not be hardcoded
         intent.setClassName("com.example.sapphireassistantframework","com.example.sapphireassistantframework.CoreService")
+        Log.i(CLASS_NAME,"File transfer finished")
         startService(finishedIntent)
     }
 

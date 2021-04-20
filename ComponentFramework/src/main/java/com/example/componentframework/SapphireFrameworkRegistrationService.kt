@@ -26,8 +26,8 @@ abstract class SapphireFrameworkRegistrationService: SapphireFrameworkService(){
 		return intent
 	}
 
-	fun registerModuleType(intent: Intent, component: String): Intent{
-		intent.putExtra(MODULE_TYPE, component)
+	fun registerModuleType(intent: Intent, type: String): Intent{
+		intent.putExtra(MODULE_TYPE, type)
 		return intent
 	}
 
@@ -51,6 +51,10 @@ abstract class SapphireFrameworkRegistrationService: SapphireFrameworkService(){
 		// This needs to not be hardcoded. I can get the info from POSTAGE
 		intent.setClassName("com.example.sapphireassistantframework","com.example.sapphireassistantframework.CoreService")
 		intent.removeExtra(FROM)
+		// This is now done by me, but I could probably slim it down even more....
+		intent.putExtra(MODULE_PACKAGE,PACKAGE_NAME)
+		intent.putExtra(MODULE_CLASS,CLASS_NAME)
+
 		intent.fillIn(landingFunction(),0)
 		intent.setAction(ACTION_SAPPHIRE_MODULE_REGISTER)
 		startService(intent)
