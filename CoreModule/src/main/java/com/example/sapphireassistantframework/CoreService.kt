@@ -81,8 +81,6 @@ class CoreService: SapphireCoreService() {
 			intent?.action == ACTION_REQUEST_FILE_DATA -> return true
 			// I think this might now work easy for requesting modules vs installing modules
 			intent?.action == ACTION_MANIPULATE_FILE_DATA -> return true
-			intent?.action == "ACTION_SAPPHIRE_TESTING" -> return true
-			intent?.action == "ACTION_SAPPHIRE_TESTING_RESPONSE" -> return true
 			intent?.hasExtra(FROM) == true -> return true
 			intent?.hasExtra(ROUTE) == true -> return true
 			else -> return false
@@ -133,7 +131,7 @@ class CoreService: SapphireCoreService() {
 		}
 	}
 
-	// This is just to see how PendingIntent works...
+	/*
 	fun pendingRetrieve(intent: Intent){
 		if(intent.action == "ACTION_SAPPHIRE_TESTING_RESPONSE") {
 			unbindService(connection)
@@ -149,6 +147,7 @@ class CoreService: SapphireCoreService() {
 			startRegistrationService(connection,calendarIntent)
 		}
 	}
+	 */
 
 	fun fileService(intent: Intent?) {
 		when (intent!!.action) {
@@ -219,9 +218,11 @@ class CoreService: SapphireCoreService() {
 								}
 								false -> {
 									Log.v(CLASS_NAME,"${moduleFileList.getString(index)} is not yet local, it seems")
-									if((multiprocessRoute.isNullOrEmpty()) or (multiprocessRoute.contains(moduleId) == false)){
+									if((multiprocessRoute.contains(moduleId) == false)){
 										Log.d(CLASS_NAME,"Adding ${moduleId} to multiprocessRoute list")
 										multiprocessRoute.add(moduleId)
+									}else{
+										Log.d(CLASS_NAME, "This module has already been added to the stack")
 									}
 									when{
 										outgoingIntent.data == null -> {
@@ -273,7 +274,13 @@ class CoreService: SapphireCoreService() {
 				Log.i(CLASS_NAME,"New route: ${outgoingIntent.getStringExtra(ROUTE)}")
 			}
 			// I need to send this info w/ the multiprocess, or have it waiting. Like a dual multiprocess
-			startPendingService()
+			var defaultsJSON = loadTable(DEFAULT_MODULES_TABLE)
+			Log.i(CLASS_NAME,"Trying to load ${MULTIPROCESS}")
+			var multiprocessor = defaultsJSON.getString(MULTIPROCESS)
+			Log.v(CLASS_NAME,"Sending the user to ${multiprocessor}")
+			var pendingIntent = pendingIntentLedger.get(multiprocessor)!!
+			// This is a test
+			pendingIntent.send(this,1,outgoingIntent)
 		}catch(exception: Exception){
 			Log.e(CLASS_NAME,"Check the way you are removing items from the list. Seems like it will cause bugs")
 			exception.printStackTrace()
@@ -461,7 +468,7 @@ class CoreService: SapphireCoreService() {
 		for(key in intent.getStringArrayListExtra(DATA_KEYS)!!){
 			Log.d(CLASS_NAME,"Offloading PendingIntent for ${key}")
 			// Whelp, just load it up...
-			pendingIntentLedger.put(key,intent.getParcelableExtra<PendingIntent>(key)!!)
+			pendingIntentLedger.put(key,intent.getParcelableExtra(key)!!)
 		}
 		startBackgroundServices()
 		initialized = true

@@ -21,8 +21,9 @@ class MultiprocessPostOfficeService: SapphireFrameworkRegistrationService(){
 	}
 
 	override fun registerModule(intent: Intent){
+		Log.v(CLASS_NAME,"Registering ${PACKAGE_NAME}")
 		var registerIntent = Intent(intent)
-		registerModuleType(registerIntent,MULTIPROCESS)
+		registerIntent = registerModuleType(registerIntent,MULTIPROCESS)
 		registerIntent = registerVersion(registerIntent, VERSION)
 		super.registerModule(registerIntent)
 	}

@@ -184,7 +184,7 @@ class CoreRegistrationService: SapphireCoreService(){
 
 	// This is generic to the whole core
 	fun registerDefaults(intent: Intent?){
-		Log.v(this.javaClass.name,"Checking defaults...")
+		Log.v(CLASS_NAME,"Checking defaults...")
 		var installPackageName = intent!!.getStringExtra(MODULE_PACKAGE)
 		var installClassName = intent!!.getStringExtra(MODULE_CLASS)
 
@@ -193,9 +193,8 @@ class CoreRegistrationService: SapphireCoreService(){
 			if(intent!!.hasExtra(MODULE_TYPE)) {
 				var type = intent.getStringExtra(MODULE_TYPE)
 				Log.v(this.javaClass.name,"testing default data for ${key}: ${installPackageName};${installClassName}...")
-				if ((type == key) and (defaultModulesTable.optString(key).isNullOrBlank())
-				) {
-					Log.i(this.javaClass.name,"Match found for ${key}. Saving default data...")
+				if ((type == key) and (defaultModulesTable.optString(key).isNullOrBlank())) {
+					Log.i(CLASS_NAME,"Match found for ${key}. Saving default data...")
 					defaultModulesTable.put(key, "${installPackageName};${installClassName}")
 					changed = true
 				}

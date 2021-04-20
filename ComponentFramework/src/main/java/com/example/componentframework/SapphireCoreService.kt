@@ -56,6 +56,5 @@ abstract class SapphireCoreService: SapphireFrameworkService(){
 	}
 
 	fun startPendingService(){
-
 	}
 }

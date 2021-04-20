@@ -20,11 +20,8 @@ class CoreModuleInstallService: SapphireFrameworkRegistrationService(){
 
     override fun registerModule(intent: Intent){
         var returnIntent = Intent(intent)
-        returnIntent.putExtra(MODULE_PACKAGE,this.packageName)
-
-        // Not needed, cause it's set in the CoreRegistrationService. This will be an issue w/ multiple entries though
-        //returnIntent.putExtra(MODULE_CLASS,"${this.packageName}.CoreService")
-        registerModuleType(returnIntent,CORE)
+        // This could throw an error, since the install service is separate from the PostOffice
+        returnIntent = registerModuleType(returnIntent,CORE)
         returnIntent = registerVersion(returnIntent,VERSION)
 
         super.registerModule(returnIntent)
