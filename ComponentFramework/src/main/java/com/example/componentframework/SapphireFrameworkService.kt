@@ -51,6 +51,8 @@ abstract class SapphireFrameworkService: Service() {
 	val ROUTE="assistant.framework.protocol.ROUTE"
 	val FROM= "assistant.framework.protocol.FROM"
 	val ID = "assistant.framework.module.protocol.ID"
+	// Is this temp or nah
+	val RECEIPIANT = "assistant.framework.module.protocol.RECEIPIANT"
 
 	// Maybe this should be used elsewhere...
 	var STARTUP_ROUTE = "assistant.framework.protocol.STARTUP_ROUTE"

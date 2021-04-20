@@ -16,6 +16,7 @@ abstract class SapphireCoreService: SapphireFrameworkService(){
 	private val ROUTE_TABLE = "routetable.tbl"
 	private val ALIAS_TABLE = "alias.tbl"
 
+	// Hmm.... This is close to just passthrough
 	fun passthroughService(intent: Intent){
 		var postage = intent.getStringExtra(POSTAGE)!!
 		postage = validatePostage(postage)
@@ -52,5 +53,9 @@ abstract class SapphireCoreService: SapphireFrameworkService(){
 		// I just need enough time for the service to init, and be non-background
 		SystemClock.sleep(700)
 		startService(intent)
+	}
+
+	fun startPendingService(){
+
 	}
 }

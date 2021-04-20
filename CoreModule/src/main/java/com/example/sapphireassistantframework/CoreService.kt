@@ -129,8 +129,6 @@ class CoreService: SapphireCoreService() {
 				ACTION_SAPPHIRE_INITIALIZE -> startRegistrationService()
 				ACTION_SAPPHIRE_CORE_REGISTRATION_COMPLETE -> initialize(intent)
 				ACTION_SAPPHIRE_MODULE_REGISTER -> forwardRegistration(intent)
-				"ACTION_SAPPHIRE_TESTING" -> pendingRetrieve(intent)
-				"ACTION_SAPPHIRE_TESTING_RESPONSE" -> pendingRetrieve(intent)
 			}
 		}
 	}
@@ -275,7 +273,7 @@ class CoreService: SapphireCoreService() {
 				Log.i(CLASS_NAME,"New route: ${outgoingIntent.getStringExtra(ROUTE)}")
 			}
 			// I need to send this info w/ the multiprocess, or have it waiting. Like a dual multiprocess
-			startRegistrationService(connection,outgoingIntent)
+			startPendingService()
 		}catch(exception: Exception){
 			Log.e(CLASS_NAME,"Check the way you are removing items from the list. Seems like it will cause bugs")
 			exception.printStackTrace()
@@ -333,7 +331,7 @@ class CoreService: SapphireCoreService() {
 		}
 		// give permission to access these URIS. The should be readable, not editable
 		outgoingIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-		startRegistrationService(connection,outgoingIntent)
+		startPendingService()
 	}
 
 	// I already did all of the prepping in request for local, so just redirect it?
@@ -346,7 +344,7 @@ class CoreService: SapphireCoreService() {
 		outgoingIntent.setClassName(packageClass[0],packageClass[1])
 
 		// I have to figre out what to do with this intent
-		startRegistrationService(connection,outgoingIntent)
+		startPendingService()
 	}
 
 	fun requestBridge(intent: Intent){
@@ -397,8 +395,7 @@ class CoreService: SapphireCoreService() {
 				counter++
 			}
 
-			// I have to figre out what to do with this intent
-			startRegistrationService(connection,manipulateIntent)
+
 		}catch(exception: Exception){
 			Log.d(this.javaClass.name,"There was an error generating the coreFiles and sending the URIs")
 		}
