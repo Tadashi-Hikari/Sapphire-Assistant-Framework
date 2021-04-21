@@ -80,7 +80,7 @@ class CalendarPostOfficeService: SapphireFrameworkRegistrationService(){
             var somethingFD = contentResolver.openFileDescriptor(uri,"wa")!!
             var fd = somethingFD.fileDescriptor
             var outputStream = FileOutputStream(fd)
-            outputStream.write(". This is appended".toByteArray())
+            outputStream.write("This text you are reading was appended to the file".toByteArray())
             Log.i(this.javaClass.name,"Did it write?")
 
             // This is the essential part, when it comes to editing a file
