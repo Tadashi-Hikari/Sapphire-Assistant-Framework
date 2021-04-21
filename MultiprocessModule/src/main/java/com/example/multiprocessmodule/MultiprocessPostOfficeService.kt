@@ -12,7 +12,7 @@ class MultiprocessPostOfficeService: SapphireFrameworkRegistrationService(){
 			when(intent!!.action) {
 				ACTION_SAPPHIRE_MODULE_REGISTER -> registerModule(intent)
 				// The default is to just forward it along
-				else -> passthrough(intent,"MultiprocessService")
+				else -> passthrough(intent,"com.example.multiprocessmodule.MultiprocessService")
 			}
 		}catch(exception: Exception){
 			Log.i(CLASS_NAME,"There was some kind of error with the install intent")

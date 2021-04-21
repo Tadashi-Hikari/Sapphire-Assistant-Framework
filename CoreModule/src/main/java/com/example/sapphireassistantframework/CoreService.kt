@@ -131,28 +131,11 @@ class CoreService: SapphireCoreService() {
 		}
 	}
 
-	/*
-	fun pendingRetrieve(intent: Intent){
-		if(intent.action == "ACTION_SAPPHIRE_TESTING_RESPONSE") {
-			unbindService(connection)
-			Log.d(CLASS_NAME, "Retrieving PendingIntent")
-			var additionalIntent = Intent().setAction("ACTION_SAPPHIRE_DEMO")
-			var pendingIntent = intent.getParcelableExtra<PendingIntent>("PENDING")!!
-			// Will this work?
-			pendingIntent.send(this, 1, additionalIntent,)
-		}else if(intent.action == "ACTION_SAPPHIRE_TESTING"){
-			Log.d(CLASS_NAME,"Requesting PendingIntent")
-			var calendarIntent = Intent(intent)
-			calendarIntent.setClassName("com.example.calendarskill","com.example.calendarskill.CalendarPostOfficeService")
-			startRegistrationService(connection,calendarIntent)
-		}
-	}
-	 */
-
 	fun fileService(intent: Intent?) {
 		when (intent!!.action) {
 			// How to tell if this is install, or request
 			ACTION_REQUEST_FILE_DATA -> newCheckForLocal(intent)
+			// The name may need to be changed... Request transfer gets forwarded to the module...
 			ACTION_MANIPULATE_FILE_DATA -> requestTransfer(intent)
 			"ACTION_BRIDGE_URI" -> Log.i(CLASS_NAME, "NOT YET IMPLEMENTED")
 		}
@@ -175,7 +158,7 @@ class CoreService: SapphireCoreService() {
 			var outgoingIntent = intent
 			// Oh wait. Where is this in the process?
 			outgoingIntent.setClassName(this,"com.example.multiprocessmodule.MultiprocessService")
-			outgoingIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+			//outgoingIntent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
 			var customLedger = JSONObject()
 			var intentCustomRecord = JSONObject()
 
@@ -226,20 +209,33 @@ class CoreService: SapphireCoreService() {
 									}
 									when{
 										outgoingIntent.data == null -> {
-											outgoingIntent.setData(FileProvider.getUriForFile(this.applicationContext,"com.example.sapphireassistantframework.fileprovider",file))
+											var uri = FileProvider.getUriForFile(this.applicationContext,"com.example.sapphireassistantframework.fileprovider",file)
+											outgoingIntent.setData(uri)
 											// the filename is the key, and the index is the size of clipdata, stored as the value
 											clipDataIndex.put("-1",file.name)
+											Log.d(CLASS_NAME,"${file.name} is the last uri needed. Adding to Data")
+											var module = moduleId.split(";")
+											Log.v(CLASS_NAME,"Granting permission to ${module[0]}")
+											grantUriPermission(module[0],uri,Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+											outgoingIntent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
 										}
 										// No clipData exists, and it will need one
 										outgoingIntent.clipData == null -> {
-											outgoingIntent.clipData = ClipData.newRawUri("FILEDATA",FileProvider.getUriForFile(this.applicationContext,"com.example.sapphireassistantframework.fileprovider",file))
+											var uri = FileProvider.getUriForFile(this.applicationContext,"com.example.sapphireassistantframework.fileprovider",file)
+											outgoingIntent.clipData = ClipData.newRawUri("FILEDATA",uri)
 											// the filename is the key, and the index is the size-1 of clipdata, stored as the value
+											Log.d(CLASS_NAME,"Creating clipData w/ uri ${file.name}")
 											clipDataIndex.put((outgoingIntent.clipData!!.itemCount-1).toString(),file.name)
+											var module = moduleId.split(";")
+											grantUriPermission(module[0],uri,Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
 										}
 										// Clip data exists, and there is more to add on!
 										outgoingIntent.clipData != null -> {
-											outgoingIntent.clipData!!.addItem(ClipData.Item(FileProvider.getUriForFile(this.applicationContext,"com.example.sapphireassistantframework.fileprovider",file)))
+											var uri = FileProvider.getUriForFile(this.applicationContext,"com.example.sapphireassistantframework.fileprovider",file)
+											outgoingIntent.clipData!!.addItem(ClipData.Item(uri))
 											// the filename is the key, and the index is the size-1 of clipdata, stored as the value
+											Log.d(CLASS_NAME,"Adding uri for ${file.name} to clipData")
+											var module = moduleId.split(";")
 											clipDataIndex.put((outgoingIntent.clipData!!.itemCount-1).toString(),file.name)
 										}
 									}
@@ -325,12 +321,19 @@ class CoreService: SapphireCoreService() {
 				// There was some kind of error
 				filenames.size <= 0 -> Log.d(CLASS_NAME,"There was a checkForLocal error")
 				// if there is only one or it's the last one, make it the uri
-				filenames.size == 1 -> outgoingIntent.setData(uri)
+				filenames.size == 1 -> {
+					outgoingIntent.setData(uri)
+				}
 				// No clipData exists, and it will need one
-				outgoingIntent.clipData == null -> outgoingIntent.clipData = ClipData.newRawUri("FILEDATA",uri)
+				outgoingIntent.clipData == null -> {
+					outgoingIntent.clipData = ClipData.newRawUri("FILEDATA", uri)
+				}
 				// Clip data exists, and there is more to add on!
-				filenames.size > 1 -> outgoingIntent.clipData!!.addItem(ClipData.Item(uri))
-				// This should be shorthand for requesting transfer OR bridge. doesn't need to be serveFile
+				filenames.size > 1 -> {
+					outgoingIntent.clipData!!.addItem(ClipData.Item(uri))
+				}
+				// This is supposed to generate the file transfer request if it doesn't exist...
+				// This doesn't strike me as right, it's not DOING anything
 				false -> serveFile(intent)
 			}
 			// I actually think this is going to cause an error
@@ -344,14 +347,16 @@ class CoreService: SapphireCoreService() {
 	// I already did all of the prepping in request for local, so just redirect it?
 	fun requestTransfer(intent: Intent){
 		var outgoingIntent = Intent(intent)
-		Log.v(this.javaClass.name,"Generating Core file for ${DATA_KEYS}")
+		Log.v(CLASS_NAME,"Generating Core file for ${outgoingIntent.getStringArrayListExtra(DATA_KEYS)}")
 		// This is temporary
 		var module = outgoingIntent.getStringExtra("TO")!!
 		var packageClass = module.split(";")
 		outgoingIntent.setClassName(packageClass[0],packageClass[1])
+		// Do I need to hand it the URI?
 
-		// I have to figre out what to do with this intent
-		startPendingService()
+		// I have to figure out what to do with this intent
+		var pendingIntent = pendingIntentLedger.get(module)!!
+		pendingIntent.send(this,1,outgoingIntent)
 	}
 
 	fun requestBridge(intent: Intent){
@@ -374,6 +379,7 @@ class CoreService: SapphireCoreService() {
 		}
 	}
 
+	// I don't see the logic to pass along this information...
 	fun serveFile(intent: Intent){
 		try{
 			var manipulateIntent = Intent()
@@ -532,4 +538,22 @@ class CoreService: SapphireCoreService() {
 		notificationManager.cancel(1337)
 		super.onDestroy()
 	}
+
+	/*
+fun pendingRetrieve(intent: Intent){
+    if(intent.action == "ACTION_SAPPHIRE_TESTING_RESPONSE") {
+        unbindService(connection)
+        Log.d(CLASS_NAME, "Retrieving PendingIntent")
+        var additionalIntent = Intent().setAction("ACTION_SAPPHIRE_DEMO")
+        var pendingIntent = intent.getParcelableExtra<PendingIntent>("PENDING")!!
+        // Will this work?
+        pendingIntent.send(this, 1, additionalIntent,)
+    }else if(intent.action == "ACTION_SAPPHIRE_TESTING"){
+        Log.d(CLASS_NAME,"Requesting PendingIntent")
+        var calendarIntent = Intent(intent)
+        calendarIntent.setClassName("com.example.calendarskill","com.example.calendarskill.CalendarPostOfficeService")
+        startRegistrationService(connection,calendarIntent)
+    }
+}
+ */
 }
