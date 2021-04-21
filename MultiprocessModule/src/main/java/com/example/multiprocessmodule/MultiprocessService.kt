@@ -69,14 +69,13 @@ class MultiprocessService: SapphireFrameworkService(){
 	fun handleNewMultiprocessIntent(intent: Intent?){
 		// I need another nested if to handle w/ a multiprocess may have no modification
 		if(intent!!.hasExtra("CUSTOM_MULTIPROCESS")){
+			// This is definitely duplicate
 			var multiprocessIntent = prepareIntent(intent!!)
-			var customIntent = Intent()
+			var customIntent = Intent(intent)
 			// This holds a subJSON for each intent
 			var customLedger = JSONObject(intent.getStringExtra("CUSTOM_MULTIPROCESS"))
 			Log.d(CLASS_NAME,"customJSON = ${customLedger}")
 			// I need blank to REMOVE things from here, so that I can retain the URI permissions
-			// I somehow doubt this will let the permissions pass over
-			customIntent.flags = intent.flags
 
 			// Copied from below
 			storedIntents.add(multiprocessIntent)
@@ -127,7 +126,10 @@ class MultiprocessService: SapphireFrameworkService(){
 									// When JSONDataKeys has
 									when(jsonDataKeys.getString(index)){
 										// Why did I pick negative one?...
-										"-1" -> customIntent.data = intent.data
+										"-1" -> {
+											Log.v(CLASS_NAME,"Copying Uri for ${intent.data.toString()}")
+											customIntent.data = intent.data
+										}
 										// This may throw an error. Gotta be super careful
 										"0" -> customIntent.clipData = ClipData.newRawUri("Copied",intent.clipData!!.getItemAt(0).uri)
 										// This copies the string index value, and converts it to an int to extract and attach said URI
@@ -150,6 +152,8 @@ class MultiprocessService: SapphireFrameworkService(){
 					}
 				}
 				Log.d(CLASS_NAME,"Sending out a customIntent, action ${customIntent.action}")
+				Log.d(CLASS_NAME,"This is where it is going to: ${customIntent.getStringExtra("TO")}")
+				Log.d(CLASS_NAME, "Should have Uri for ${customIntent.getStringArrayListExtra(DATA_KEYS)}")
 				returnSapphireService(customIntent)
 				intentLedger.put(multiprocessIntent.getIntExtra(MULTIPROCESS_ID,-1).toString(), intentRecord)
 			}
