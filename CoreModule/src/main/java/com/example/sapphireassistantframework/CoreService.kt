@@ -81,6 +81,7 @@ class CoreService: SapphireCoreService() {
 			intent?.action == ACTION_REQUEST_FILE_DATA -> return true
 			// I think this might now work easy for requesting modules vs installing modules
 			intent?.action == ACTION_MANIPULATE_FILE_DATA -> return true
+			intent?.action == "FILE_TRANSFER_FINISHED" -> return true
 			intent?.hasExtra(FROM) == true -> return true
 			intent?.hasExtra(ROUTE) == true -> return true
 			else -> return false
