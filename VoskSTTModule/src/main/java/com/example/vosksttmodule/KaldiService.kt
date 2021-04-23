@@ -32,12 +32,12 @@ class KaldiService: RecognitionListener, SapphireFrameworkService(){
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.v(this.javaClass.name,"KaldiService intent received")
+        Log.v("KaldiService intent received")
         return super.onStartCommand(intent, flags, startId)
     }
 
     override fun onBind(intent: Intent?): IBinder {
-        Log.i(CLASS_NAME,"kaldi service started")
+        Log.i("kaldi service started")
         var binder: IBinder = Binder()
 
         return binder
@@ -50,7 +50,7 @@ class KaldiService: RecognitionListener, SapphireFrameworkService(){
             var intent = Intent()
             intent.setClassName(this,"${this.packageName}.voiceassistant.CoreVoiceInteractionService")
             intent.setAction("android.speech.RecognitionService")
-            Log.i(this.javaClass.name,"Sending to assistant....")
+            Log.i("Sending to assistant....")
             //recognizer.cancel()
             //recognizer.shutdown()
             startService(intent)
@@ -60,7 +60,7 @@ class KaldiService: RecognitionListener, SapphireFrameworkService(){
             // This is a input module, it should always be sending to core. How would I wrap it?
             var coreServiceIntent: Intent = Intent()
             coreServiceIntent.putExtra(MESSAGE, utterance)
-            Log.i("KaldiService", "Utterance hypothesis dispatched")
+            Log.i("Utterance hypothesis dispatched")
             returnSapphireService(coreServiceIntent)
         }
     }
@@ -70,7 +70,7 @@ class KaldiService: RecognitionListener, SapphireFrameworkService(){
         var result = StringBuilder()
 
         var assets = Assets(this)
-        Log.i("KaldiService","Created the assets object")
+        Log.i("Created the assets object")
         var assetDir: File = assets.syncAssets()
 
         Vosk.SetLogLevel(0)
@@ -92,11 +92,11 @@ class KaldiService: RecognitionListener, SapphireFrameworkService(){
         intent.setAction(sapphireService.ACTION_SAPPHIRE_INITIALIZE)
         startService(intent)
         recognizer.startListening()
-        Log.i(CLASS_NAME,"Listening Started")
+        Log.i("Listening Started")
     }
 
     override fun onError(p0: Exception?) {
-        Log.e("KaldiService", "Kaldi ran into an error")
+        Log.e("Kaldi ran into an error")
         // fix the error, or tell the user
     }
 
@@ -110,7 +110,7 @@ class KaldiService: RecognitionListener, SapphireFrameworkService(){
     override fun onResult(hypothesis: String) {
         // print/pass the output, restart the loop
 
-        Log.i("KaldiService","Result: ${hypothesis}")
+        Log.i("Result: ${hypothesis}")
         // This sends the utterance to CoreService
         sendUtterance(hypothesis)
     }

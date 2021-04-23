@@ -14,10 +14,10 @@ class VoskPostOfficeService: SapphireFrameworkRegistrationService(){
 		try {
 			when(intent!!.action){
 				ACTION_SAPPHIRE_MODULE_REGISTER -> registerModule(intent!!)
-				else -> Log.i(CLASS_NAME,"There was some kind of error with the PostOfficeService")
+				else -> Log.i("There was some kind of error with the PostOfficeService")
 			}
 		}catch(exception: Exception){
-			Log.e(this.javaClass.name,"There was some kind of error with the install intent")
+			Log.e("There was some kind of error with the install intent")
 		}
 		return super.onStartCommand(intent, flags, startId)
 	}

@@ -13,7 +13,7 @@ class CoreModuleInstallService: SapphireFrameworkRegistrationService(){
                 registerModule(intent!!)
             }
         }catch(exception: Exception){
-             Log.e(this.javaClass.name,"There was some kind of error with the install intent")
+             Log.e("There was some kind of error with the install intent")
         }
         return super.onStartCommand(intent, flags, startId)
     }

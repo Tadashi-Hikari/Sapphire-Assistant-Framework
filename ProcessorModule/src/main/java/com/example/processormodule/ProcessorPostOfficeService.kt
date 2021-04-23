@@ -9,8 +9,8 @@ class ProcessorPostOfficeService: SapphireFrameworkRegistrationService(){
 	val VERSION = "0.0.1"
 
 	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-		Log.v(CLASS_NAME,"Processor started")
-		Log.v(CLASS_NAME,intent?.extras.toString())
+		Log.v("Processor started")
+		Log.v(intent?.extras.toString())
 		try {
 			when{
 				intent!!.action == ACTION_SAPPHIRE_MODULE_REGISTER -> registerModule(intent)
@@ -20,7 +20,7 @@ class ProcessorPostOfficeService: SapphireFrameworkRegistrationService(){
 				else -> passthrough(intent, "com.example.processormodule.ProcessorCentralService")
 			}
 		}catch(exception: Exception){
-			Log.i(CLASS_NAME,"There was some kind of error with the install intent")
+			Log.i("There was some kind of error with the install intent")
 		}
 		return super.onStartCommand(intent, flags, startId)
 	}
