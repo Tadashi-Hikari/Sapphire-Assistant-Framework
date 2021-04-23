@@ -14,7 +14,7 @@ class ProcessorCentralService: SapphireFrameworkService(){
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         try{
-            Log.v(CLASS_NAME,"ProcessorCentralService started")
+            Log.v("ProcessorCentralService started")
             when {
                 // This is just a quick action for me, will be changed
                 intent!!.action == "DELETE_CLASSIFIER" -> deleteClassifier()
@@ -23,7 +23,7 @@ class ProcessorCentralService: SapphireFrameworkService(){
             }
             return super.onStartCommand(intent, flags, startId)
         }catch (exception: Exception){
-            Log.d(CLASS_NAME,"There was an intent error w/ the processor")
+            Log.d("There was an intent error w/ the processor")
            exception.printStackTrace()
         }
         return super.onStartCommand(intent, flags, startId)
@@ -36,21 +36,21 @@ class ProcessorCentralService: SapphireFrameworkService(){
 
         try{
             if(utterance != ""){
-                Log.i("ProcessorCentralService","Loading the classifier")
+                Log.i("Loading the classifier")
                 var classifier = loadClassifier()
                 // This is specific to how CoreNLP works
                 var datumToClassify = classifier.makeDatumFromLine("none\t${utterance}")
                 // Can these two be combined, or done at the same time?
                 var classifiedDatum = classifier.classOf(datumToClassify)
                 var classifiedScores = classifier.scoresOf(datumToClassify)
-                Log.v("ProcessorCentralService","Datum classification: ${classifiedDatum}")
+                Log.v("Datum classification: ${classifiedDatum}")
                 // This is an arbitrary number, and should probably be a configurable variable
                 if(classifiedScores.getCount(classifiedDatum) >= .04){
-                    Log.i("ProcessorCentralService","Text matches class ${classifiedDatum}")
+                    Log.i("Text matches class ${classifiedDatum}")
                     // This could be an issue with the new design
                     outgoingIntent.putExtra(ROUTE,classifiedDatum)
                 }else {
-                    Log.i("ProcessorCentralService","Text does not match a class. Using default")
+                    Log.i("Text does not match a class. Using default")
                     // This could be an issue with the new design
                     outgoingIntent.putExtra(ROUTE,"DEFAULT")
                 }
@@ -65,7 +65,7 @@ class ProcessorCentralService: SapphireFrameworkService(){
                 startService(outgoingIntent)
             }
         }catch(exception: Exception){
-            Log.e("ProcessorCentralService","There was an error trying to process the text")
+            Log.e("There was an error trying to process the text")
         }
     }
 
@@ -94,7 +94,7 @@ class ProcessorCentralService: SapphireFrameworkService(){
         intent.putExtra(DATA_KEYS, requestedDataKeys)
         // This is where it is off to next, yeah?
         intent.putExtra(FROM,"${PACKAGE_NAME};${CANONICAL_CLASS_NAME}")
-        Log.i(CLASS_NAME,"Requesting ${requestedDataKeys} files")
+        Log.i("Requesting ${requestedDataKeys} files")
         startService(intent)
         // This is temporary
         stopSelf()

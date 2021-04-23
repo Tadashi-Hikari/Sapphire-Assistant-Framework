@@ -41,7 +41,7 @@ class CoreRegistrationService: SapphireCoreService(){
 
 	override fun onCreate() {
 		super.onCreate()
-		Log.i(CLASS_NAME,"Starting registration service")
+		Log.i("Starting registration service")
 		loadAllTables()
 	}
 
@@ -49,7 +49,7 @@ class CoreRegistrationService: SapphireCoreService(){
 		when(intent?.action){
 			ACTION_SAPPHIRE_INITIALIZE -> scanModules()
 			ACTION_SAPPHIRE_MODULE_REGISTER -> registerModule(intent)
-			else -> Log.e(this.javaClass.name, "There was an issue with the registration intent. Dispatching remaining intents")
+			else -> Log.e( "There was an issue with the registration intent. Dispatching remaining intents")
 		}
 		dispatchRemainingIntents()
 		return super.onStartCommand(intent, flags, startId)
@@ -59,23 +59,23 @@ class CoreRegistrationService: SapphireCoreService(){
 		if(sapphireModuleStack.isNotEmpty()){
 			// Pop it from the stack, and dispatch it.
 			// Do I need to redirect this to core? ugh, I think I do
-			Log.i(CLASS_NAME,"Dispatching ${sapphireModuleStack.last().getStringExtra(MODULE_CLASS)!!}")
+			Log.i("Dispatching ${sapphireModuleStack.last().getStringExtra(MODULE_CLASS)!!}")
 			// Remove the last one in the list
 			returnSapphireService(sapphireModuleStack.removeAt(sapphireModuleStack.size-1))
 		}else{
-			Log.i(CLASS_NAME,"All modules registered")
+			Log.i("All modules registered")
 			var finalIntent = Intent()
 			finalIntent.action = ACTION_SAPPHIRE_CORE_REGISTRATION_COMPLETE
 			finalIntent.setClassName(this,"com.example.sapphireassistantframework.CoreService")
 			// Does this cast it ok?
-			Log.v(CLASS_NAME,"Casting ${dataKey}")
+			Log.v("Casting ${dataKey}")
 			var dataKeyArrayList = dataKey.toCollection(ArrayList())
-			Log.v(CLASS_NAME,"Cast result: ${dataKeyArrayList}")
+			Log.v("Cast result: ${dataKeyArrayList}")
 			finalIntent.putExtra(DATA_KEYS,dataKeyArrayList)
 			// Hopefull this works fine
 			finalIntent.fillIn(pendingIntentLedger,0)
-			Log.v(CLASS_NAME,"The defaults table is this: ${defaultModulesTable}")
-			Log.v(CLASS_NAME,"Returning PendingIntent names ${finalIntent.getStringArrayListExtra(DATA_KEYS)}")
+			Log.v("The defaults table is this: ${defaultModulesTable}")
+			Log.v("Returning PendingIntent names ${finalIntent.getStringArrayListExtra(DATA_KEYS)}")
 			startService(finalIntent)
 		}
 	}
@@ -83,7 +83,7 @@ class CoreRegistrationService: SapphireCoreService(){
 	fun scanModules(){
 		var templateIntent = Intent().setAction(ACTION_SAPPHIRE_MODULE_REGISTER)
 		var availableSapphireModules = this.packageManager.queryIntentServices(templateIntent,GET_RESOLVED_FILTER)
-		Log.i(CLASS_NAME,"${availableSapphireModules.size} modules found")
+		Log.i("${availableSapphireModules.size} modules found")
 
 		for(module in availableSapphireModules){
 			try{
@@ -97,7 +97,7 @@ class CoreRegistrationService: SapphireCoreService(){
 				// Add it to the stack (yes, I know it's not a literal stack)
 				sapphireModuleStack.add(registrationIntent)
 			}catch(exception: Exception){
-				Log.d(CLASS_NAME,exception.toString())
+				Log.d(exception.toString())
 				continue
 			}
 		}
@@ -124,7 +124,7 @@ class CoreRegistrationService: SapphireCoreService(){
 	}
 
 	fun registerModule(intent: Intent?){
-		Log.i(CLASS_NAME,"Registering intent")
+		Log.i("Registering intent")
 		if(newVersion()){
 			registerRoute(intent!!)
 			registerDefaults(intent!!)
@@ -138,17 +138,17 @@ class CoreRegistrationService: SapphireCoreService(){
 	// Save the PostOfficeService PendingIntent for CoreService
 	fun registerPendingIntent(intent: Intent){
 		try{
-			Log.v(CLASS_NAME,"Registering pending intent")
+			Log.v("Registering pending intent")
 			var pendingIntent = intent.getParcelableExtra<PendingIntent>("PENDING")!!
 			// The move to PendingIntent renders the MODULE_PACKAGE and MODULE_CLASS separation pointless
 			var moduleInfo = "${intent.getStringExtra(MODULE_PACKAGE)};${intent.getStringExtra(MODULE_CLASS)}"
 			dataKey.add(moduleInfo)
-			Log.v(CLASS_NAME,"Module info for pending intent: ${moduleInfo}")
-			Log.v(CLASS_NAME,"Pending intent info: ${pendingIntent}")
+			Log.v("Module info for pending intent: ${moduleInfo}")
+			Log.v("Pending intent info: ${pendingIntent}")
 			pendingIntentLedger.putExtra(moduleInfo,pendingIntent)
-			Log.v(CLASS_NAME,"Ledger has ${moduleInfo}?: ${pendingIntentLedger.hasExtra(moduleInfo)}")
+			Log.v("Ledger has ${moduleInfo}?: ${pendingIntentLedger.hasExtra(moduleInfo)}")
 		}catch(exception: Exception){
-			Log.d(CLASS_NAME,"There was an error registering the PendingIntent")
+			Log.d("There was an error registering the PendingIntent")
 			exception.printStackTrace()
 		}
 	}
@@ -177,7 +177,7 @@ class CoreRegistrationService: SapphireCoreService(){
 	// This is for keeping track of what module has what files. It acts as a CENTRAL REGISTRY *shudder*
 	fun registerFilenames(intent: Intent){
 		if(intent.hasExtra(DATA_KEYS)) {
-			Log.i(CLASS_NAME,"This module has DATA_KEYS")
+			Log.i("This module has DATA_KEYS")
 			var module = "${intent.getStringExtra(MODULE_PACKAGE)};${intent.getStringExtra(MODULE_CLASS)}"
 			var filenames = JSONArray()
 			var data_keys = intent.getStringArrayListExtra(DATA_KEYS)!!
@@ -187,13 +187,13 @@ class CoreRegistrationService: SapphireCoreService(){
 			// This saves the filelist in the table
 			filenameTable.put(module,filenames)
 		}else{
-			Log.i(CLASS_NAME,"This module has no files to share")
+			Log.i("This module has no files to share")
 		}
 	}
 
 	// This is generic to the whole core
 	fun registerDefaults(intent: Intent?){
-		Log.v(CLASS_NAME,"Checking defaults...")
+		Log.v("Checking defaults...")
 		var installPackageName = intent!!.getStringExtra(MODULE_PACKAGE)
 		var installClassName = intent!!.getStringExtra(MODULE_CLASS)
 
@@ -201,9 +201,9 @@ class CoreRegistrationService: SapphireCoreService(){
 		for(key in DEFAULT_MODULES) {
 			if(intent!!.hasExtra(MODULE_TYPE)) {
 				var type = intent.getStringExtra(MODULE_TYPE)
-				Log.v(this.javaClass.name,"testing default data for ${key}: ${installPackageName};${installClassName}...")
+				Log.v("testing default data for ${key}: ${installPackageName};${installClassName}...")
 				if ((type == key) and (defaultModulesTable.optString(key).isNullOrBlank())) {
-					Log.i(CLASS_NAME,"Match found for ${key}. Saving default data...")
+					Log.i("Match found for ${key}. Saving default data...")
 					defaultModulesTable.put(key, "${installPackageName};${installClassName}")
 					changed = true
 				}
@@ -220,7 +220,7 @@ class CoreRegistrationService: SapphireCoreService(){
 	fun registerBackgroundService(intent: Intent) {
 		if (intent.hasExtra("BACKGROUND")) {
 			var backgroundInfo = JSONObject(intent.getStringExtra("BACKGROUND"))
-			Log.v(this.javaClass.name, "Registering background service...")
+			Log.v( "Registering background service...")
 			// I suppose I am just outright copying the data here
 			backgroundStartupTable.put(
 				backgroundInfo.getString("registration_id"),
@@ -235,7 +235,7 @@ class CoreRegistrationService: SapphireCoreService(){
 		var routeData = intent.getStringExtra(ROUTE)
 		// This is being used for the ROUTE id, so it can be looked up.
 		var routeName = intent.getStringExtra("ROUTE_NAME")
-		Log.v(this.javaClass.name,"Registering ${routeName} as going to route ${routeData}")
+		Log.v("Registering ${routeName} as going to route ${routeData}")
 		routeTable.put(routeName,routeData)
 		var file = File(filesDir,ROUTE_TABLE)
 		file.writeText(routeTable.toString())

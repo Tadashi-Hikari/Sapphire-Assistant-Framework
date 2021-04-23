@@ -15,13 +15,13 @@ class MultiprocessPostOfficeService: SapphireFrameworkRegistrationService(){
 				else -> passthrough(intent,"com.example.multiprocessmodule.MultiprocessService")
 			}
 		}catch(exception: Exception){
-			Log.i(CLASS_NAME,"There was some kind of error with the install intent")
+			Log.i("There was some kind of error with the install intent")
 		}
 		return super.onStartCommand(intent, flags, startId)
 	}
 
 	override fun registerModule(intent: Intent){
-		Log.v(CLASS_NAME,"Registering ${PACKAGE_NAME}")
+		Log.v("Registering ${PACKAGE_NAME}")
 		var registerIntent = Intent(intent)
 		registerIntent = registerModuleType(registerIntent,MULTIPROCESS)
 		registerIntent = registerVersion(registerIntent, VERSION)

@@ -22,7 +22,7 @@ class CoreService: SapphireCoreService() {
 	// The bound connection. The core attaches to each service as a client, tying them to cores lifecycle
 	inner class Connection() : ServiceConnection {
 		override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-			Log.i(this.javaClass.name, "Service connected")
+			Log.i("Service connected")
 			if (service != null) {
 				// This will be moved to a permission style check, to increase user control and prevent rouge background services
 				Toast.makeText(applicationContext, "This service: ${name?.shortClassName} didn't return a null binder, is that ok?", Toast.LENGTH_LONG)
@@ -30,7 +30,7 @@ class CoreService: SapphireCoreService() {
 		}
 
 		override fun onServiceDisconnected(name: ComponentName?) {
-			Log.i(this.javaClass.name, "Service disconnected")
+			Log.i("Service disconnected")
 		}
 	}
 
@@ -65,7 +65,7 @@ class CoreService: SapphireCoreService() {
 		if (validateIntent(intent)) {
 			sortMail(intent!!)
 		} else {
-			Log.i(this.javaClass.simpleName, "There was an issue with an incoming intent. Did it say where it was FROM?")
+			Log.i("There was an issue with an incoming intent. Did it say where it was FROM?")
 		}
 		// This may need to be moved, if I am to do things in the background
 		return super.onStartCommand(intent, flags, startId)
@@ -73,7 +73,7 @@ class CoreService: SapphireCoreService() {
 
 	// Check if it exists, and has the minimum information needed to go further
 	fun validateIntent(intent: Intent?): Boolean {
-		Log.i(CLASS_NAME, "Validating intent")
+		Log.i("Validating intent")
 		when {
 			intent?.action == ACTION_SAPPHIRE_INITIALIZE -> return true
 			intent?.action == ACTION_SAPPHIRE_MODULE_REGISTER -> return true
@@ -100,19 +100,19 @@ class CoreService: SapphireCoreService() {
 		}
 
 		var notification = NotificationCompat.Builder(this, CHANNEL_ID)
-				.setSmallIcon(R.drawable.assistant)
-				.setContentTitle("Sapphire Assistant")
-				.setContentText("Thank you for trying out the Sapphire Framework")
-				.setOngoing(true)
-				.setPriority(NotificationCompat.PRIORITY_HIGH)
-				.build()
+			.setSmallIcon(R.drawable.assistant)
+			.setContentTitle("Sapphire Assistant")
+			.setContentText("Thank you for trying out the Sapphire Framework")
+			.setOngoing(true)
+			.setPriority(NotificationCompat.PRIORITY_HIGH)
+			.build()
 
 		startForeground(1337, notification)
 	}
 
 	// What is the nervous systems function called
 	fun sortMail(intent: Intent) {
-		Log.i(CLASS_NAME, "Sorting intent")
+		Log.i("Sorting intent")
 		// Looking for a better mental abstraction. These actions are more akin to heartbeats, digestion, etc. Autonomous actions, but unchangeable
 		// Handle actions here
 		when (initialized) {
@@ -138,36 +138,35 @@ class CoreService: SapphireCoreService() {
 			ACTION_REQUEST_FILE_DATA -> newCheckForLocal(intent)
 			// The name may need to be changed... Request transfer gets forwarded to the module...
 			ACTION_MANIPULATE_FILE_DATA -> requestTransfer(intent)
-			"ACTION_BRIDGE_URI" -> Log.i(CLASS_NAME, "NOT YET IMPLEMENTED")
+			"ACTION_BRIDGE_URI" -> Log.i("NOT YET IMPLEMENTED")
 		}
 	}
 
-	// This is faaaaaaaaaaaaaaar too specific to the training module, but its progress
 	fun newCheckForLocal(intent: Intent){
 		// Request update from new modules. Core only needs to do the initail install one by one, because it can't start w/o everything installed
 		//UpdateNewModuleData -> multiprocessModule
 		val FILENAME_TABLE = "filenames.tbl"
-		Log.i(CLASS_NAME,"Checking for local files")
+		Log.i("Checking for local files")
 		try{
 			// I don't like this naming scheme, but I am hacking this together
-			var filetypes = intent.getStringArrayListExtra(DATA_KEYS)!!
-			var fileRegistry = loadTable(FILENAME_TABLE)
-			Log.v(CLASS_NAME,"These are the files in the registry that we are checking for: ${fileRegistry.toString()}")
+			var fileExtensions = intent.getStringArrayListExtra(DATA_KEYS)!!
+			var moduleFileRegistries = loadTable(FILENAME_TABLE)
+			Log.v("These are the files in the registry that we are checking for: ${moduleFileRegistries.toString()}")
 			// This is for the custom multiprocess
-			var multiprocessRoute = mutableListOf<String>()
+			var fileRequestDestinationModules = mutableListOf<String>()
 			// Is there a reason I am making this blank?
 			var outgoingIntent = intent
 			// Oh wait. Where is this in the process?
 			outgoingIntent.setClassName(this,"com.example.multiprocessmodule.MultiprocessService")
 			//outgoingIntent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-			var customLedger = JSONObject()
+			var customSettingsLedger = JSONObject()
 			var intentCustomRecord = JSONObject()
 
 			// OOOOOOH NESTED FOR LOOPS. Bad
 			// For each modules data record...
-			for(moduleId in fileRegistry.keys()){
+			for(module in moduleFileRegistries.keys()){
 				// load the record....
-				var moduleFileList = fileRegistry.getJSONArray(moduleId)
+				var moduleFileList = moduleFileRegistries.getJSONArray(module)
 				/*
 					This is special for when the file doesn't exist. I capture its index in the clipData (or data)
 					and save that index in the customJSON. This allows multiprocess intent to retrieve it. I don't
@@ -177,17 +176,18 @@ class CoreService: SapphireCoreService() {
 
 				// and search through its file listing.... (-1 for proper index
 				for(index in 0..moduleFileList.length()-1){
+					var filename = moduleFileList.getString(index)
 					// To see if it matches the type of data we are looking for...
-					for(fileTypeName in filetypes) {
-						Log.i(CLASS_NAME,"Checking for filetype ${fileTypeName}")
-						if(moduleFileList.getString(index).endsWith(fileTypeName)){
-							Log.i(CLASS_NAME,"Checking for locality file ${moduleFileList.getString(index)}")
+					for(extension in fileExtensions) {
+						Log.i("Checking for filetype ${extension}")
+						if(filename.endsWith(extension)){
+							Log.i("Checking for locality file ${filename}")
 							// Hacky, but should work
-							var bool = File(filesDir,moduleFileList.getString(index)).exists()
-							Log.i(CLASS_NAME,"Does ${moduleFileList.getString(index)} exist? ${bool}")
-							var file = File(filesDir,moduleFileList.getString(index))
+							var exists = File(filesDir,filename).exists()
+							Log.i("Does ${filename} exist? ${exists}")
+							var file = File(filesDir,filename)
 							// If it exists, just add it on. If it doesn't exist, make it and do all the rest
-							when(bool) {
+							when(exists) {
 								true -> {
 									when {
 										// if there is only one or it's the last one, make it the uri
@@ -201,12 +201,12 @@ class CoreService: SapphireCoreService() {
 									}
 								}
 								false -> {
-									Log.v(CLASS_NAME,"${moduleFileList.getString(index)} is not yet local, it seems")
-									if((multiprocessRoute.contains(moduleId) == false)){
-										Log.d(CLASS_NAME,"Adding ${moduleId} to multiprocessRoute list")
-										multiprocessRoute.add(moduleId)
+									Log.v("${moduleFileList.getString(index)} is not yet local, it seems")
+									if((fileRequestDestinationModules.contains(module) == false)){
+										Log.d("Adding ${module} to multiprocessRoute list")
+										fileRequestDestinationModules.add(module)
 									}else{
-										Log.d(CLASS_NAME, "This module has already been added to the stack")
+										Log.d("This module has already been added to the stack")
 									}
 									when{
 										outgoingIntent.data == null -> {
@@ -214,9 +214,9 @@ class CoreService: SapphireCoreService() {
 											outgoingIntent.setData(uri)
 											// the filename is the key, and the index is the size of clipdata, stored as the value
 											clipDataIndex.put("-1",file.name)
-											Log.d(CLASS_NAME,"${file.name} is the last uri needed. Adding to Data")
-											var module = moduleId.split(";")
-											Log.v(CLASS_NAME,"Granting permission to ${module[0]}")
+											Log.d("${file.name} is the last uri needed. Adding to Data")
+											var module = module.split(";")
+											Log.v("Granting permission to ${module[0]}")
 											grantUriPermission(module[0],uri,Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
 											outgoingIntent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
 										}
@@ -225,9 +225,9 @@ class CoreService: SapphireCoreService() {
 											var uri = FileProvider.getUriForFile(this.applicationContext,"com.example.sapphireassistantframework.fileprovider",file)
 											outgoingIntent.clipData = ClipData.newRawUri("FILEDATA",uri)
 											// the filename is the key, and the index is the size-1 of clipdata, stored as the value
-											Log.d(CLASS_NAME,"Creating clipData w/ uri ${file.name}")
+											Log.d("Creating clipData w/ uri ${file.name}")
 											clipDataIndex.put((outgoingIntent.clipData!!.itemCount-1).toString(),file.name)
-											var module = moduleId.split(";")
+											var module = module.split(";")
 											grantUriPermission(module[0],uri,Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
 										}
 										// Clip data exists, and there is more to add on!
@@ -235,8 +235,8 @@ class CoreService: SapphireCoreService() {
 											var uri = FileProvider.getUriForFile(this.applicationContext,"com.example.sapphireassistantframework.fileprovider",file)
 											outgoingIntent.clipData!!.addItem(ClipData.Item(uri))
 											// the filename is the key, and the index is the size-1 of clipdata, stored as the value
-											Log.d(CLASS_NAME,"Adding uri for ${file.name} to clipData")
-											var module = moduleId.split(";")
+											Log.d("Adding uri for ${file.name} to clipData")
+											var module = module.split(";")
 											clipDataIndex.put((outgoingIntent.clipData!!.itemCount-1).toString(),file.name)
 										}
 									}
@@ -247,39 +247,39 @@ class CoreService: SapphireCoreService() {
 					// JSON makes it easy to send around arbitrary data. I can deal with optimization later
 					// It goes at this level, because I need one customRecord per Module, not per file type
 					intentCustomRecord = customMultiprocessTemp(clipDataIndex)
-					intentCustomRecord.put("MODULE",moduleId)
-					customLedger.put(moduleId,intentCustomRecord)
+					intentCustomRecord.put("MODULE",module)
+					customSettingsLedger.put(module,intentCustomRecord)
 				}
 			}
-			Log.d(CLASS_NAME,"Final customJSON: ${customLedger}")
+			Log.d("Final customJSON: ${customSettingsLedger}")
 			// If there are no files needed from other modules, we're good to go. Otherwise, we gotta do all this
-			if(customLedger.length() != 0) {
-				outgoingIntent.putExtra("CUSTOM_MULTIPROCESS", customLedger.toString())
+			if(customSettingsLedger.length() != 0) {
+				outgoingIntent.putExtra("CUSTOM_MULTIPROCESS", customSettingsLedger.toString())
 				var newRoute = ""
-				for (valueIndex in multiprocessRoute.withIndex()) {
+				for (valueIndex in fileRequestDestinationModules.withIndex()) {
 					when (valueIndex.index) {
 						0 -> newRoute += "(${valueIndex.value}"
-						multiprocessRoute.size - 1 -> newRoute += ",${valueIndex.value})"
+						fileRequestDestinationModules.size - 1 -> newRoute += ",${valueIndex.value})"
 						else -> newRoute += ",${valueIndex.value}"
 					}
-					if(multiprocessRoute.size == 1){
+					if(fileRequestDestinationModules.size == 1){
 						newRoute += ")"
 					}
 				}
 				// This is hacky. It's here to add a route for multiprocess intent. I don't like how much the core is tied in to it
 				outgoingIntent.putExtra(ROUTE,"${newRoute},${outgoingIntent.getStringExtra(ROUTE)}")
-				Log.i(CLASS_NAME,"New route: ${outgoingIntent.getStringExtra(ROUTE)}")
+				Log.i("New route: ${outgoingIntent.getStringExtra(ROUTE)}")
 			}
 			// I need to send this info w/ the multiprocess, or have it waiting. Like a dual multiprocess
 			var defaultsJSON = loadTable(DEFAULT_MODULES_TABLE)
-			Log.i(CLASS_NAME,"Trying to load ${MULTIPROCESS}")
+			Log.i("Trying to load ${MULTIPROCESS}")
 			var multiprocessor = defaultsJSON.getString(MULTIPROCESS)
-			Log.v(CLASS_NAME,"Sending the user to ${multiprocessor}")
+			Log.v("Sending the user to ${multiprocessor}")
 			var pendingIntent = pendingIntentLedger.get(multiprocessor)!!
 			// This is a test
 			pendingIntent.send(this,1,outgoingIntent)
 		}catch(exception: Exception){
-			Log.e(CLASS_NAME,"Check the way you are removing items from the list. Seems like it will cause bugs")
+			Log.e("Check the way you are removing items from the list. Seems like it will cause bugs")
 			exception.printStackTrace()
 		}
 	}
@@ -320,7 +320,7 @@ class CoreService: SapphireCoreService() {
 			// This is an easy enough shortcut. Just put the *last* one in the data slot. The order *really* matters here though, pay attention!
 			when(file.exists()){
 				// There was some kind of error
-				filenames.size <= 0 -> Log.d(CLASS_NAME,"There was a checkForLocal error")
+				filenames.size <= 0 -> Log.d("There was a checkForLocal error")
 				// if there is only one or it's the last one, make it the uri
 				filenames.size == 1 -> {
 					outgoingIntent.setData(uri)
@@ -348,7 +348,7 @@ class CoreService: SapphireCoreService() {
 	// I already did all of the prepping in request for local, so just redirect it?
 	fun requestTransfer(intent: Intent){
 		var outgoingIntent = Intent(intent)
-		Log.v(CLASS_NAME,"Generating Core file for ${outgoingIntent.getStringArrayListExtra(DATA_KEYS)}")
+		Log.v("Generating Core file for ${outgoingIntent.getStringArrayListExtra(DATA_KEYS)}")
 		// This is temporary
 		var module = outgoingIntent.getStringExtra("TO")!!
 		var packageClass = module.split(";")
@@ -367,7 +367,7 @@ class CoreService: SapphireCoreService() {
 
 	// This is meant to bridge, or serve internal. This is not at all
 	fun serveFileProper(intent: Intent) {
-		Log.i(CLASS_NAME,"Serving a file")
+		Log.i("Serving a file")
 		// I'm just going to assume a chatty protocol
 		// get file list from the module, in DATA_KEYS? <- yes
 		when (intent.extras != null) {
@@ -390,7 +390,7 @@ class CoreService: SapphireCoreService() {
 			var counter = 0
 
 			for(key in intent.getStringArrayListExtra(DATA_KEYS)!!){
-				Log.v(this.javaClass.name,"Generating Core file for ${key} from ${intent.getStringExtra(FROM)}")
+				Log.v("Generating Core file for ${key} from ${intent.getStringExtra(FROM)}")
 				var file = File(filesDir,key)
 				// I don't know if this is needed...
 				file.createNewFile()
@@ -411,13 +411,13 @@ class CoreService: SapphireCoreService() {
 
 
 		}catch(exception: Exception){
-			Log.d(this.javaClass.name,"There was an error generating the coreFiles and sending the URIs")
+			Log.d("There was an error generating the coreFiles and sending the URIs")
 		}
 	}
 
 	// Is this when redundant w/ validate?
 	fun handleRoute(intent: Intent){
-		Log.v(CLASS_NAME,"Handling a route. Next module or new route?")
+		Log.v("Handling a route. Next module or new route?")
 		when(intent.hasExtra(ROUTE)){
 			true -> nextModule(intent)
 			false -> handleNewInput(intent)
@@ -446,7 +446,7 @@ class CoreService: SapphireCoreService() {
 		var route = intent.getStringExtra(ROUTE)!!
 		// This needs to be expanding the route variable to an actual place
 		var cleanedRoute = expandRoute(route).split(",")
-		Log.d("MODULE", intent.getStringExtra(ROUTE)!!)
+		Log.d(intent.getStringExtra(ROUTE)!!)
 		var module = cleanedRoute.get(0).split(";")
 		// pop the module from the route
 
@@ -456,21 +456,21 @@ class CoreService: SapphireCoreService() {
 		var validatedIntent = validatePostage(intent)
 		// This should be the go to for whatever is next in the route
 		var pendingIntent = pendingIntentLedger.get(cleanedRoute.get(0))!!
-		Log.d(CLASS_NAME,"PendingIntent creator package: ${pendingIntent.creatorPackage}")
+		Log.d("PendingIntent creator package: ${pendingIntent.creatorPackage}")
 		pendingIntent.send(this,0,validatedIntent)
 	}
 
 	fun handleNewInput(intent: Intent){
 		// Does this load from the proper place (such as a local file)?
-		Log.v(CLASS_NAME,"Handling new input")
+		Log.v("Handling new input")
 		var routeTable = loadTable(ROUTE_TABLE)
-		Log.v(CLASS_NAME,"Loaded route table: ${routeTable}")
+		Log.v("Loaded route table: ${routeTable}")
 		when{
 			// This isn't doing a conversion for default? Maybe it is in nextModule
 			routeTable.has(intent.getStringExtra(FROM)) -> {
 				intent.putExtra(ROUTE,routeTable.getString(intent.getStringExtra(FROM)!!))
-				Log.v(CLASS_NAME, "Hit for ${intent.getStringExtra(FROM)}")
-				Log.v(CLASS_NAME,"Heading along route ${intent.getStringExtra(ROUTE)}")
+				Log.v("Hit for ${intent.getStringExtra(FROM)}")
+				Log.v("Heading along route ${intent.getStringExtra(ROUTE)}")
 				nextModule(intent)
 			}
 			else -> defaultPath(intent)
@@ -478,14 +478,14 @@ class CoreService: SapphireCoreService() {
 	}
 
 	fun defaultPath(intent: Intent){
-		Log.e(this.javaClass.name, "There is no default path")
+		Log.e("There is no default path")
 	}
 
 	fun initialize(intent: Intent){
-		Log.v(CLASS_NAME,"Initializing")
+		Log.v("Initializing")
 		// Might want to try/catch this
 		for(key in intent.getStringArrayListExtra(DATA_KEYS)!!){
-			Log.d(CLASS_NAME,"Offloading PendingIntent for ${key}")
+			Log.d("Offloading PendingIntent for ${key}")
 			// Whelp, just load it up...
 			pendingIntentLedger.put(key,intent.getParcelableExtra(key)!!)
 		}
@@ -494,16 +494,16 @@ class CoreService: SapphireCoreService() {
 	}
 
 	fun startBackgroundServices(){
-		Log.i(CLASS_NAME,"Starting background services")
+		Log.i("Starting background services")
 		var jsonBackgroundTable = loadTable(BACKGROUND_TABLE)
-		Log.i(this.javaClass.name, jsonBackgroundTable.toString())
+		Log.i(jsonBackgroundTable.toString())
 		for(recordName in jsonBackgroundTable.keys()){
 			var record = JSONObject(jsonBackgroundTable.getString(recordName))
 
 			var startupIntent = Intent()
 			startupIntent.putExtra(ROUTE,record.getString(STARTUP_ROUTE))
 			startupIntent.putExtra(POSTAGE,loadTable(DEFAULT_MODULES_TABLE).toString())
-			Log.v(this.javaClass.name,startupIntent.getStringExtra(ROUTE)!!)
+			Log.v(startupIntent.getStringExtra(ROUTE)!!)
 			var module = startupIntent.getStringExtra(ROUTE)!!.split(",").get(0).split(";")
 			startupIntent.setClassName(module.component1(),module.component2())
 			when(record.getBoolean("bound")){
@@ -519,7 +519,7 @@ class CoreService: SapphireCoreService() {
 		if (packageManager.resolveService(boundIntent,0) != null) {
 			bindService(boundIntent, connection, Context.BIND_AUTO_CREATE)
 		} else {
-			Log.e(this.javaClass.name, "PackageManager says the service doesn't exist")
+			Log.e("PackageManager says the service doesn't exist")
 		}
 		// This appends it to the class variable, so I can shut it down later
 		// I don't like how it's a pair
@@ -528,10 +528,10 @@ class CoreService: SapphireCoreService() {
 
 	// Run through the registration process
 	fun startRegistrationService(){
-		Log.i(CLASS_NAME,"Starting registration service")
+		Log.i("Starting registration service")
 		var registrationIntent = Intent().setClassName(this.packageName,"${this.packageName}.CoreRegistrationService")
 		registrationIntent.setAction(ACTION_SAPPHIRE_INITIALIZE)
-		Log.v(this.javaClass.name,"starting service ${"${this.packageName}.CoreRegistrationService"}")
+		Log.v("starting service ${"${this.packageName}.CoreRegistrationService"}")
 		startService(registrationIntent)
 	}
 
@@ -539,22 +539,4 @@ class CoreService: SapphireCoreService() {
 		notificationManager.cancel(1337)
 		super.onDestroy()
 	}
-
-	/*
-fun pendingRetrieve(intent: Intent){
-    if(intent.action == "ACTION_SAPPHIRE_TESTING_RESPONSE") {
-        unbindService(connection)
-        Log.d(CLASS_NAME, "Retrieving PendingIntent")
-        var additionalIntent = Intent().setAction("ACTION_SAPPHIRE_DEMO")
-        var pendingIntent = intent.getParcelableExtra<PendingIntent>("PENDING")!!
-        // Will this work?
-        pendingIntent.send(this, 1, additionalIntent,)
-    }else if(intent.action == "ACTION_SAPPHIRE_TESTING"){
-        Log.d(CLASS_NAME,"Requesting PendingIntent")
-        var calendarIntent = Intent(intent)
-        calendarIntent.setClassName("com.example.calendarskill","com.example.calendarskill.CalendarPostOfficeService")
-        startRegistrationService(connection,calendarIntent)
-    }
-}
- */
 }

@@ -2,43 +2,39 @@ package com.example.componentframework
 
 import android.app.Service
 import android.content.Intent
-import android.content.ServiceConnection
-import android.os.Binder
 import android.os.IBinder
-import android.os.SystemClock
 import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStreamReader
-import java.net.DatagramSocketImpl
-import java.net.InetAddress
-import java.net.Socket
 
 abstract class SapphireFrameworkService: Service() {
+	var CLASS_NAME = this.javaClass.name
+
 	inner class LogOverride{
-		fun i(name: String, message: String){
-			android.util.Log.i(name,message)
-			broadcastStatus(name,message)
+		fun i(message: String){
+			android.util.Log.i(CLASS_NAME,message)
+			broadcastStatus(CLASS_NAME,message)
 		}
 
-		fun d(name: String, message: String){
-			android.util.Log.d(name,message)
-			broadcastStatus(name,message)
+		fun d(message: String){
+			android.util.Log.d(CLASS_NAME,message)
+			broadcastStatus(CLASS_NAME,message)
 		}
 
-		fun e(name: String, message: String){
-			android.util.Log.e(name,message)
-			broadcastStatus(name,message)
+		fun e(message: String){
+			android.util.Log.e(CLASS_NAME,message)
+			broadcastStatus(CLASS_NAME,message)
 		}
 
-		fun v(name: String, message: String){
-			android.util.Log.v(name,message)
-			broadcastStatus(name,message)
+		fun v(message: String){
+			android.util.Log.v(CLASS_NAME,message)
+			broadcastStatus(CLASS_NAME,message)
 		}
 
-		fun w(name: String, message: String){
-			android.util.Log.w(name,message)
-			broadcastStatus(name,message)
+		fun w(message: String){
+			android.util.Log.w(CLASS_NAME,message)
+			broadcastStatus(CLASS_NAME,message)
 		}
 	}
 
@@ -101,7 +97,6 @@ abstract class SapphireFrameworkService: Service() {
 	var ACTION_REQUEST_FILE_DATA = "action.framework.module.REQUEST_FILE_DATA"
 	val GUI_BROADCAST = "assistant.framework.broadcast.GUI_UPDATE"
 	var CANONICAL_CLASS_NAME = this.javaClass.canonicalName
-	var CLASS_NAME = this.javaClass.name
 	lateinit var PACKAGE_NAME: String
 
 	open override fun onCreate() {
@@ -168,7 +163,7 @@ abstract class SapphireFrameworkService: Service() {
 		for(key in jsonDefaultModules.keys()){
 			jsonPostage!!.put(key,jsonDefaultModules.getString(key))
 		}
-		Log.v(this.javaClass.name,"Postage is ${jsonPostage.toString()}")
+		Log.v("Postage is ${jsonPostage.toString()}")
 		intent.putExtra(POSTAGE,jsonPostage!!.toString())
 
 		return intent

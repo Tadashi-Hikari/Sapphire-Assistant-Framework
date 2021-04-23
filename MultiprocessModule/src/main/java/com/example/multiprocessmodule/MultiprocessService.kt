@@ -29,11 +29,11 @@ class MultiprocessService: SapphireFrameworkService(){
 	// This ties the Multiprocess to Core much more than I wanted. Perhaps I should specify 'levels' of modules
 	inner class Connection() : ServiceConnection {
 		override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-			Log.i(this.javaClass.name, "Service connected")
+			Log.i("Service connected")
 		}
 
 		override fun onServiceDisconnected(name: ComponentName?) {
-			Log.i(this.javaClass.name, "Service disconnected")
+			Log.i("Service disconnected")
 		}
 	}
 
@@ -57,7 +57,7 @@ class MultiprocessService: SapphireFrameworkService(){
 			when (intent?.hasExtra(MULTIPROCESS_ID)){
 				true -> evaluateReturningIntent(intent)
 				false -> handleNewMultiprocessIntent(intent)
-				else -> Log.d(this.javaClass.name, "There was an intent error. Stopping Multiprocess Module...")
+				else -> Log.d("There was an intent error. Stopping Multiprocess Module...")
 			}
 		}catch(exception: Exception){
 			exception.printStackTrace()
@@ -74,7 +74,7 @@ class MultiprocessService: SapphireFrameworkService(){
 			var customIntent = Intent(intent)
 			// This holds a subJSON for each intent
 			var customLedger = JSONObject(intent.getStringExtra("CUSTOM_MULTIPROCESS"))
-			Log.d(CLASS_NAME,"customJSON = ${customLedger}")
+			Log.d("customJSON = ${customLedger}")
 			// I need blank to REMOVE things from here, so that I can retain the URI permissions
 
 			// Copied from below
@@ -102,11 +102,11 @@ class MultiprocessService: SapphireFrameworkService(){
 					// Handle special flags, and just copy unk extras
 					for(key in processSettingsJSON.keys()){
 						// When the key is a special key, do something, else default
-						Log.d(CLASS_NAME, "Checking key ${key}")
+						Log.d("Checking key ${key}")
 						when(key){
 							// Set the action for the intent
 							"ACTION" -> {customIntent.action = processSettingsJSON.getString(key)
-								Log.d(CLASS_NAME, customIntent.action!!)}
+								Log.d(customIntent.action!!)}
 							// This inject the route in before returning to multiprocess.
 							"ROUTE" -> customIntent.putExtra(ROUTE,processSettingsJSON.getString(ROUTE))
 							// Convert the keys to something useable by the next intent
@@ -116,7 +116,7 @@ class MultiprocessService: SapphireFrameworkService(){
 								var data_keys = mutableListOf<String>()
 								// These area all of the filenames
 								var jsonDataKeys = processSettingsJSON.getJSONArray(DATA_KEYS)
-								Log.d(CLASS_NAME, "DATA_KEYS: ${jsonDataKeys}")
+								Log.d("DATA_KEYS: ${jsonDataKeys}")
 								// This is the index of the corrisponding uri in ClipData, or Data
 								var jsonDataClipIndex = processSettingsJSON.getJSONObject("DATA_CLIP")
 								// Can't forget to convert length to index
@@ -127,7 +127,7 @@ class MultiprocessService: SapphireFrameworkService(){
 									when(jsonDataKeys.getString(index)){
 										// Why did I pick negative one?...
 										"-1" -> {
-											Log.v(CLASS_NAME,"Copying Uri for ${intent.data.toString()}")
+											Log.v("Copying Uri for ${intent.data.toString()}")
 											customIntent.data = intent.data
 										}
 										// This may throw an error. Gotta be super careful
@@ -151,9 +151,9 @@ class MultiprocessService: SapphireFrameworkService(){
 						false -> returnSapphireService(customIntent)
 					}
 				}
-				Log.d(CLASS_NAME,"Sending out a customIntent, action ${customIntent.action}")
-				Log.d(CLASS_NAME,"This is where it is going to: ${customIntent.getStringExtra("TO")}")
-				Log.d(CLASS_NAME, "Should have Uri for ${customIntent.getStringArrayListExtra(DATA_KEYS)}")
+				Log.d("Sending out a customIntent, action ${customIntent.action}")
+				Log.d("This is where it is going to: ${customIntent.getStringExtra("TO")}")
+				Log.d("Should have Uri for ${customIntent.getStringArrayListExtra(DATA_KEYS)}")
 				returnSapphireService(customIntent)
 				intentLedger.put(multiprocessIntent.getIntExtra(MULTIPROCESS_ID,-1).toString(), intentRecord)
 			}
@@ -217,7 +217,7 @@ class MultiprocessService: SapphireFrameworkService(){
 				shutdownIfFinished()
 			}
 		}catch(exception: Exception){
-			Log.d(CLASS_NAME,exception.toString())
+			Log.d(exception.toString())
 		}
 	}
 
@@ -249,7 +249,7 @@ class MultiprocessService: SapphireFrameworkService(){
 			sendUltimateResult(intentRecord)
 
 		}catch(exception: Exception){
-			Log.d(CLASS_NAME,exception.toString())
+			Log.d(exception.toString())
 		}
 	}
 
@@ -266,7 +266,7 @@ class MultiprocessService: SapphireFrameworkService(){
 	// This is *not* recursive, and could be easy to mess up
 	fun regexRouteString(intent: Intent): Intent{
 		var route = intent.getStringExtra(ROUTE)!!
-		Log.d(CLASS_NAME,route)
+		Log.d(route)
 		// Break out the multiprocess syntax
 		var start = route.indexOf("(")+1
 		var end = route.indexOf(")",start)
@@ -291,7 +291,7 @@ class MultiprocessService: SapphireFrameworkService(){
 		preparedIntent.putStringArrayListExtra("MULTIPROCESS_ROUTE_LIST", ArrayList(routeList))
 		return preparedIntent
 	}
-s
+
 	// This should do some
 	fun generateId(intent: Intent?): Intent{
 		var id = -1

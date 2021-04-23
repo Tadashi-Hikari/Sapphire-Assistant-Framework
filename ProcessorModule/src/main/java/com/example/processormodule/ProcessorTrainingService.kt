@@ -18,17 +18,17 @@ class ProcessorTrainingServiceUpdated: SapphireFrameworkService(){
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         try{
-            Log.v(CLASS_NAME,"ProcessorTrainingService started")
+            Log.v("ProcessorTrainingService started")
             train(intent)
         }catch(exception: Exception){
-            Log.d(CANONICAL_CLASS_NAME, "There was an error with the received intent. It was lacking some stuff, I suspect")
+            Log.d("There was an error with the received intent. It was lacking some stuff, I suspect")
         }
 
         return super.onStartCommand(intent, flags, startId)
     }
 
     fun train(intent: Intent?){
-        Log.i(CLASS_NAME,"Commencing training...")
+        Log.i("Commencing training...")
         var trainingFiles = cacheTrainingFiles(intent)
         // Currently unused. It's for Mycroft style .intent files to meet Stanford CoreNLP standards
         var prepared = prepareTrainingData(intent!!)
@@ -37,7 +37,7 @@ class ProcessorTrainingServiceUpdated: SapphireFrameworkService(){
 
     // Maybe I should move this to SapphireFrameworkService. It is optimized for Uris
     fun convertUriToFile(uri: Uri): String{
-        Log.i(CLASS_NAME,"Converting ${uri.lastPathSegment} to cache file...")
+        Log.i("Converting ${uri.lastPathSegment} to cache file...")
         try {
             var parcelFileDescriptor = contentResolver.openFileDescriptor(uri,"rw")!!
             var fileDescriptor = parcelFileDescriptor.fileDescriptor
@@ -54,7 +54,7 @@ class ProcessorTrainingServiceUpdated: SapphireFrameworkService(){
             cacheFileWriter.close()
             return cacheFile.name
         }catch (exception: Exception){
-            Log.i(this.javaClass.name, exception.toString())
+            Log.i(exception.toString())
             return ""
         }
     }
@@ -74,7 +74,7 @@ class ProcessorTrainingServiceUpdated: SapphireFrameworkService(){
                 trainingFiles.add(convertUriToFile(clipData.getItemAt(clipIndex).uri))
             }
         }
-        Log.v(CANONICAL_CLASS_NAME,"Files transferred to ${CLASS_NAME}")
+        Log.v("Files transferred to ${CLASS_NAME}")
         return trainingFiles.toList()
     }
 
@@ -85,7 +85,7 @@ class ProcessorTrainingServiceUpdated: SapphireFrameworkService(){
         for(filename in files){
             var file = File(cacheDir,filename)
             for(line in file.readLines()){
-                Log.i("ProcessorTrainingService","Line being added: ${line.trim()}")
+                Log.i("Line being added: ${line.trim()}")
                 // I need to be careful. I could be adding unneeded white space
                 combinedFile.appendText("${line.trim()}\n")
             }
@@ -101,7 +101,7 @@ class ProcessorTrainingServiceUpdated: SapphireFrameworkService(){
         var combinedFile = combineFiles(trainingFiles)
 
         classifier.trainClassifier(combinedFile.canonicalPath)
-        Log.i("Parser","Intent classifier training done")
+        Log.i("Intent classifier training done")
         saveClassifier(classifier)
     }
 

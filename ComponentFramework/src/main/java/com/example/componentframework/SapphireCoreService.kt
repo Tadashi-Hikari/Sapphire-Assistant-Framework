@@ -30,7 +30,7 @@ abstract class SapphireCoreService: SapphireFrameworkService(){
 		for(key in jsonDefaultModules.keys()){
 			jsonPostageTable.put(key,jsonDefaultModules.getString(key))
 		}
-		Log.v(this.javaClass.name,"Postage is ${jsonPostageTable.toString()}")
+		Log.v("Postage is ${jsonPostageTable.toString()}")
 		return jsonPostageTable.toString()
 	}
 
@@ -38,13 +38,13 @@ abstract class SapphireCoreService: SapphireFrameworkService(){
 		var routeList = route.split(",").toMutableList()
 		// I don't like that this'll load each time. Can I avoid this somehow?
 		var variables = loadTable(DEFAULT_MODULES_TABLE)
-		Log.v(CLASS_NAME,"Defaults tables: ${variables}")
-		Log.v(CLASS_NAME,"Expanding route ${routeList}")
+		Log.v("Defaults tables: ${variables}")
+		Log.v("Expanding route ${routeList}")
 		// This also doesn't seem to be working
 		for(module in routeList.withIndex()){
-			Log.v(CLASS_NAME,"Checking module ${module.value}")
+			Log.v("Checking module ${module.value}")
 			if(variables.has(module.value)){
-				Log.v(CLASS_NAME,"This is a match!")
+				Log.v("This is a match!")
 				routeList.set(module.index,variables.getString(module.value))
 			}
 		}

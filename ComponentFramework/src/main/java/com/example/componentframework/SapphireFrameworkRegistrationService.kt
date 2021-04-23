@@ -70,14 +70,14 @@ abstract class SapphireFrameworkRegistrationService: SapphireFrameworkService(){
 
 	// This is a temporary name/function. It is for converting to PendingIntent model
 	fun landingFunction(): Intent{
-		Log.d(CLASS_NAME,"Testing intent received")
+		Log.d("Testing intent received")
 		var outgoingIntent = Intent().setClassName("com.example.sapphireassistantframework","com.example.sapphireassistantframework.CoreService")
 		var localIntent = Intent().setClassName(PACKAGE_NAME,CLASS_NAME)
 		// This is a temporary way of giving it a system unique ID
 		var pendingIntent = PendingIntent.getService(this, Random.nextInt(),localIntent, 0)
 
 		outgoingIntent.putExtra("PENDING",pendingIntent)
-		Log.d(CLASS_NAME, "Sending PendingIntent")
+		Log.d("Sending PendingIntent")
 		return outgoingIntent
 	}
 
@@ -88,7 +88,7 @@ abstract class SapphireFrameworkRegistrationService: SapphireFrameworkService(){
 		//var something = convertFilesToSomething()
 
 		for(fileName in fileNames){
-			Log.i(CLASS_NAME,"Loading file: ${fileName}")
+			Log.i("Loading file: ${fileName}")
 			// Processor cycles are cheap. Worry about optimization later
 			var file = convertAssetToFile(fileName)
 
@@ -97,7 +97,7 @@ abstract class SapphireFrameworkRegistrationService: SapphireFrameworkService(){
 				// I account for the line termination in ProcessorTrainingService. I shouldn't cause, who knows what data will be sent
 				lines.add("${line}")
 			}
-			Log.v(CLASS_NAME,"Added lines: ${lines}")
+			Log.v("Added lines: ${lines}")
 			processorData.put(fileName,lines)
 		}
 		return processorData
@@ -133,10 +133,10 @@ abstract class SapphireFrameworkRegistrationService: SapphireFrameworkService(){
 		try {
 			assetArray = assets.list(directory)!!
 			for(assetFilename in assetArray){
-				Log.v(this.javaClass.name, assetFilename)
+				Log.v(assetFilename)
 			}
 		}catch (exception: Exception){
-			Log.d(this.javaClass.name, "Error loading assets")
+			Log.d("Error loading assets")
 		}
 		return assetArray
 	}
