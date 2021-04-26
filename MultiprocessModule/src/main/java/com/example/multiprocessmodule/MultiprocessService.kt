@@ -68,7 +68,9 @@ class MultiprocessService: SapphireFrameworkService(){
 	// Do what must be done
 	fun handleNewMultiprocessIntent(intent: Intent?){
 		// I need another nested if to handle w/ a multiprocess may have no modification
+		Log.v("Handling a new multiprocess intent")
 		if(intent!!.hasExtra("CUSTOM_MULTIPROCESS")){
+			Log.v("This is a custom multiprocess")
 			// This is definitely duplicate
 			var multiprocessIntent = prepareIntent(intent!!)
 			var customIntent = Intent(intent)
@@ -117,6 +119,12 @@ class MultiprocessService: SapphireFrameworkService(){
 								// These area all of the filenames
 								var jsonDataKeys = processSettingsJSON.getJSONArray(DATA_KEYS)
 								Log.d("DATA_KEYS: ${jsonDataKeys}")
+								var temp = mutableListOf<String>()
+								for(key in 0..jsonDataKeys.length()-1){
+									temp.add(jsonDataKeys.getString(key))
+								}
+								customIntent.putExtra(DATA_KEYS,temp.toCollection(ArrayList()))
+								Log.v("DATA_KEYS updated")
 								// This is the index of the corrisponding uri in ClipData, or Data
 								var jsonDataClipIndex = processSettingsJSON.getJSONObject("DATA_CLIP")
 								// Can't forget to convert length to index
@@ -160,6 +168,7 @@ class MultiprocessService: SapphireFrameworkService(){
 		// This is just the unchanged old code
 		}else{
 			// The record information for MULTIPROCESS_ID
+			Log.v("This is not a custom multiprocess")
 			var intentRecord = JSONObject()
 			var multiprocessIntent = prepareIntent(intent!!)
 
@@ -186,6 +195,7 @@ class MultiprocessService: SapphireFrameworkService(){
 	// This should be expected at *ALL* times. Core can be a bridge/pipe/socket between other FileProviders, to ease permission issues
 	// I might want to keep DATA_KEYS in case the original has its own use for clipData, so I don't overwrite it.
 	fun sendUltimateResult(intentRecord: JSONObject){
+		Log.v("Sending ultimate result")
 		// Load the original intent data
 		var resultIntent = Intent(storedIntents.get(intentRecord.getInt("ORIGINAL")))
 		// Does this overwrite stuff? I should be careful with this
@@ -228,6 +238,7 @@ class MultiprocessService: SapphireFrameworkService(){
 	}
 
 	fun evaluateReturningIntent(intent: Intent?){
+		Log.v("Evaluating a returning intent")
 		try{
 			// Load the intent recod
 			var intentRecord = intentLedger.getJSONObject(intent!!.getIntExtra(MULTIPROCESS_ID,-1)!!.toString())
@@ -265,8 +276,9 @@ class MultiprocessService: SapphireFrameworkService(){
 	// This is unique to the Multiprocess Module. I need it to look for the unique () syntax
 	// This is *not* recursive, and could be easy to mess up
 	fun regexRouteString(intent: Intent): Intent{
+		Log.v("Performing route RegEx")
 		var route = intent.getStringExtra(ROUTE)!!
-		Log.d(route)
+		Log.d("Existing route: ${route}")
 		// Break out the multiprocess syntax
 		var start = route.indexOf("(")+1
 		var end = route.indexOf(")",start)
@@ -285,6 +297,7 @@ class MultiprocessService: SapphireFrameworkService(){
 
 	// This simply takes the multiprocess route string and turns it in to a list
 	fun makeMultiprocessList(intent: Intent): Intent{
+		Log.v("Making multiprocess list")
 		var preparedIntent = Intent(intent)
 		var routeList = preparedIntent.getStringExtra("MULTIPROCESS_ROUTE")!!.split(",")
 		// This is ugly, and I don't like it
@@ -294,6 +307,7 @@ class MultiprocessService: SapphireFrameworkService(){
 
 	// This should do some
 	fun generateId(intent: Intent?): Intent{
+		Log.v("Generating ID")
 		var id = -1
 		do{
 			id = Random.nextInt().absoluteValue

@@ -257,6 +257,7 @@ class CoreService: SapphireCoreService() {
 				outgoingIntent.putExtra("CUSTOM_MULTIPROCESS", customSettingsLedger.toString())
 				var newRoute = ""
 				for (valueIndex in fileRequestDestinationModules.withIndex()) {
+					Log.v("Looping to add newRoute")
 					when (valueIndex.index) {
 						0 -> newRoute += "(${valueIndex.value}"
 						fileRequestDestinationModules.size - 1 -> newRoute += ",${valueIndex.value})"
