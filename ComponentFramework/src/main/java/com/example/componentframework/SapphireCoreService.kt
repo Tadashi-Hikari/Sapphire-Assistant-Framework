@@ -23,6 +23,35 @@ abstract class SapphireCoreService: SapphireFrameworkService(){
 		intent.putExtra(POSTAGE,postage)
 	}
 
+	fun cleanRoute(intent: Intent):Intent{
+		if(intent.hasExtra(ROUTE)) {
+			Log.v("Cleaning ROUTE: ${intent.getStringExtra(ROUTE)}")
+			var route = intent.getStringExtra(ROUTE)
+			while ((route?.first() == ',') or (route?.first() == ' ')) {
+				route!!.removeRange(0, 0)
+			}
+			while ((route?.last() == ',') or (route?.last() == ' ')) {
+				route!!.removeRange(route.length,route.length)
+			}
+			var newRoute = ""
+			var tempRoute = route!!.split(",")
+			for(module in tempRoute.withIndex()){
+				if(module.value == "null"){
+					tempRoute.drop(module.index)
+				}else {
+					when (module.index) {
+						0 -> newRoute += module.value
+						else -> newRoute += ",${module.value}"
+					}
+				}
+			}
+
+			intent.putExtra(ROUTE, newRoute)
+			Log.v("Cleaned ROUTE: ${route}")
+		}
+		return intent
+	}
+
 	fun validatePostage(postage: String):String{
 		var jsonDefaultModules = JSONObject()
 		var jsonPostageTable = JSONObject()
