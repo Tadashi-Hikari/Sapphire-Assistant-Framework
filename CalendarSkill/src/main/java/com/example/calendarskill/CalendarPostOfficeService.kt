@@ -46,31 +46,37 @@ class CalendarPostOfficeService: SapphireFrameworkRegistrationService(){
             }
         }catch(exception: Exception){
             Log.d("Exception. There was some kind of DATA_KEY error")
-            Log.d( exception.toString())
+            exception.printStackTrace()
         }
     }
 
     // This seems like unneeded modularity. Also, it's messy
     fun offloadFiles(intent: Intent){
         Log.d("Requesting a file offload")
+        Log.v("DATA_KEY for calendar is ${intent.getStringArrayListExtra(DATA_KEYS)}")
+        var count = intent.getStringArrayListExtra(DATA_KEYS)!!.size
+
         if(intent.data != null) {
+            Log.v("Writing data: ${intent.data}")
             writeToCore(intent.data!!)
         }
 
         if(intent.clipData != null) {
+            Log.d("ClipData = ${intent.clipData}")
             var clipData = intent.clipData!!
-            for (clipIndex in 0..clipData.itemCount) {
+            for (clipIndex in 0..clipData.itemCount-1) {
+                Log.v("Writing clip: ${clipData.getItemAt(clipIndex)}")
                 // This is how it has to be done w/ clipData it seems
                 writeToCore(clipData.getItemAt(clipIndex).uri)
             }
         }
 
-        var finishedIntent = Intent()
-        finishedIntent.action = "FILE_TRANSFER_FINISHED"
+        intent.action = "FILE_TRANSFER_FINISHED"
         // This should not be hardcoded
         intent.setClassName("com.example.sapphireassistantframework","com.example.sapphireassistantframework.CoreService")
         Log.i("File transfer finished")
-        startService(finishedIntent)
+        // Does this need to bounce back to core, or multiprocess?
+        startService(intent)
     }
 
     fun writeToCore(uri: Uri){

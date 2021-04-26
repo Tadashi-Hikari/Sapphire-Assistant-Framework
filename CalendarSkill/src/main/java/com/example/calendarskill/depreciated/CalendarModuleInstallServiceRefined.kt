@@ -13,7 +13,7 @@ class CalendarModuleInstallServiceRefined: SapphireFrameworkRegistrationService(
 	var REQUEST_FILE = "ACTION_SAPPHIRE_REQUEST_FILE"
 
 	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-		Log.i(this.javaClass.name,"Calendar intent received")
+		Log.i("Calendar intent received")
 		when(intent?.action){
 			ACTION_SAPPHIRE_MODULE_REGISTER -> registerModule(intent!!)
 			ACTION_SAPPHIRE_CORE_REQUEST_DATA -> sendRequestedFiles(intent)
@@ -26,13 +26,13 @@ class CalendarModuleInstallServiceRefined: SapphireFrameworkRegistrationService(
 		var uri = intent.data!!
 		try {
 			var uri = intent.data!!
-			Log.i(this.javaClass.name,uri.toString()!!)
+			Log.i(uri.toString()!!)
 			//var testFile = uri.toFile()
 			var somethingFD = contentResolver.openFileDescriptor(uri,"wa")!!
 			var fd = somethingFD.fileDescriptor
 			var outputStream = FileOutputStream(fd)
 			outputStream.write(". This is appended".toByteArray())
-			Log.i(this.javaClass.name,"Did it write?")
+			Log.i("Did it write?")
 
 			// This is the essential part, when it comes to editing a file
 			somethingFD = contentResolver.openFileDescriptor(uri,"rw")!!
@@ -49,12 +49,12 @@ class CalendarModuleInstallServiceRefined: SapphireFrameworkRegistrationService(
 			}
 			fileWriter.close()
 
-			Log.i(this.javaClass.name, testFile.readText())
+			Log.i(testFile.readText())
 
-			Log.i(this.javaClass.name, "This seems like a valid way to edit the file")
+			Log.i("This seems like a valid way to edit the file")
 		}catch (exception: Exception){
-			Log.d(this.javaClass.name, "You cannot access the file this way")
-			Log.i(this.javaClass.name, exception.toString())
+			Log.d("You cannot access the file this way")
+			Log.i(exception.toString())
 		}
 	}
 
@@ -82,9 +82,9 @@ class CalendarModuleInstallServiceRefined: SapphireFrameworkRegistrationService(
 		var contentUri = intent.data!!
 		var filepath = contentUri.path!!
 
-		Log.d(this.javaClass.name,filepath)
+		Log.d(filepath)
 		var file = File(filepath)
-		Log.d(this.javaClass.name,"It looks like the file was made: ${file.name}")
+		Log.d("It looks like the file was made: ${file.name}")
 
 		for(filename in filenames){
 			sendFile(contentResolver.openOutputStream(contentUri)!!,filename)
@@ -112,7 +112,7 @@ class CalendarModuleInstallServiceRefined: SapphireFrameworkRegistrationService(
 
 
 	override fun onBind(intent: Intent?): IBinder? {
-		Log.v(this.javaClass.name,"onBind can start the service, but it can't access Uris. Accessing in onStartCommand()")
+		Log.v("onBind can start the service, but it can't access Uris. Accessing in onStartCommand()")
 		return Binder()
 	}
 }
