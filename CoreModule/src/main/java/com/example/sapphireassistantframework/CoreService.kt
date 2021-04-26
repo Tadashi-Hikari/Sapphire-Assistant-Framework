@@ -63,7 +63,8 @@ class CoreService: SapphireCoreService() {
 
 	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 		if (validateIntent(intent)) {
-			sortMail(intent!!)
+			var passedIntent = cleanRoute(intent!!)
+			sortMail(passedIntent)
 		} else {
 			Log.i("There was an issue with an incoming intent. Did it say where it was FROM?")
 		}
