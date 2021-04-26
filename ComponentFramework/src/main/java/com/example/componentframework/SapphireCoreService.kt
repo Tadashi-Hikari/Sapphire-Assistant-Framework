@@ -36,8 +36,9 @@ abstract class SapphireCoreService: SapphireFrameworkService(){
 			var newRoute = ""
 			var tempRoute = route!!.split(",")
 			for(module in tempRoute.withIndex()){
+				Log.v("Checking module: ${module.value}")
 				if(module.value == "null"){
-					tempRoute.drop(module.index)
+					continue
 				}else {
 					when (module.index) {
 						0 -> newRoute += module.value
