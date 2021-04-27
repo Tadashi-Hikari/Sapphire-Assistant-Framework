@@ -207,11 +207,13 @@ class MultiprocessService: SapphireFrameworkService(){
 					continue
 				} else {
 					// This will retrieve all of the intents for a specific record
-					var storedIntent = storedIntents.get(intentRecord.getInt(key))
-					// Iterate through all the items in the clipData, and pass them along
-					for (index in 0..storedIntent.clipData!!.itemCount) {
-						// Append the clipData to the resultIntent
-						resultIntent.clipData!!.addItem(storedIntent.clipData!!.getItemAt(index))
+					if(storedIntents.contains(intentRecord.getInt(key))) {
+						var storedIntent = storedIntents.get(intentRecord.getInt(key))
+						// Iterate through all the items in the clipData, and pass them along
+						for (index in 0..storedIntent.clipData!!.itemCount - 1) {
+							// Append the clipData to the resultIntent
+							resultIntent.clipData!!.addItem(storedIntent.clipData!!.getItemAt(index))
+						}
 					}
 				}
 			}
@@ -228,6 +230,7 @@ class MultiprocessService: SapphireFrameworkService(){
 			}
 		}catch(exception: Exception){
 			Log.d(exception.toString())
+			exception.printStackTrace()
 		}
 	}
 
@@ -255,7 +258,7 @@ class MultiprocessService: SapphireFrameworkService(){
 				}
 			}
 			//This multiprocess has finished. remove it from the ledger
-			intentLedger.remove(intent!!.getStringExtra(MULTIPROCESS_ID))
+			intentLedger.remove(intent!!.getIntExtra(MULTIPROCESS_ID,0).toString())
 			// and ship it out
 			sendUltimateResult(intentRecord)
 
