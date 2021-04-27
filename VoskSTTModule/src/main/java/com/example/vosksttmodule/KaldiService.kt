@@ -4,7 +4,6 @@ package com.example.vosksttmodule
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
-import com.example.componentframework.depreciated.SAFService
 import com.example.componentframework.SapphireFrameworkService
 import org.json.JSONObject
 import org.kaldi.*

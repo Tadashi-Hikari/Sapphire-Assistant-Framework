@@ -2,7 +2,6 @@ package com.example.vosksttmodule
 
 import android.content.Intent
 import com.example.componentframework.SapphireFrameworkRegistrationService
-import com.example.componentframework.depreciated.SAFInstallService
 import org.json.JSONObject
 import java.lang.Exception
 

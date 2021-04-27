@@ -2,7 +2,6 @@ package com.example.sapphireassistantframework
 
 import android.content.Intent
 import com.example.componentframework.SapphireFrameworkRegistrationService
-import com.example.componentframework.depreciated.SAFInstallService
 
 class CoreModuleInstallService: SapphireFrameworkRegistrationService(){
     val VERSION = "0.0.1"
