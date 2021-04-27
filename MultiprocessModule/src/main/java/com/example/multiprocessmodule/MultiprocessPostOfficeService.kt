@@ -2,7 +2,6 @@ package com.example.multiprocessmodule
 
 import android.content.Intent
 import com.example.componentframework.SapphireFrameworkRegistrationService
-import com.example.componentframework.depreciated.SAFInstallService
 
 class MultiprocessPostOfficeService: SapphireFrameworkRegistrationService(){
 	val VERSION = "0.0.1"
@@ -16,6 +15,7 @@ class MultiprocessPostOfficeService: SapphireFrameworkRegistrationService(){
 			}
 		}catch(exception: Exception){
 			Log.i("There was some kind of error with the install intent")
+			exception.printStackTrace()
 		}
 		return super.onStartCommand(intent, flags, startId)
 	}

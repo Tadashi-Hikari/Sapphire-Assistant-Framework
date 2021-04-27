@@ -2,7 +2,6 @@ package com.example.processormodule
 
 import android.content.Intent
 import com.example.componentframework.SapphireFrameworkRegistrationService
-import com.example.componentframework.depreciated.SAFInstallService
 import java.lang.Exception
 
 class ProcessorPostOfficeService: SapphireFrameworkRegistrationService(){

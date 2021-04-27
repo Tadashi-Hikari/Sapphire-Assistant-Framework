@@ -2,7 +2,7 @@ package com.example.processormodule
 
 import android.content.Intent
 import android.os.IBinder
-import com.example.componentframework.depreciated.SAFService
+import com.example.componentframework.SapphireFrameworkService
 import edu.stanford.nlp.ie.crf.CRFClassifier
 import edu.stanford.nlp.ling.CoreLabel
 import org.json.JSONObject
@@ -15,13 +15,13 @@ import java.util.*
  * The purpose here is to train
  */
 
-class EntityTrainingService: SAFService(){
+class EntityTrainingService: SapphireFrameworkService(){
 	lateinit var classifier: CRFClassifier<CoreLabel>
 	var trainingFile = "Not yet implemented"
 
 	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 		if(intent!!.action == "ENTITY"){
-			Log.i("EntityProcessing","NER intent received")
+			Log.i("NER intent received")
 			// This should just be message
 			var utterance = intent.getStringExtra("HYPOTHESIS")
 			if(utterance != null) {
@@ -35,7 +35,7 @@ class EntityTrainingService: SAFService(){
 		var json = JSONObject(utterance)
 		var text = json.getString("text")
 		var result = classifier.classifyToString(text)
-		Log.i("EntityTrainingService",result)
+		Log.i(result)
 	}
 
 	fun trainNERClassifier(){

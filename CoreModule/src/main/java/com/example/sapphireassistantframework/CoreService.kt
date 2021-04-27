@@ -255,21 +255,23 @@ class CoreService: SapphireCoreService() {
 			Log.d("Final customJSON: ${customSettingsLedger}")
 			// If there are no files needed from other modules, we're good to go. Otherwise, we gotta do all this
 			if(customSettingsLedger.length() != 0) {
+				Log.v("Adding from customSettingsLedger")
 				outgoingIntent.putExtra("CUSTOM_MULTIPROCESS", customSettingsLedger.toString())
 				var newRoute = ""
 				for (valueIndex in fileRequestDestinationModules.withIndex()) {
-					Log.v("Looping to add newRoute")
-					when (valueIndex.index) {
-						0 -> newRoute += "(${valueIndex.value}"
-						fileRequestDestinationModules.size - 1 -> newRoute += ",${valueIndex.value})"
+					Log.v("Adding new route data")
+					when(newRoute) {
+						"" -> newRoute += "(${valueIndex.value}"
 						else -> newRoute += ",${valueIndex.value}"
 					}
-					if(fileRequestDestinationModules.size == 1){
-						newRoute += ")"
-					}
 				}
+				newRoute+=")"
 				// This is hacky. It's here to add a route for multiprocess intent. I don't like how much the core is tied in to it
-				outgoingIntent.putExtra(ROUTE,"${newRoute},${outgoingIntent.getStringExtra(ROUTE)}")
+				if(outgoingIntent.hasExtra(ROUTE)) {
+					outgoingIntent.putExtra(ROUTE,"${newRoute},${outgoingIntent.getStringExtra(ROUTE)}")
+				}else{
+					outgoingIntent.putExtra(ROUTE,newRoute)
+				}
 				Log.i("New route: ${outgoingIntent.getStringExtra(ROUTE)}")
 			}
 			// I need to send this info w/ the multiprocess, or have it waiting. Like a dual multiprocess

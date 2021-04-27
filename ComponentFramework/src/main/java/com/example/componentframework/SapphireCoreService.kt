@@ -24,31 +24,21 @@ abstract class SapphireCoreService: SapphireFrameworkService(){
 	}
 
 	fun cleanRoute(intent: Intent):Intent{
-		if(intent.hasExtra(ROUTE)) {
-			Log.v("Cleaning ROUTE: ${intent.getStringExtra(ROUTE)}")
-			var route = intent.getStringExtra(ROUTE)
-			while ((route?.first() == ',') or (route?.first() == ' ')) {
-				route!!.removeRange(0, 0)
-			}
-			while ((route?.last() == ',') or (route?.last() == ' ')) {
-				route!!.removeRange(route.length,route.length)
-			}
+		if(intent.hasExtra(ROUTE)){
+			Log.v("Current ROUTE: ${intent.getStringExtra(ROUTE)}")
+			var modules = intent.getStringExtra(ROUTE)!!.split(",")
 			var newRoute = ""
-			var tempRoute = route!!.split(",")
-			for(module in tempRoute.withIndex()){
-				Log.v("Checking module: ${module.value}")
-				if(module.value == "null"){
-					continue
-				}else {
-					when (module.index) {
-						0 -> newRoute += module.value
-						else -> newRoute += ",${module.value}"
+			for(module in modules){
+				Log.v("Checking module ${module}")
+					if((module != null)and(module != "")){
+						when(newRoute == ""){
+							true -> newRoute += module
+							false -> newRoute += (",${module}")
 					}
 				}
 			}
-
-			intent.putExtra(ROUTE, newRoute)
-			Log.v("Cleaned ROUTE: ${route}")
+			Log.v("New ROUTE: ${newRoute}")
+			intent.putExtra(ROUTE,newRoute)
 		}
 		return intent
 	}
