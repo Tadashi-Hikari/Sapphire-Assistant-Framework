@@ -258,11 +258,11 @@ class CoreService: SapphireCoreService() {
 				Log.v("Adding from customSettingsLedger")
 				outgoingIntent.putExtra("CUSTOM_MULTIPROCESS", customSettingsLedger.toString())
 				var newRoute = ""
-				for (valueIndex in fileRequestDestinationModules.withIndex()) {
+				for (value in fileRequestDestinationModules) {
 					Log.v("Adding new route data")
-					when(newRoute) {
-						"" -> newRoute += "(${valueIndex.value}"
-						else -> newRoute += ",${valueIndex.value}"
+					when(newRoute.isNullOrBlank()) {
+						true -> newRoute += "(${value}"
+						false -> newRoute += ",${value}"
 					}
 				}
 				newRoute+=")"
@@ -450,18 +450,27 @@ class CoreService: SapphireCoreService() {
 		var route = intent.getStringExtra(ROUTE)!!
 		// This needs to be expanding the route variable to an actual place
 		var cleanedRoute = expandRoute(route).split(",")
-		Log.d(intent.getStringExtra(ROUTE)!!)
-		var module = cleanedRoute.get(0).split(";")
-		// pop the module from the route
+		var nextRoute = ""
+		when(cleanedRoute.size){
+			0 -> nextRoute = cleanedRoute.toString()
+			else -> nextRoute = cleanedRoute.get(0)
+		}
 
-		intent.putExtra(ROUTE,route.toString())
+		Log.d(intent.getStringExtra(ROUTE)!!)
+		var module = nextRoute.split(";")
+
+		intent.putExtra(ROUTE,route)
 
 		intent.setClassName(module.component1(),module.component2())
 		var validatedIntent = validatePostage(intent)
 		// This should be the go to for whatever is next in the route
-		var pendingIntent = pendingIntentLedger.get(cleanedRoute.get(0))!!
-		Log.d("PendingIntent creator package: ${pendingIntent.creatorPackage}")
-		pendingIntent.send(this,0,validatedIntent)
+		if(pendingIntentLedger.containsKey(nextRoute)) {
+			var pendingIntent = pendingIntentLedger.get(nextRoute)!!
+			Log.d(pendingIntent.toString())
+			pendingIntent.send(this, 3, validatedIntent)
+		}else{
+			Log.d("There is a pending intent ledger. Look through it for ${nextRoute}\n${pendingIntentLedger}")
+		}
 	}
 
 	fun handleNewInput(intent: Intent){
