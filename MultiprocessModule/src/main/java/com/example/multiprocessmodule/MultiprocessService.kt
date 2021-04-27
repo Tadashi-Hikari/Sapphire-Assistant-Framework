@@ -289,7 +289,7 @@ class MultiprocessService: SapphireFrameworkService(){
 
 		// I think it's just easier to pass around the intent right now
 		intent.putExtra("MULTIPROCESS_ROUTE",multiprocessRoute)
-		var returnModule = "${this.packageName};${this.javaClass.canonicalName},"
+		var returnModule = MULTIPROCESS
 		// This is to have it return. I could probably move this to preparedIntent()
 		intent.putExtra(ROUTE, returnModule+remainingRoute)
 		return intent

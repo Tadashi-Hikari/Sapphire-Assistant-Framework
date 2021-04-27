@@ -74,7 +74,7 @@ abstract class SapphireFrameworkRegistrationService: SapphireFrameworkService(){
 		var outgoingIntent = Intent().setClassName("com.example.sapphireassistantframework","com.example.sapphireassistantframework.CoreService")
 		var localIntent = Intent().setClassName(PACKAGE_NAME,CLASS_NAME)
 		// This is a temporary way of giving it a system unique ID
-		var pendingIntent = PendingIntent.getService(this, Random.nextInt(),localIntent, 0)
+		var pendingIntent = PendingIntent.getService(this, Random.nextInt(),localIntent,0)
 
 		outgoingIntent.putExtra("PENDING",pendingIntent)
 		Log.d("Sending PendingIntent")
