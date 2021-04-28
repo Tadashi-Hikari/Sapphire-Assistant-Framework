@@ -88,12 +88,10 @@ class ProcessorCentralService: SapphireFrameworkService(){
         var requestedDataKeys = arrayListOf<String>("intent")
 
         intent.setClassName("com.example.sapphireassistantframework","com.example.sapphireassistantframework.CoreService")
-        // I want the requested files to go to the training service. I am just injecting this in to the ROUTE. It's injected here...
-        intent.putExtra("PROCESSOR_EXTRA","ProcessorTrainingService")
         intent.action = ACTION_REQUEST_FILE_DATA
         intent.putExtra(DATA_KEYS, requestedDataKeys)
         // This is where it is off to next, yeah?
-        intent.putExtra(FROM,"${PACKAGE_NAME};${CANONICAL_CLASS_NAME}")
+        intent.putExtra("RETURN",PROCESSOR)
         Log.i("Requesting ${requestedDataKeys} files")
         startService(intent)
         // This is temporary

@@ -265,12 +265,14 @@ class CoreService: SapphireCoreService() {
 						false -> newRoute += ",${value}"
 					}
 				}
-				newRoute+=")"
-				// This is hacky. It's here to add a route for multiprocess intent. I don't like how much the core is tied in to it
-				if(outgoingIntent.hasExtra(ROUTE)) {
-					outgoingIntent.putExtra(ROUTE,"${newRoute},${outgoingIntent.getStringExtra(ROUTE)}")
-				}else{
-					outgoingIntent.putExtra(ROUTE,newRoute)
+				if(newRoute.isNotBlank()) {
+					newRoute += ")"
+					// This is hacky. It's here to add a route for multiprocess intent. I don't like how much the core is tied in to it
+					if (outgoingIntent.hasExtra(ROUTE)) {
+						outgoingIntent.putExtra(ROUTE, "${newRoute},${outgoingIntent.getStringExtra(ROUTE)}")
+					} else {
+						outgoingIntent.putExtra(ROUTE, newRoute)
+					}
 				}
 				Log.i("New route: ${outgoingIntent.getStringExtra(ROUTE)}")
 			}

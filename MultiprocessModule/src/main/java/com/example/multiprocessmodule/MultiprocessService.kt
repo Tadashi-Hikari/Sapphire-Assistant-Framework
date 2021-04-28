@@ -221,6 +221,9 @@ class MultiprocessService: SapphireFrameworkService(){
 			// Scrub the action, since that is now taken care of
 			resultIntent.action = ""
 			// This is hard coded, but should be moved to the SapphireFrameworkService()
+			if(resultIntent.hasExtra("RETURN")){
+				resultIntent.putExtra(ROUTE,"${resultIntent.getStringExtra("RETURN")},${resultIntent.getStringExtra(ROUTE)}")
+			}
 			resultIntent.setClassName("com.example.sapphireassistantframework","com.example.sapphireassistantframework.CoreService")
 			// Send it to the core, so that it can continue along the pipeline
 			startService(resultIntent)
@@ -279,22 +282,26 @@ class MultiprocessService: SapphireFrameworkService(){
 	// This is unique to the Multiprocess Module. I need it to look for the unique () syntax
 	// This is *not* recursive, and could be easy to mess up
 	fun regexRouteString(intent: Intent): Intent{
-		Log.v("Performing route RegEx")
-		var route = intent.getStringExtra(ROUTE)!!
-		Log.d("Existing route: ${route}")
-		// Break out the multiprocess syntax
-		var start = route.indexOf("(")+1
-		var end = route.indexOf(")",start)
-		// Return the multiprocess block
-		var multiprocessRoute = route.substring(start,end)
-		// Return the rest of the information
-		var remainingRoute = route.substring(end+1,)
+		if(intent.hasExtra(ROUTE)) {
+			Log.v("Performing route RegEx")
+			var route = intent.getStringExtra(ROUTE)!!
+			Log.d("Existing route: ${route}")
+			// Break out the multiprocess syntax
+			var start = route.indexOf("(") + 1
+			var end = route.indexOf(")", start)
+			// Return the multiprocess block
+			var multiprocessRoute = route.substring(start, end)
+			// Return the rest of the information
+			var remainingRoute = route.substring(end + 1, )
 
-		// I think it's just easier to pass around the intent right now
-		intent.putExtra("MULTIPROCESS_ROUTE",multiprocessRoute)
-		var returnModule = MULTIPROCESS
-		// This is to have it return. I could probably move this to preparedIntent()
-		intent.putExtra(ROUTE, returnModule+remainingRoute)
+			// I think it's just easier to pass around the intent right now
+			intent.putExtra("MULTIPROCESS_ROUTE", multiprocessRoute)
+			var returnModule = MULTIPROCESS
+			// This is to have it return. I could probably move this to preparedIntent()
+			intent.putExtra(ROUTE, returnModule + remainingRoute)
+		}else{
+			intent.putExtra(ROUTE,"${MULTIPROCESS}")
+		}
 		return intent
 	}
 
@@ -302,9 +309,13 @@ class MultiprocessService: SapphireFrameworkService(){
 	fun makeMultiprocessList(intent: Intent): Intent{
 		Log.v("Making multiprocess list")
 		var preparedIntent = Intent(intent)
-		var routeList = preparedIntent.getStringExtra("MULTIPROCESS_ROUTE")!!.split(",")
-		// This is ugly, and I don't like it
-		preparedIntent.putStringArrayListExtra("MULTIPROCESS_ROUTE_LIST", ArrayList(routeList))
+		if(preparedIntent.hasExtra("MULTIPROCESS_ROUTE")) {
+			var routeList = preparedIntent.getStringExtra("MULTIPROCESS_ROUTE")!!.split(",")
+			// This is ugly, and I don't like it
+			preparedIntent.putStringArrayListExtra("MULTIPROCESS_ROUTE_LIST", ArrayList(routeList))
+		}else{
+
+		}
 		return preparedIntent
 	}
 
