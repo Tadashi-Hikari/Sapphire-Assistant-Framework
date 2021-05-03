@@ -1,0 +1,8 @@
+include ':UserInterface'
+include ':CercadianRythm'
+include ':PerceptionProcessor'
+include ':LongTermMemory'
+include ':AutomaticNervousSystem'
+include ':NervousSystemLibrary'
+include ':ThalamusRelay'
+rootProject.name = "NaviFramework"
