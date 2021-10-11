@@ -15,5 +15,3 @@ Though the Sapphire Framework contains an assistant that works out of the box (n
 I've just uploaded a prealpha APK (under releases on github) that can be tried out, but it's likely to be *VERY BUGGY* until the Alpha/Beta releases.
 
 More information can be found on the GitHub wiki for this project, which is considered the official source of information. Alternatively you can get in contact with me on [Reddit](https://www.reddit.com/r/SapphireFramework/) where I've set up a subreddit to help out and talk with people interested in the project. If you're interested in a live chat, you can reach out on matrix at #SapphireFramework:matrix.org
-
-If you'd like to donate to help support this project (the sooner I can buy out my work contract, the sooner I can do this full time) you can donate to https://paypal.me/pools/c/8vWDFtysV4
