@@ -3,14 +3,14 @@ The Sapphire Assistant Framework is plug-in framework for [Athena](https://githu
 
 The Sapphire Framework is a data aggregation and processing framework for Android that allows users and developers to refine, customize, or develop a mobile assistant tailored to their needs.
 
-## Highlights
+# Highlights
 * Free and Open Source
 * Doesn't use Google services
 * Works on Android 7.1 to 11
 * Works entirely offline/on device
 * Highly modular and extensible
 
-## Motivation
+# Motivation
 The Sapphire Framework was developed to meet the needs of the open source community, while offering quality alternatives to producs in the closed source world. My original goal was simply to find a flexible mobile assistant that I could develop features for to help manage my ADHD. Finding nothing on the market to meet my need that also respected the ethics of free and open source software, I decided to start developing my own. It started out as a port of Mycroft for Android but due to system differences it quickly turned into its own project under the title "The Sapphire Assistant Framework". Due to concern that configuring the Sapphire Framework might overwhelm non-technical users, I split the code base in two to create [Athena](https://github.com/Tadashi-Hikari/Athena) and the Sapphire Framework, which can be installed stand alone or as a plug-in to Athena.
 
 
