@@ -1,9 +1,7 @@
 # The Sapphire Assistant Framework
-If you are looking for an Android assistant that is easy to use, flexible, and respects your privacy then look no further.
+The Sapphire Assistant Framework is plug-in framework for [Athena](https://github.com/Tadashi-Hikari/Athena), an open source Google Assistant replacement (that doesn't require any Google services to run).
 
 The Sapphire Framework is a data aggregation and processing framework for Android that allows users and developers to refine, customize, or develop a mobile assistant tailored to their needs.
-
-Though the Sapphire Framework contains an assistant that works out of the box (no assembly required), it also offers a set of tools to collect and process data, run scripts, and develop custom assistants, while also being capable of utilizing apps designed for existing toy assistants like Alexa and Google Assistant. 
 
 ## Highlights
 * Free and Open Source
@@ -12,6 +10,20 @@ Though the Sapphire Framework contains an assistant that works out of the box (n
 * Works entirely offline/on device
 * Highly modular and extensible
 
-I've just uploaded a prealpha APK (under releases on github) that can be tried out, but it's likely to be *VERY BUGGY* until the Alpha/Beta releases.
+## Motivation
+The Sapphire Framework was developed to meet the needs of the open source community, while offering quality alternatives to producs in the closed source world. My original goal was simply to find a flexible mobile assistant that I could develop features for to help manage my ADHD. Finding nothing on the market to meet my need that also respected the ethics of free and open source software, I decided to start developing my own. It started out as a port of Mycroft for Android but due to system differences it quickly turned into its own project under the title "The Sapphire Assistant Framework". Due to concern that configuring the Sapphire Framework might overwhelm non-technical users, I split the code base in two to create [Athena](https://github.com/Tadashi-Hikari/Athena) and the Sapphire Framework, which can be installed stand alone or as a plug-in to Athena.
 
-More information can be found on the GitHub wiki for this project, which is considered the official source of information. Alternatively you can get in contact with me on [Reddit](https://www.reddit.com/r/SapphireFramework/) where I've set up a subreddit to help out and talk with people interested in the project. If you're interested in a live chat, you can reach out on matrix at #SapphireFramework:matrix.org
+
+# Build Status
+Pre-Alpha 
+
+# Frameworks and Libraries Used
+* CMU PocketSphinx
+* TensorSpeech TTS
+* Stanford CoreNLP
+
+# Contributions
+* Financial contributions are always appreciated, and can help me move to making this my full time job. Check out the sponsor button in the repository if you are interested in helping to fund the project
+* Join in the community on [Reddit](www.reddit.com/r/SapphireFramework) or Matrix at #SapphireFramework:matrix.org
+* Android, Machine Learning developers, and UI/UX developers would be greatly appreciated for the project (or consulting at a minimum). I will continue to move forward reguardless, but it will go a lot quicker with some domain specific expertise
+* Documentation help would be greatly appreciated. I generally have all of the information locked up in my head and I am working on documentation, but sometimes I miss what others would find helpful or need more information on. Feel free to ask questions on Reddit or Matrix (I'm pretty responsive) if you would like to help out
