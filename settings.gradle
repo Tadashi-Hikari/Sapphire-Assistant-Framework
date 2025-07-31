@@ -1,10 +1,21 @@
-include ':TaskerModule'
-include ':MycroftModule'
-include ':TermuxModule'
-include ':MultiprocessModule'
-include ':ComponentFramework'
-include ':CalendarSkill'
-include ':ProcessorModule'
-include ':VoskSTTModule'
-include ':CoreModule'
+// Core Framework
+include ':packages:core:CoreModule'
+include ':packages:framework:ComponentFramework'
+
+// Processing Modules
+include ':packages:processing:ProcessorModule'
+include ':packages:processing:VoskSTTModule'
+include ':packages:processing:MycroftModule'
+include ':packages:processing:MultiprocessModule'
+
+// Skills
+include ':packages:skills:CalendarSkill'
+
+// Integrations
+include ':packages:integrations:TermuxModule'
+include ':packages:integrations:TaskerModule'
+
+// Examples (for learning and development)
+include ':examples:HelloWorldSkill'
+
 rootProject.name = "Sapphire Assistant Framework"

@@ -1,26 +1,55 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
-    // This is used to switch whether I want to build it as individal APKs, or as a single APK
+    // This is used to switch whether I want to build it as individual APKs, or as a single APK
     project.ext.single = true
 
-    ext.kotlin_version = "1.4.10"
+    ext.kotlin_version = "1.9.10"
+    ext.compileSdk = 34
+    ext.targetSdk = 34
+    ext.minSdk = 24
+    
     repositories {
         google()
-        jcenter()
+        mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.1.3'
+        classpath 'com.android.tools.build:gradle:8.1.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-                // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle file
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
     }
 }
 
 allprojects {
     repositories {
         google()
-        jcenter()
+        mavenCentral()
     }
+}
+
+// Shared dependency versions
+ext {
+    // Android versions
+    compileSdkVersion = 34
+    targetSdkVersion = 34
+    minSdkVersion = 24
+    
+    // Library versions
+    androidxCoreVersion = "1.12.0"
+    appCompatVersion = "1.6.1"
+    materialVersion = "1.10.0"
+    constraintLayoutVersion = "2.1.4"
+    
+    // Testing versions
+    junitVersion = "4.13.2"
+    androidxJunitVersion = "1.1.5"
+    espressoVersion = "3.5.1"
+    
+    // Kotlin and coroutines
+    kotlinCoroutinesVersion = "1.7.3"
+    
+    // Stanford CoreNLP (keeping existing version for compatibility)
+    stanfordCoreNlpVersion = "4.1.0"
 }
 
 task clean(type: Delete) {

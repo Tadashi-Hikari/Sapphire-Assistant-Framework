@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.helloworldskill">
+
+    <application>
+        <!-- Main skill service -->
+        <service android:name=".HelloWorldService"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+        </service>
+
+        <!-- Registration service -->
+        <service android:name=".HelloWorldPostOfficeService"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+        </service>
+    </application>
+
+</manifest>

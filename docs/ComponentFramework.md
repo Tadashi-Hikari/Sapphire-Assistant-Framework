@@ -1,11 +1,16 @@
 # ComponentFramework Module
 
+**Location**: `packages/framework/ComponentFramework/`  
+**Package Category**: **Framework** - Base classes and utilities
+
 ## Overview
 The ComponentFramework module provides the foundational services and abstract base classes that all other modules in the Sapphire Assistant Framework extend. It implements core routing, validation, and communication protocols.
 
 ## Key Components
 
 ### SapphireCoreService.kt
+**Location**: `packages/framework/ComponentFramework/src/main/java/com/example/componentframework/SapphireCoreService.kt`
+
 **Purpose**: Abstract base class for core services with routing and validation capabilities.
 
 **Key Methods**:
@@ -17,6 +22,8 @@ The ComponentFramework module provides the foundational services and abstract ba
 **Functionality**: Provides core routing and validation logic for the framework.
 
 ### SapphireFrameworkService.kt
+**Location**: `packages/framework/ComponentFramework/src/main/java/com/example/componentframework/SapphireFrameworkService.kt`
+
 **Purpose**: Abstract base service class providing common framework functionality.
 
 **Key Methods**:
@@ -28,6 +35,8 @@ The ComponentFramework module provides the foundational services and abstract ba
 **Functionality**: Foundation service class with logging, messaging, and routing capabilities.
 
 ### SapphireFrameworkRegistrationService.kt
+**Location**: `packages/framework/ComponentFramework/src/main/java/com/example/componentframework/SapphireFrameworkRegistrationService.kt`
+
 **Purpose**: Handles module registration and data exchange between modules.
 
 **Key Methods**:
@@ -54,11 +63,27 @@ The ComponentFramework module provides the foundational services and abstract ba
 - JSON processing capabilities
 - File I/O operations
 
+## Build Configuration
+```gradle
+// In settings.gradle
+include ':packages:framework:ComponentFramework'
+
+// Build command
+./gradlew :packages:framework:ComponentFramework:build
+```
+
 ## Usage
 Other modules extend the abstract classes provided by this framework:
 - Extend `SapphireFrameworkService` for basic service functionality
 - Extend `SapphireCoreService` for core routing capabilities
 - Use `SapphireFrameworkRegistrationService` for module registration
+
+## Package Dependencies
+This is a foundational module that other packages depend on:
+- `packages/core/CoreModule/` - Uses all framework services
+- `packages/skills/*` - Extend SapphireFrameworkService
+- `packages/integrations/*` - Extend SapphireFrameworkService
+- `packages/processing/*` - Use framework base classes
 
 ## Architecture Role
 This module forms the backbone of the inter-module communication system, providing:
@@ -66,3 +91,9 @@ This module forms the backbone of the inter-module communication system, providi
 - Message routing and validation
 - Module lifecycle management
 - Common utilities and logging
+
+## Development Notes
+- **Critical Dependency**: All other modules depend on this framework
+- **Base Classes**: Provides the foundation for service communication
+- **Build First**: Must be built before other modules
+- **API Stability**: Changes here affect all modules

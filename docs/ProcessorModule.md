@@ -1,11 +1,16 @@
 # ProcessorModule
 
+**Location**: `packages/processing/ProcessorModule/`  
+**Package Category**: **Processing** - Natural language processing
+
 ## Overview
 The ProcessorModule provides natural language processing capabilities using Stanford CoreNLP. It handles intent classification, named entity recognition (NER), and machine learning model training for the Sapphire Assistant Framework.
 
 ## Key Components
 
 ### ProcessorCentralService.kt
+**Location**: `packages/processing/ProcessorModule/src/main/java/com/example/processormodule/ProcessorCentralService.kt`
+
 **Purpose**: Main text processing service using Stanford CoreNLP for intent classification.
 
 **Key Methods**:
@@ -16,6 +21,8 @@ The ProcessorModule provides natural language processing capabilities using Stan
 **Functionality**: Natural language processing for intent recognition using machine learning.
 
 ### EntityTrainingService.kt
+**Location**: `packages/processing/ProcessorModule/src/main/java/com/example/processormodule/EntityTrainingService.kt`
+
 **Purpose**: Named Entity Recognition (NER) training and processing.
 
 **Key Methods**:
@@ -26,6 +33,8 @@ The ProcessorModule provides natural language processing capabilities using Stan
 **Functionality**: Handles entity extraction using Stanford NLP's CRF classifier.
 
 ### ProcessorTrainingService.kt
+**Location**: `packages/processing/ProcessorModule/src/main/java/com/example/processormodule/ProcessorTrainingService.kt`
+
 **Purpose**: Trains intent classification models from training data.
 
 **Key Methods**:
@@ -37,11 +46,15 @@ The ProcessorModule provides natural language processing capabilities using Stan
 **Functionality**: Machine learning model training for intent classification.
 
 ## Dependencies
+**Location**: `packages/processing/ProcessorModule/libs/` and `src/main/assets/`
+
 - `stanford-corenlp-4.1.0.jar`: Stanford CoreNLP library
 - `english.all.3class.distsim.crf.ser.gz`: Pre-trained NER model
 - `english.all.3class.distsim.prop`: NER configuration properties
 
 ## Configuration Files
+**Location**: `packages/processing/ProcessorModule/src/main/assets/`
+
 - `processor.conf`: Configuration for processing operations
 
 ## Module Type
@@ -74,11 +87,34 @@ The ProcessorModule provides natural language processing capabilities using Stan
 - **NER Classifier**: Extracts entities like dates, names, locations
 - **Custom Models**: Support for domain-specific trained models
 
+## Package Dependencies
+- `packages/framework/ComponentFramework/` - Base service functionality
+- `packages/core/CoreModule/` - File management and routing
+- `packages/processing/VoskSTTModule/` - Speech-to-text input
+- `packages/skills/*` - Training data and intent routing
+- `packages/processing/MycroftModule/` - Intent pattern expansion
+
+## Build Configuration
+```gradle
+// In settings.gradle
+include ':packages:processing:ProcessorModule'
+
+// Build command
+./gradlew :packages:processing:ProcessorModule:build
+```
+
 ## Integration Points
-- **Input Modules**: Receives text from VoskSTTModule and other sources
-- **Skill Modules**: Routes classified intents to appropriate skills
-- **Core Module**: Coordinates with core for file management and routing
+- **Input Processing**: Receives text from `packages/processing/VoskSTTModule/`
+- **Skill Routing**: Routes classified intents to `packages/skills/*`
+- **Core Coordination**: Coordinates with `packages/core/CoreModule/`
 - **Training Data**: Receives training examples from all skill modules
+- **Utility Integration**: Uses `packages/processing/MycroftModule/` for pattern expansion
 
 ## Status
 **Active** - Fully implemented NLP processing with Stanford CoreNLP integration and model training capabilities.
+
+## Development Notes
+- **Processing Pipeline**: Core component of the NLP processing pipeline
+- **Machine Learning**: Handles all ML model training and inference
+- **Heavy Dependencies**: Large Stanford CoreNLP library impacts build size
+- **Performance Critical**: Central to system response accuracy and speed

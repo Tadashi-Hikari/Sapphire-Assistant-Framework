@@ -1,11 +1,16 @@
 # VoskSTTModule
 
+**Location**: `packages/processing/VoskSTTModule/`  
+**Package Category**: **Processing** - Speech recognition
+
 ## Overview
 The VoskSTTModule provides offline speech-to-text capabilities using the Vosk speech recognition toolkit. It enables continuous voice recognition with hotword detection for the Sapphire Assistant Framework.
 
 ## Key Components
 
 ### KaldiService.kt
+**Location**: `packages/processing/VoskSTTModule/src/main/java/com/example/vosksttmodule/KaldiService.kt`
+
 **Purpose**: Speech-to-text service using Vosk/Kaldi libraries.
 
 **Key Methods**:
@@ -16,6 +21,8 @@ The VoskSTTModule provides offline speech-to-text capabilities using the Vosk sp
 **Functionality**: Continuous speech recognition with hotword detection and result processing.
 
 ### VoskPostOfficeService.kt
+**Location**: `packages/processing/VoskSTTModule/src/main/java/com/example/vosksttmodule/VoskPostOfficeService.kt`
+
 **Purpose**: Registration service for the Vosk STT module.
 
 **Key Methods**:
@@ -24,9 +31,13 @@ The VoskSTTModule provides offline speech-to-text capabilities using the Vosk sp
 **Functionality**: Module registration with background service setup for continuous listening.
 
 ### CustomSpeechRecognizer.java
+**Location**: `packages/processing/VoskSTTModule/src/main/java/com/example/vosksttmodule/CustomSpeechRecognizer.java`
+
 **Purpose**: Custom implementation bridging Vosk recognition with Android audio systems.
 
 ## Dependencies
+**Locations**: `packages/processing/VoskSTTModule/aars/` and `src/main/assets/`
+
 - `kaldi-android-5.2.aar`: Vosk/Kaldi Android library
 - Pre-trained Vosk model files in `assets/sync/model-android/`:
   - `final.mdl`: Acoustic model
@@ -36,6 +47,8 @@ The VoskSTTModule provides offline speech-to-text capabilities using the Vosk sp
   - Various configuration files
 
 ## Configuration Files
+**Location**: `packages/processing/VoskSTTModule/src/main/assets/`
+
 - `vosk.conf`: Configuration for speech recognition parameters
 - `mfcc.conf`: Audio feature extraction configuration
 
@@ -65,11 +78,28 @@ The VoskSTTModule provides offline speech-to-text capabilities using the Vosk sp
 5. **Intent Routing**: Sends recognized text to ProcessorModule
 6. **Response Handling**: Manages system responses and feedback
 
+## Package Dependencies
+- `packages/framework/ComponentFramework/` - Base service functionality
+- `packages/core/CoreModule/` - Routing and voice interaction
+- `packages/processing/ProcessorModule/` - Intent classification
+- Android AudioRecord for microphone access
+- Android VoiceInteractionService
+
+## Build Configuration
+```gradle
+// In settings.gradle
+include ':packages:processing:VoskSTTModule'
+
+// Build command
+./gradlew :packages:processing:VoskSTTModule:build
+```
+
 ## Integration Points
 - **Audio System**: Android AudioRecord for microphone access
-- **Core Module**: Routes recognition results through core
-- **Processor Module**: Sends recognized text for intent classification
-- **Voice Interaction**: Integrates with Android VoiceInteractionService
+- **Core Communication**: Routes recognition results through `packages/core/CoreModule/`
+- **NLP Processing**: Sends recognized text to `packages/processing/ProcessorModule/`
+- **Voice Interaction**: Integrates with Android VoiceInteractionService in CoreModule
+- **Framework Foundation**: Built on `packages/framework/ComponentFramework/`
 
 ## Model Management
 - **Model Loading**: Loads pre-trained Vosk models from assets
@@ -91,3 +121,10 @@ The VoskSTTModule provides offline speech-to-text capabilities using the Vosk sp
 
 ## Status
 **Active** - Fully implemented offline speech recognition with Vosk integration and continuous listening capabilities.
+
+## Development Notes
+- **Processing Pipeline**: Entry point for voice input processing
+- **Large Dependencies**: Vosk models are substantial (100MB+)
+- **Performance Critical**: Real-time audio processing requirements
+- **Privacy First**: Completely offline operation
+- **Hardware Intensive**: Requires significant RAM and CPU for continuous recognition
