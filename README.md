@@ -3,6 +3,14 @@ The Sapphire Assistant Framework is plug-in framework for [Athena](https://githu
 
 The Sapphire Framework is a data aggregation and processing framework for Android that allows users and developers to refine, customize, or develop a mobile assistant tailored to their needs.
 
+# Roadmap
+* Update to more modern Androids
+* Find a lightweight VAD and Hotword detector
+* Replace PocketSphinx with Whisper
+* Add in an Ollama callout
+* Wrap Llama.cpp to run small local LLMs
+* Optimize for on device NPUs
+
 # Highlights
 * Free and Open Source
 * Doesn't use Google services
