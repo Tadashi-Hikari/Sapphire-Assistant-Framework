@@ -1,0 +1,149 @@
+# Gradle files
+.gradle/
+build/
+gradle-app.setting
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+
+# Local configuration file (sdk path, etc)
+local.properties
+
+# Android Studio / IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+.idea_modules/
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Windows
+*.tmp
+*.bak
+*.swp
+*~.nib
+
+# Eclipse
+.metadata
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.settings/
+.loadpath
+.recommenders
+.project
+.external*
+.classpath
+.factorypath
+
+# NetBeans
+/nbproject/private/
+/build/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# Android Studio Profiler
+profiler/
+
+# Keystore files
+# If you have your signing keys, keep them private!
+*.jks
+*.keystore
+
+# External native build folder generated in Android Studio 2.2 and later
+.externalNativeBuild/
+.cxx/
+
+# Google Services (e.g. APIs or Firebase)
+# google-services.json
+
+# Freeline
+freeline.py
+freeline/
+freeline_project_description.json
+
+# fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+fastlane/readme.md
+
+# Version control
+*.orig
+
+# Temporary files
+*.log
+*.tmp
+
+# Test results
+test-results/
+test-outputs/
+
+# Compiled source
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+*.apk
+*.ap_
+*.dex
+
+# Archives
+*.jar
+!libs/*.jar
+*.war
+*.ear
+
+# Generated files
+bin/
+gen/
+out/
+proguard/
+
+# Firebase
+firebase-debug.log
+
+# Android
+*.ap_
+*.aab
+mapping.txt
+
+# Local testing database
+*.db
+
+# Node modules (if using any JS tooling)
+node_modules/
+
+# Python
+*.pyc
+__pycache__/
+*.pyo
+
+# R
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+# Backup files
+*~
+*.backup
