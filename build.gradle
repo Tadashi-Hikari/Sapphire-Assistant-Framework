@@ -1,20 +1,24 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
     // This is used to switch whether I want to build it as individual APKs, or as a single APK
-    project.ext.single = true
+    project.ext.single = false
 
-    ext.kotlin_version = "1.9.10"
+    ext.kotlin_version = "1.9.22"
     ext.compileSdk = 34
     ext.targetSdk = 34
-    ext.minSdk = 24
+    ext.minSdk = 26  // Increased for better modern API support
     
     repositories {
         google()
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.1.2'
+        classpath 'com.android.tools.build:gradle:8.2.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        
+        // Add modern tooling
+        classpath 'com.google.dagger:hilt-android-gradle-plugin:2.48.1'
+        classpath 'androidx.navigation:navigation-safe-args-gradle-plugin:2.7.6'
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }
@@ -27,30 +31,107 @@ allprojects {
     }
 }
 
-// Shared dependency versions
+// Shared dependency versions (updated to latest)
 ext {
     // Android versions
     compileSdkVersion = 34
     targetSdkVersion = 34
-    minSdkVersion = 24
+    minSdkVersion = 26
     
-    // Library versions
+    // AndroidX Core
     androidxCoreVersion = "1.12.0"
     appCompatVersion = "1.6.1"
-    materialVersion = "1.10.0"
+    materialVersion = "1.11.0"
     constraintLayoutVersion = "2.1.4"
     
-    // Testing versions
-    junitVersion = "4.13.2"
-    androidxJunitVersion = "1.1.5"
-    espressoVersion = "3.5.1"
+    // Architecture Components
+    lifecycleVersion = "2.7.0"
+    navigationVersion = "2.7.6"
+    roomVersion = "2.6.1"
+    hiltVersion = "2.48.1"
     
-    // Kotlin and coroutines
-    kotlinCoroutinesVersion = "1.7.3"
+    // Modern UI
+    composeVersion = "2024.02.00"
+    composeMaterial3Version = "1.2.0"
+    composeCompilerVersion = "1.5.8"
+    
+    // Async
+    coroutinesVersion = "1.7.3"
+    
+    // WorkManager
+    workManagerVersion = "2.9.0"
+    
+    // Testing (modernized)
+    junitVersion = "4.13.2"
+    junitExtVersion = "1.1.5"
+    espressoVersion = "3.5.1"
+    mockkVersion = "1.13.8"
+    turbineVersion = "1.0.0"
+    
+    // Security
+    encryptedPrefsVersion = "1.0.0"
     
     // Stanford CoreNLP (keeping existing version for compatibility)
     stanfordCoreNlpVersion = "4.1.0"
 }
+
+// Modern dependency catalog
+ext.deps = [
+    // Core Android
+    androidxCore: "androidx.core:core-ktx:$androidxCoreVersion",
+    appCompat: "androidx.appcompat:appcompat:$appCompatVersion",
+    material: "com.google.android.material:material:$materialVersion",
+    constraintLayout: "androidx.constraintlayout:constraintlayout:$constraintLayoutVersion",
+    
+    // Architecture Components
+    viewModel: "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion",
+    liveData: "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleVersion",
+    lifecycleCommon: "androidx.lifecycle:lifecycle-common-java8:$lifecycleVersion",
+    navigation: "androidx.navigation:navigation-fragment-ktx:$navigationVersion",
+    navigationUi: "androidx.navigation:navigation-ui-ktx:$navigationVersion",
+    
+    // Room Database
+    room: "androidx.room:room-runtime:$roomVersion",
+    roomKtx: "androidx.room:room-ktx:$roomVersion",
+    roomKapt: "androidx.room:room-compiler:$roomVersion",
+    
+    // Dependency Injection
+    hilt: "com.google.dagger:hilt-android:$hiltVersion",
+    hiltKapt: "com.google.dagger:hilt-compiler:$hiltVersion",
+    
+    // Compose BOM
+    composeBom: "androidx.compose:compose-bom:$composeVersion",
+    composeUi: "androidx.compose.ui:ui",
+    composePreview: "androidx.compose.ui:ui-tooling-preview",
+    composeTooling: "androidx.compose.ui:ui-tooling",
+    composeMaterial3: "androidx.compose.material3:material3",
+    composeActivity: "androidx.activity:activity-compose:1.8.2",
+    composeViewModel: "androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycleVersion",
+    
+    // Coroutines
+    coroutinesCore: "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion",
+    coroutinesAndroid: "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion",
+    
+    // WorkManager
+    workManager: "androidx.work:work-runtime-ktx:$workManagerVersion",
+    workManagerHilt: "androidx.hilt:hilt-work:1.1.0",
+    
+    // Security
+    encryptedPrefs: "androidx.security:security-crypto:$encryptedPrefsVersion",
+    
+    // Testing
+    junit: "junit:junit:$junitVersion",
+    junitExt: "androidx.test.ext:junit:$junitExtVersion",
+    espresso: "androidx.test.espresso:espresso-core:$espressoVersion",
+    mockk: "io.mockk:mockk:$mockkVersion",
+    turbine: "app.cash.turbine:turbine:$turbineVersion",
+    coroutinesTest: "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion",
+    composeTest: "androidx.compose.ui:ui-test-junit4",
+    composeTestManifest: "androidx.compose.ui:ui-test-manifest",
+    
+    // Legacy libraries (keeping for compatibility)
+    stanfordCoreNlp: "edu.stanford.nlp:stanford-corenlp:$stanfordCoreNlpVersion"
+]
 
 task clean(type: Delete) {
     delete rootProject.buildDir

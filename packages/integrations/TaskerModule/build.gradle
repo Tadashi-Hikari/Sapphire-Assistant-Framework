@@ -1,19 +1,30 @@
 plugins {
     id 'com.android.dynamic-feature'
     id 'kotlin-android'
+    id 'kotlin-kapt'
+    id 'dagger.hilt.android.plugin'
 }
 android {
-    compileSdkVersion 30
-    buildToolsVersion "30.0.3"
+    namespace "com.example.sapphireassistantframework.taskermodule"
+    compileSdk rootProject.ext.compileSdk
 
     defaultConfig {
-        applicationId "com.example.taskermodule"
-        minSdkVersion 25
-        targetSdkVersion 30
+        minSdk rootProject.ext.minSdk
+        targetSdk rootProject.ext.targetSdk
         versionCode 1
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildFeatures {
+        compose true
+        viewBinding true
+        dataBinding true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = rootProject.ext.composeCompilerVersion
     }
 
     buildTypes {
@@ -22,14 +33,71 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    
+    kotlinOptions {
+        jvmTarget = "17"
+        freeCompilerArgs += [
+            "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
+            "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api"
+        ]
+    }
+    
+    packagingOptions {
+        resources {
+            excludes += '/META-INF/{AL2.0,LGPL2.1}'
+        }
+    }
 }
 
 dependencies {
-    implementation project(":CoreModule")
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    implementation 'androidx.core:core-ktx:1.3.2'
-    testImplementation 'junit:junit:4.+'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
-    androidTestImplementation 'androidx.annotation:annotation:1.1.0'
+    // Core Android
+    implementation rootProject.ext.deps.androidxCore
+    implementation rootProject.ext.deps.appCompat
+    implementation rootProject.ext.deps.material
+    
+    // Architecture Components
+    implementation rootProject.ext.deps.viewModel
+    implementation rootProject.ext.deps.liveData
+    implementation rootProject.ext.deps.lifecycleCommon
+    
+    // Dependency Injection
+    implementation rootProject.ext.deps.hilt
+    kapt rootProject.ext.deps.hiltKapt
+    
+    // Coroutines
+    implementation rootProject.ext.deps.coroutinesCore
+    implementation rootProject.ext.deps.coroutinesAndroid
+    
+    // WorkManager
+    implementation rootProject.ext.deps.workManager
+    implementation rootProject.ext.deps.workManagerHilt
+    
+    // Security
+    implementation rootProject.ext.deps.encryptedPrefs
+    
+    // Compose BOM
+    implementation platform(rootProject.ext.deps.composeBom)
+    implementation rootProject.ext.deps.composeUi
+    implementation rootProject.ext.deps.composePreview
+    implementation rootProject.ext.deps.composeMaterial3
+    implementation rootProject.ext.deps.composeActivity
+    implementation rootProject.ext.deps.composeViewModel
+    debugImplementation rootProject.ext.deps.composeTooling
+    
+    // Project dependencies
+    implementation project(":packages:core:CoreModule")
+    
+    // Testing
+    testImplementation rootProject.ext.deps.junit
+    testImplementation rootProject.ext.deps.mockk
+    testImplementation rootProject.ext.deps.coroutinesTest
+    androidTestImplementation rootProject.ext.deps.junitExt
+    androidTestImplementation rootProject.ext.deps.espresso
+    androidTestImplementation rootProject.ext.deps.composeTest
+    debugImplementation rootProject.ext.deps.composeTestManifest
 }

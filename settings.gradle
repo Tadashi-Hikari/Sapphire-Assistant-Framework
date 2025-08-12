@@ -4,8 +4,9 @@ include ':packages:framework:ComponentFramework'
 
 // Processing Modules
 include ':packages:processing:ProcessorModule'
-include ':packages:processing:VoskSTTModule'
-include ':packages:processing:MycroftModule'
+//include ':packages:processing:VoskSTTModule'
+// TODO: Remove this module. Mycroft is dead!
+//include ':packages:processing:MycroftModule'
 include ':packages:processing:MultiprocessModule'
 
 // Skills
@@ -15,7 +16,7 @@ include ':packages:skills:CalendarSkill'
 include ':packages:integrations:TermuxModule'
 include ':packages:integrations:TaskerModule'
 
-// Examples (for learning and development)
-include ':examples:HelloWorldSkill'
+// Examples (for learning and development) - commented out to exclude from default build
+// include ':examples:HelloWorldSkill'
 
 rootProject.name = "Sapphire Assistant Framework"

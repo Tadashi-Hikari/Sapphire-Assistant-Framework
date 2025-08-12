@@ -1,22 +1,35 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
+    id 'kotlin-kapt'
+    id 'dagger.hilt.android.plugin'
+    id 'androidx.navigation.safeargs.kotlin'
 }
 
 configurations.maybeCreate("default")
 
 android {
-    compileSdkVersion 30
-    buildToolsVersion "30.0.2"
+    namespace "com.example.sapphireassistantframework"
+    compileSdk rootProject.ext.compileSdk
 
     defaultConfig {
         applicationId "com.example.sapphireassistantframework"
-        minSdkVersion 25
-        targetSdkVersion 30
+        minSdk rootProject.ext.minSdk
+        targetSdk rootProject.ext.targetSdk
         versionCode 1
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildFeatures {
+        compose true
+        viewBinding true
+        dataBinding true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = rootProject.ext.composeCompilerVersion
     }
 
     buildTypes {
@@ -26,16 +39,27 @@ android {
         }
     }
 
-    lintOptions {
+    lint {
         checkReleaseBuilds false
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
+    
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = "17"
+        freeCompilerArgs += [
+            "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
+            "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api"
+        ]
+    }
+    
+    packagingOptions {
+        resources {
+            excludes += '/META-INF/{AL2.0,LGPL2.1}'
+        }
     }
 }
 
@@ -44,29 +68,69 @@ android {
 //clean.dependsOn(clean_assets)
 
 dependencies {
-    implementation "androidx.core:core-ktx:1.3.2"
-    implementation "androidx.fragment:fragment-ktx:1.2.5"
+    // Core Android
+    implementation rootProject.ext.deps.androidxCore
+    implementation rootProject.ext.deps.appCompat
+    implementation rootProject.ext.deps.material
+    implementation rootProject.ext.deps.constraintLayout
+    implementation "androidx.fragment:fragment-ktx:1.6.2"
+    implementation "androidx.preference:preference-ktx:1.2.1"
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'com.google.android.material:material:1.2.1'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.2'
-	implementation 'androidx.preference:preference:1.1.1'
-	testImplementation 'junit:junit:4.+'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
-    implementation project(":ComponentFramework")
-    def core_version = "1.3.2"
+    
+    // Architecture Components
+    implementation rootProject.ext.deps.viewModel
+    implementation rootProject.ext.deps.liveData
+    implementation rootProject.ext.deps.lifecycleCommon
+    implementation rootProject.ext.deps.navigation
+    implementation rootProject.ext.deps.navigationUi
+    
+    // Room Database
+    implementation rootProject.ext.deps.room
+    implementation rootProject.ext.deps.roomKtx
+    kapt rootProject.ext.deps.roomKapt
+    
+    // Dependency Injection
+    implementation rootProject.ext.deps.hilt
+    kapt rootProject.ext.deps.hiltKapt
+    
+    // Coroutines
+    implementation rootProject.ext.deps.coroutinesCore
+    implementation rootProject.ext.deps.coroutinesAndroid
+    
+    // WorkManager
+    implementation rootProject.ext.deps.workManager
+    implementation rootProject.ext.deps.workManagerHilt
+    
+    // Security
+    implementation rootProject.ext.deps.encryptedPrefs
+    
+    // Compose BOM
+    implementation platform(rootProject.ext.deps.composeBom)
+    implementation rootProject.ext.deps.composeUi
+    implementation rootProject.ext.deps.composePreview
+    implementation rootProject.ext.deps.composeMaterial3
+    implementation rootProject.ext.deps.composeActivity
+    implementation rootProject.ext.deps.composeViewModel
+    debugImplementation rootProject.ext.deps.composeTooling
+    
+    // Module dependencies
+    implementation project(":packages:framework:ComponentFramework")
 
-    // Java language implementation
-    implementation "androidx.core:core:$core_version"
-    // Kotlin
-    implementation "androidx.core:core-ktx:$core_version"
-
+    // This is for building a standalone assistant APK, rather than each module as a plugin
     if(project.single){
-        implementation project(":VoskSTTModule")
-        implementation project(":ProcessorModule")
-        implementation project(":MultiprocessModule")
-        //implementation project(":CalendarSkill")
-        implementation project(":TermuxModule")
+        implementation project(":packages:processing:VoskSTTModule")
+        implementation project(":packages:processing:ProcessorModule")
+        implementation project(":packages:processing:MultiprocessModule")
+        implementation project(":packages:skills:CalendarSkill")
+        implementation project(":packages:integrations:TermuxModule")
     }
+    
+    // Testing
+    testImplementation rootProject.ext.deps.junit
+    testImplementation rootProject.ext.deps.mockk
+    testImplementation rootProject.ext.deps.coroutinesTest
+    androidTestImplementation rootProject.ext.deps.junitExt
+    androidTestImplementation rootProject.ext.deps.espresso
+    androidTestImplementation rootProject.ext.deps.composeTest
+    debugImplementation rootProject.ext.deps.composeTestManifest
 }
